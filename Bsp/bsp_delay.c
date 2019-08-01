@@ -1,29 +1,43 @@
 #include "bsp_delay.h"
 
-//static unsigned char fac_us=0;  //STM32 us延时倍乘数
+static unsigned char fac_us=0;  //us延时倍乘数，静态全局变量，单独此.c用
 
-/* STM32 延时函数初始化 */
-//void Delay_Init(unsigned char sysclk)
-//{
-//	HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);  //STM32 SysTick频率为HCLK
-//	fac_us = sysclk;
-//}
+/* 延时函数初始化 */
+void Delay_Init(unsigned char sysclk)
+{
+	//STM8
+	if(sysclk >= 16)
+		fac_us = (16 - 4) / 4;
+	else if(sysclk > 4)
+		fac_us = (sysclk - 4) / 4;
+	else
+		fac_us = 1;
+	
+	//STM32 
+	// HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);  //SysTick频率为HCLK
+	// fac_us = sysclk;
+}
 
 /* 延时nus，nus为要延时的us数，注意:nus的值不要大于1000（1ms），STM32时钟摘取法 */
 void delay_us(unsigned int nus)
 {
-    while(nus--)
-    {
-        asm("NOP");
-        asm("NOP");
-        asm("NOP");
-        asm("NOP");
-        asm("NOP");
-        asm("NOP");
-        asm("NOP");
-        asm("NOP");
-    }
-    
+    //STM8
+	//延时时间=(fac_us*4+4)*nus*(T)，16M对应（3*4+4）*nus/16=nus us
+	//其中,T为CPU运行频率(Mhz)的倒数,单位为us
+	__asm(
+	"PUSH A \n"  //1T，压栈
+	"DELAY_XUS: \n"  //代码段名
+	"LD A,fac_us \n"  //1T，fac_us加载到累加器A
+	"DELAY_US_1: \n"  //代码段名
+	"NOP \n"  //1T,nop延时
+	"DEC A \n"  //1T,A--
+	"JRNE DELAY_US_1 \n"  //A不等于0,则跳转(2T)到DELAY_US_1继续执行,若等于0,则不跳转(1T)
+	"NOP \n"  //1T,nop延时
+	"DECW X \n"   //1T,x--，对应nus
+	"JRNE DELAY_XUS \n"  //X不等于0,则跳转(2T)到DELAY_XUS继续执行,若等于0,则不跳转(1T)
+	"POP A \n"  //1T,出栈
+	);
+	
     //STM32
 //	unsigned long int ticks;  //目标计数值
 //	unsigned long int told;  //初始捕获值
@@ -53,6 +67,20 @@ void delay_us(unsigned int nus)
 /* 延时nms，nms:要延时的ms数 */
 void delay_ms(unsigned int nms)
 {
-    while(nms--)
-        delay_us(1000);
+	//STM8
+	//减少while判断与跳转使用，增加准确性
+	unsigned char t = 0;
+	
+	if(nms > 65)
+	{
+		t = nms / 65;
+		while(t--)
+			delay_us(65000);
+		nms = nms % 65;
+	}
+	delay_us(nms * 1000);
+	
+	//STM32
+    // while(nms--)
+        // delay_us(1000);
 }
