@@ -1,9 +1,9 @@
 #include "bsp_queue.h"
 
-static unsigned char is_queue_empty(pQueue_TypeDef queue);
-static unsigned char is_queue_full(pQueue_TypeDef queue);
-static void queue_write_single(pQueue_TypeDef queue, unsigned char data);
-static unsigned char queue_read_sigle(pQueue_TypeDef queue);
+static unsigned char is_queue_empty(pQueue_TypeDef queue);  //判断队列是否为空
+static unsigned char is_queue_full(pQueue_TypeDef queue);  //判断队列是否为满
+static void queue_write_single(pQueue_TypeDef queue, unsigned char data);  //写入队列单个数据
+static unsigned char queue_read_sigle(pQueue_TypeDef queue);  //读出队列单个数据
 
 /* 队列初始化 */
 void queue_init(pQueue_TypeDef queue, unsigned char size)
@@ -65,7 +65,7 @@ void queue_write(pQueue_TypeDef queue, unsigned char *pdata, unsigned char len)
 	}
 }
 
-/* 读出队列单个数据，移动头指针 */
+/* 读出队列单个数据，移动头指针，并清0已读出的数据 */
 static unsigned char queue_read_sigle(pQueue_TypeDef queue)
 {
 	unsigned char data;
@@ -82,7 +82,7 @@ static unsigned char queue_read_sigle(pQueue_TypeDef queue)
 	return data;
 }
 
-/* 读出队列指定长度数据，顺移头指针 */
+/* 读出队列指定长度数据，顺移头指针，并清0已读出的数据 */
 void queue_read(pQueue_TypeDef queue, unsigned char *pdata, unsigned char len)
 {
 	if(len <= queue->len)  //要读的长度 <= 队列中数据长度
