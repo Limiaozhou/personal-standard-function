@@ -26,13 +26,13 @@ typedef struct
 
 typedef Queue_TypeDef* pQueue_TypeDef;  //指向队列结构体的指针
 
-void queue_init(pQueue_TypeDef queue, uint16_t size);
-void queue_delete(pQueue_TypeDef queue);
+void queue_init(pQueue_TypeDef queue, uint16_t size);  //队列初始化，设置队列数据尺寸并分配数据空间
+void queue_delete(pQueue_TypeDef queue);  //队列删除，删除分配的数据空间
 
-void queue_write(pQueue_TypeDef queue, Data_t *pdata, uint16_t len);
-void queue_read(pQueue_TypeDef queue, Data_t *pdata, uint16_t len);
+void queue_write(pQueue_TypeDef queue, Data_t *pdata, uint16_t len);  //写入队列指定长度数据
+void queue_read(pQueue_TypeDef queue, Data_t *pdata, uint16_t len);  //读出队列指定长度数据，并清0已读出的数据
 
-uint16_t get_queue_len(pQueue_TypeDef queue);
-Data_t queue_data_sum(pQueue_TypeDef queue);
+uint16_t get_queue_len(pQueue_TypeDef queue);  //计算队列中数据长度
+Data_t queue_data_sum(pQueue_TypeDef queue);  //计算队列中保存的数据之和
 
 #endif

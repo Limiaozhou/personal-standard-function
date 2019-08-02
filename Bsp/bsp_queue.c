@@ -1,11 +1,12 @@
 #include "bsp_queue.h"
 
+//内部函数
 static uint8_t is_queue_empty(pQueue_TypeDef queue);  //判断队列是否为空
 static uint8_t is_queue_full(pQueue_TypeDef queue);  //判断队列是否为满
 static void queue_write_single(pQueue_TypeDef queue, Data_t data);  //写入队列单个数据
 static Data_t queue_read_sigle(pQueue_TypeDef queue);  //读出队列单个数据
 
-/* 队列初始化 */
+/* 队列初始化，设置队列数据尺寸并分配数据空间 */
 void queue_init(pQueue_TypeDef queue, uint16_t size)
 {
 	queue->head = 0;
@@ -15,7 +16,7 @@ void queue_init(pQueue_TypeDef queue, uint16_t size)
 	queue->data = (Data_t*) malloc(size * sizeof(Data_t));  //为data分配内存
 }
 
-/* 队列删除 */
+/* 队列删除，删除分配的数据空间 */
 void queue_delete(pQueue_TypeDef queue)
 {
 	queue->head = 0;
@@ -95,10 +96,10 @@ void queue_read(pQueue_TypeDef queue, Data_t *pdata, uint16_t len)
 /* 计算队列中数据长度 */
 uint16_t get_queue_len(pQueue_TypeDef queue)
 {
-	if(queue->tail >= queue->head)
-		queue->len = queue->tail - queue->head;
-	else
-		queue->len = queue->size - queue->head + queue->tail;
+	// if(queue->tail >= queue->head)
+		// queue->len = queue->tail - queue->head;
+	// else
+		// queue->len = queue->size - queue->head + queue->tail;
 	
 	return queue->len;
 }

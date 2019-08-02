@@ -2,7 +2,7 @@
 
 static uint8_t fac_us=0;  //us延时倍乘数，静态全局变量，单独此.c用
 
-/* 延时函数初始化 */
+/* 延时函数初始化，初始化延时基准 */
 void Delay_Init(uint8_t sysclk)
 {
 	//STM8

@@ -7,11 +7,29 @@ extern "C"
 #endif
 
 #include "iostm8s103F3.h"
-#include "bsp_delay.h"
-#include "bsp_iic_master.h"
 
-#define SlaveAddress 0x3C
+//数据类型声明
+typedef unsigned char uint8_t;
+typedef char int8_t;
+typedef unsigned int uint16_t;
+typedef int int16_t;  //8位机int为16,32位机int为32
+typedef unsigned long int uint32_t;
+typedef long int int32_t;
 
+#define HIGH 1  //引脚输出电平-高
+#define LOW  0
+
+#define OUT 1  //引脚配置输出
+#define IN  0
+
+#define DELAY_US_IIC  5  //IIC输出延时us
+
+#define my_st(x)  do { x } while(0)  //函数语句
+#define my_BV(n)  (1 << (n))  //取n位
+
+#define IICAddress 0x3C  //本机IIC地址
+
+//IIC引脚配置寄存器定义
 //type = 1
 #define IIC_SLAVE_SDA_CR1       PB_CR1_C15  //数据线SDA控制寄存器1
 #define IIC_SLAVE_SCL_CR1       PB_CR1_C14  //时钟线SCL
@@ -46,8 +64,8 @@ extern "C"
 #define IIC_SLAVE_SCL_IQ_ON()        my_st(IIC_SLAVE_SCL_CR2 = 1;)  //SCL中断输入开，高速输出
 #define IIC_SLAVE_SCL_IQ_OFF()       my_st(IIC_SLAVE_SCL_CR2 = 0;)  //SCL中断输入关，低速输出
 
-#define IIC_SLAVE_SDA_OUT(a)         my_st(IIC_MASTER_SDA_PIN_OUT = a;)  //SDA输出电平
-#define IIC_SLAVE_SCL_OUT(a)         my_st(IIC_MASTER_SCL_PIN_OUT = a;)
+#define IIC_SLAVE_SDA_OUT(a)         my_st(IIC_SLAVE_SDA_PIN_OUT = a;)  //SDA输出电平
+#define IIC_SLAVE_SCL_OUT(a)         my_st(IIC_SLAVE_SCL_PIN_OUT = a;)
 
 #define IIC_SLAVE_SDA_DIR_OUT()      my_st(IIC_SLAVE_SDA_DIR |= IIC_SLAVE_SDA_DIR_BV;)  //SDA输出模式
 #define IIC_SLAVE_SDA_DIR_IN()       my_st(IIC_SLAVE_SDA_DIR &= ~(IIC_SLAVE_SDA_DIR_BV);)
@@ -63,7 +81,7 @@ extern "C"
 #define IIC_SLAVE_SCL_EXTI_DOWN()    my_st(IIC_SLAVE_SCL_EXTI_CR1 = 0x02;)  //SCL中断下降沿触发
 #define IIC_SLAVE_SCL_EXTI_UPDOWN()  my_st(IIC_SLAVE_SCL_EXTI_CR1 = 0x03;)  //SCL中断上升和下降沿触发
 
-void IIC_Slave_Init(unsigned char type);
+void IIC_Slave_Init(uint8_t type);
 
 #ifdef __cplusplus
 }

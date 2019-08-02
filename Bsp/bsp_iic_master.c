@@ -1,48 +1,42 @@
 #include "bsp_iic_master.h"
 
-static void delay_us(unsigned int utime);
+//内部函数
+static void delay_us(uint16_t nus);  //延时n us，内部使用
 
-static void IIC_Master_Start(unsigned char type);
-static void IIC_Master_Stop(unsigned char type);
+static void IIC_Master_Start(uint8_t type);  //起始信号
+static void IIC_Master_Stop(uint8_t type);  //停止信号
 
-static void IIC_Master_SendAck(unsigned char type, unsigned char ack);
-static unsigned char IIC_Master_ReceiveAck(unsigned char type);
+static void IIC_Master_SendAck(uint8_t type, uint8_t ack);  //发送应答信号
+static uint8_t IIC_Master_ReceiveAck(uint8_t type);  //接收应答信号
 
-static unsigned char IIC_Master_SendByte(unsigned char type, unsigned char byte);
-static unsigned char IIC_Master_ReceiveByte(unsigned char type);
+static uint8_t IIC_Master_SendByte(uint8_t type, uint8_t byte);  //发送一个字节
+static uint8_t IIC_Master_ReceiveByte(uint8_t type);  //接收一个字节
 
-void delay_us(unsigned int utime)
+//延时n us，内部使用
+static void delay_us(uint16_t nus)
 {
-  while (utime--)
-  {
-    asm("NOP");
-    asm("NOP");
-    asm("NOP");
-    asm("NOP");
-    asm("NOP");
-    asm("NOP");
-    asm("NOP");
-    asm("NOP");
-  }
-}
-
-void my_delay_ms(unsigned int mtime)
-{
-  while (mtime--)
-  {
-    delay_us(1000);
-  }
+	while (nus--)
+	{
+		asm("NOP");
+		asm("NOP");
+		asm("NOP");
+		asm("NOP");
+		asm("NOP");
+		asm("NOP");
+		asm("NOP");
+		asm("NOP");
+	}
 }
 
 //初始化为空闲状态，scl与sda都为高，scl高电平收发稳定sda电平，低电平才能改sda电平
-void IIC_Master_Init(unsigned char type)
+void IIC_Master_Init(uint8_t type)
 {
     switch(type)
     {
         case 1 :
             IIC_MASTER_SDA_DIR_OUT();  //SDA输出
             IIC_MASTER_SCL_DIR_OUT();
-            IIC_MASTER_SDA_UP();  //SDA上拉输入，推挽输出，0为浮空
+            IIC_MASTER_SDA_UP();  //SDA上拉输入，推挽输出
             IIC_MASTER_SCL_UP();  //SCL上拉输入，推挽输出
             IIC_MASTER_SDA_IQ_OFF();  //SDA禁止输入中断，低速输出
             IIC_MASTER_SCL_IQ_OFF();  //SCL禁止输入中断，低速输出
@@ -54,7 +48,7 @@ void IIC_Master_Init(unsigned char type)
         case 2 :
             IIC_MASTER2_SDA_DIR_OUT();  //SDA输出
             IIC_MASTER2_SCL_DIR_OUT();
-            IIC_MASTER2_SDA_UP();  //SDA上拉输入，推挽输出，0为浮空
+            IIC_MASTER2_SDA_UP();  //SDA上拉输入，推挽输出
             IIC_MASTER2_SCL_UP();  //SCL上拉输入，推挽输出
             IIC_MASTER2_SDA_IQ_OFF();  //SDA禁止输入中断，低速输出
             IIC_MASTER2_SCL_IQ_OFF();  //SCL禁止输入中断，低速输出
@@ -66,7 +60,7 @@ void IIC_Master_Init(unsigned char type)
         case 3 :
             IIC_MASTER3_SDA_DIR_OUT();  //SDA输出
             IIC_MASTER3_SCL_DIR_OUT();
-            IIC_MASTER3_SDA_UP();  //SDA上拉输入，推挽输出，0为浮空
+            IIC_MASTER3_SDA_UP();  //SDA上拉输入，推挽输出
             IIC_MASTER3_SCL_UP();  //SCL上拉输入，推挽输出
             IIC_MASTER3_SDA_IQ_OFF();  //SDA禁止输入中断，低速输出
             IIC_MASTER3_SCL_IQ_OFF();  //SCL禁止输入中断，低速输出
@@ -81,7 +75,7 @@ void IIC_Master_Init(unsigned char type)
 }
 
 //起始信号，当SCL处于高电平时，SDA由高电平变成低电平时
-void IIC_Master_Start(unsigned char type)
+static void IIC_Master_Start(uint8_t type)
 {
     switch(type)
     {
@@ -121,7 +115,7 @@ void IIC_Master_Start(unsigned char type)
 }
 
 //停止信号，当SCL处于高电平时，SDA由低电平变成高电平
-void IIC_Master_Stop(unsigned char type)
+static void IIC_Master_Stop(uint8_t type)
 {
     switch(type)
     {
@@ -155,7 +149,7 @@ void IIC_Master_Stop(unsigned char type)
 }
 
 //发送应答信号，0:ACK，1:NAK
-void IIC_Master_SendAck(unsigned char type, unsigned char ack)
+static void IIC_Master_SendAck(uint8_t type, uint8_t ack)
 {
     switch(type)
     {
@@ -189,9 +183,9 @@ void IIC_Master_SendAck(unsigned char type, unsigned char ack)
 }
 
 //接收应答信号，0:ACK，1:NAK
-unsigned char IIC_Master_ReceiveAck(unsigned char type)
+static uint8_t IIC_Master_ReceiveAck(uint8_t type)
 {
-    unsigned char ack = 1;
+    uint8_t ack = 1;
     
     switch(type)
     {
@@ -245,9 +239,9 @@ unsigned char IIC_Master_ReceiveAck(unsigned char type)
 }
 
 //发送一字节，返回应答信号
-unsigned char IIC_Master_SendByte(unsigned char type, unsigned char byte)
+static uint8_t IIC_Master_SendByte(uint8_t type, uint8_t byte)
 {
-    unsigned char i, bit = 1;
+    uint8_t i, bit = 1;
     
     switch(type)
     {
@@ -298,9 +292,9 @@ unsigned char IIC_Master_SendByte(unsigned char type, unsigned char byte)
 }
 
 //接收一字节
-unsigned char IIC_Master_ReceiveByte(unsigned char type)
+static uint8_t IIC_Master_ReceiveByte(uint8_t type)
 {
-    unsigned char i, byte = 0;
+    uint8_t i, byte = 0;
     
     switch(type)
     {
@@ -362,10 +356,10 @@ unsigned char IIC_Master_ReceiveByte(unsigned char type)
     return byte;
 }
 
-//写数据到设备寄存器，成功返回0
-unsigned char IIC_Master_Write(unsigned char type, unsigned char device_adr, unsigned char reg_adr, unsigned char * data, unsigned char len)
+//写数据到设备寄存器，成功返回0，失败返回1
+uint8_t IIC_Master_Write(uint8_t type, uint8_t device_adr, uint8_t reg_adr, uint8_t * data, uint8_t len)
 {
-    unsigned char i;
+    uint8_t i;
     
     IIC_Master_Start(type);
 
@@ -392,10 +386,10 @@ unsigned char IIC_Master_Write(unsigned char type, unsigned char device_adr, uns
     return 0;
 }
 
-//读设备寄存器，先发写信号再发读，发失败立即返回
-void IIC_Master_Read(unsigned char type, unsigned char device_adr, unsigned char reg_adr, unsigned char * data, unsigned char len)
+//读设备指定长度数据，发读信号，发失败立即返回
+void IIC_Master_Read(uint8_t type, uint8_t device_adr, uint8_t reg_adr, uint8_t * data, uint8_t len)
 {
-    unsigned char i;
+    uint8_t i;
     
     IIC_Master_Start(type);
     if(IIC_Master_SendByte(type, device_adr + 1))  //设备地址 + 读信号，bit0=0为写，bit0=1为读
@@ -407,9 +401,9 @@ void IIC_Master_Read(unsigned char type, unsigned char device_adr, unsigned char
     {
         *(data + i) = IIC_Master_ReceiveByte(type);
         if(i < len - 1)
-            IIC_Master_SendAck(type, 0);
+            IIC_Master_SendAck(type, 0);  //接收一个字节，发送一个有效应答信号
     }
-    IIC_Master_SendAck(type, 1);
+    IIC_Master_SendAck(type, 1);  //接收完数据，发送一个非应答信号
 
     IIC_Master_Stop(type);
 }
