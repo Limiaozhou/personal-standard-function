@@ -1,9 +1,9 @@
 #include "bsp_delay.h"
 
-static unsigned char fac_us=0;  //us延时倍乘数，静态全局变量，单独此.c用
+static uint8_t fac_us=0;  //us延时倍乘数，静态全局变量，单独此.c用
 
 /* 延时函数初始化 */
-void Delay_Init(unsigned char sysclk)
+void Delay_Init(uint8_t sysclk)
 {
 	//STM8
 	if(sysclk >= 16)
@@ -19,7 +19,7 @@ void Delay_Init(unsigned char sysclk)
 }
 
 /* 延时nus，nus为要延时的us数，注意:nus的值不要大于1000（1ms），STM32时钟摘取法 */
-void delay_us(unsigned int nus)
+void delay_us(uint16_t nus)
 {
     //STM8
 	//延时时间=(fac_us*4+4)*nus*(T)，16M对应（3*4+4）*nus/16=nus us
@@ -65,11 +65,11 @@ void delay_us(unsigned int nus)
 }
 
 /* 延时nms，nms:要延时的ms数 */
-void delay_ms(unsigned int nms)
+void delay_ms(uint16_t nms)
 {
 	//STM8
 	//减少while判断与跳转使用，增加准确性
-	unsigned char t = 0;
+	uint8_t t = 0;
 	
 	if(nms > 65)
 	{

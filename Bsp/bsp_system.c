@@ -52,7 +52,7 @@
 //}
 
 /* System Clock Configuration，clk_sel: 输入时钟选择，hsidiv: HSI分频系数，cpudiv: CPU分频系数 */
-void CLK_SYSCLK_Config(CLK_Source_Select_TypeDef clk_sel, unsigned char hsidiv, unsigned char cpudiv)
+void CLK_SYSCLK_Config(CLK_Source_Select_TypeDef clk_sel, uint8_t hsidiv, uint8_t cpudiv)
 {
     //STM8
     switch(clk_sel)
@@ -149,11 +149,11 @@ void CLK_SYSCLK_Config(CLK_Source_Select_TypeDef clk_sel, unsigned char hsidiv, 
 }
 
 //主时钟频率获取，输出主频率，不是CPU频率，CPU频率 = 主频率 / 2^CPU分频系数
-unsigned long int CLK_GetMasterClock_Freq(void)
+uint32_t CLK_GetMasterClock_Freq(void)
 {
     //STM8
     CLK_Source_TypeDef clock_source = CLK_SOURCE_HSI;  //时钟源缓存
-    unsigned long int clock_frequency = 0;  //主时钟频率缓存
+    uint32_t clock_frequency = 0;  //主时钟频率缓存
     
     clock_source = (CLK_Source_TypeDef)CLK_CMSR;  //读取时钟源寄存器，获取时钟源
     
@@ -201,7 +201,7 @@ unsigned long int CLK_GetMasterClock_Freq(void)
   * @param  line: assert_param error line source number
   * @retval None
   */
-void assert_failed(unsigned char * file, unsigned long int line)
+void assert_failed(uint8_t * file, uint32_t line)
 { 
   /* User can add his own implementation to report the file name and line number,
      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
