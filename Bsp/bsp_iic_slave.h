@@ -22,7 +22,7 @@ typedef long int int32_t;
 #define my_st(x)  do { x } while(0)  //函数语句
 #define my_BV(n)  (1 << (n))  //取n位为1
 
-#define IICAddress 0x3C  //本机IIC地址
+#define IIC_DEVICE_ADDRESS 0x3C  //本机IIC设备地址
 
 //IIC引脚配置寄存器定义
 //port = 1
