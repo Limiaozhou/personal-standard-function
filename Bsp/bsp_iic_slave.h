@@ -76,10 +76,11 @@ typedef long int int32_t;
 #define IIC_SLAVE_SCL_EXTI_DOWN()    my_st(IIC_SLAVE_SCL_EXTI_EDGE = 0x02;)  //SCL中断下降沿触发
 #define IIC_SLAVE_SCL_EXTI_UPDOWN()  my_st(IIC_SLAVE_SCL_EXTI_EDGE = 0x03;)  //SCL中断上升和下降沿触发
 
-typedef void (*iic_slave_be_written)(uint16_t reg_adr, uint8_t *data, uint16_t len);  //IIC从机被写回调函数，接收指定长度数据到指定寄存器
-typedef void (*iic_slave_be_read)(uint16_t reg_adr, uint8_t *data, uint16_t len);  //IIC从机被读回调函数，发送指定长度数据
+typedef void (*iic_slave_be_written)(uint8_t *data, uint16_t len);  //IIC从机被写回调函数，接收指定长度数据
+typedef void (*iic_slave_be_read)(void);  //IIC从机被读回调函数，发送指定长度数据
 
 void IIC_Slave_Init(uint8_t port, iic_slave_be_written be_written_cb, iic_slave_be_read be_read_cb);  //IIC从机初始化，注册读写回调函数
+int8_t IIC_Slave_Write(uint8_t port, uint8_t * data, uint16_t len);  //从机发送指定长度数据，发送一个字节中返回-1，发完一个字节返回0，发完结束所有数据或收到非应答信号返回1，并开启接收停止
 
 #ifdef __cplusplus
 }
