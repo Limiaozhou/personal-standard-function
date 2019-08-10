@@ -359,30 +359,36 @@ static uint8_t IIC_Master_ReceiveByte(uint8_t type)
 //写数据到设备寄存器，成功返回0，失败返回1
 uint8_t IIC_Master_Write(uint8_t type, uint8_t device_adr, uint8_t reg_adr, uint8_t * data, uint8_t len)
 {
-    uint8_t i;
+    uint8_t i;  //发送数据字节
+	uint8_t resend_times = 3;  //失败重发次数
+	uint8_t state;  //发送状态
     
-    IIC_Master_Start(type);
+	while(resend_times--)
+	{
+		IIC_Master_Start(type);
 
-    if(IIC_Master_SendByte(type, device_adr + 0))  //设备地址 + 写信号，bit0=0为写，bit0=1为读
-    {
-        IIC_Master_Stop(type);
-        return 1;
-    }
-    if(IIC_Master_SendByte(type, reg_adr))  //寄存器地址
-    {
-        IIC_Master_Stop(type);
-        return 1;
-    }
-    for(i = 0; i < len; i++)
-    {
-        if(IIC_Master_SendByte(type, *(data++)))  //寄存器数据
-        {
-            IIC_Master_Stop(type);
-            return 1;
-        }
-    }
-
-    IIC_Master_Stop(type);
+		if(IIC_Master_SendByte(type, device_adr + 0))  //设备地址 + 写信号，bit0=0为写，bit0=1为读
+		{
+			IIC_Master_Stop(type);
+			return 1;
+		}
+		if(IIC_Master_SendByte(type, reg_adr))  //寄存器地址
+		{
+			IIC_Master_Stop(type);
+			return 1;
+		}
+		for(i = 0; i < len; i++)
+		{
+			if(IIC_Master_SendByte(type, *(data++)))  //寄存器数据
+			{
+				IIC_Master_Stop(type);
+				return 1;
+			}
+		}
+		
+		IIC_Master_Stop(type);
+	}
+    
     return 0;
 }
 
