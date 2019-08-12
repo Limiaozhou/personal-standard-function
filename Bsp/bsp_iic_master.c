@@ -369,8 +369,8 @@ uint8_t IIC_Master_Write(uint8_t type, uint8_t device_adr, uint8_t reg_adr, uint
 
 		if(IIC_Master_SendByte(type, device_adr + 0))  //设备地址 + 写信号，bit0=0为写，bit0=1为读
 		{
-			IIC_Master_Stop(type);
-			return 1;
+			IIC_Master_Stop(type);  //
+			continue;
 		}
 		if(IIC_Master_SendByte(type, reg_adr))  //寄存器地址
 		{
