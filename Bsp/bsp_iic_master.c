@@ -356,12 +356,12 @@ static uint8_t IIC_Master_ReceiveByte(uint8_t type)
     return byte;
 }
 
-//写数据到设备寄存器，成功返回0，失败返回1
+//写数据到设备寄存器，成功返回0，失败则重发，连续3次都失败返回1
 uint8_t IIC_Master_Write(uint8_t type, uint8_t device_adr, uint8_t reg_adr, uint8_t * data, uint8_t len)
 {
-    uint8_t i;  //发送数据字节
+    uint8_t i;  //发送数据字节数记录
 	uint8_t resend_times = 3;  //失败重发次数
-	uint8_t state;  //发送状态
+	uint8_t error_flag = 0;  //发送错误标志
     
 	while(resend_times--)
 	{
@@ -369,47 +369,64 @@ uint8_t IIC_Master_Write(uint8_t type, uint8_t device_adr, uint8_t reg_adr, uint
 
 		if(IIC_Master_SendByte(type, device_adr + 0))  //设备地址 + 写信号，bit0=0为写，bit0=1为读
 		{
-			IIC_Master_Stop(type);  //
-			continue;
+			IIC_Master_Stop(type);
+			continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
 		}
 		if(IIC_Master_SendByte(type, reg_adr))  //寄存器地址
 		{
 			IIC_Master_Stop(type);
-			return 1;
+			continue;
 		}
 		for(i = 0; i < len; i++)
 		{
 			if(IIC_Master_SendByte(type, *(data++)))  //寄存器数据
 			{
 				IIC_Master_Stop(type);
-				return 1;
+				error_flag = 1;  //置1发送错误标志
+				break;  //发送出错就停止，跳当前for循环
 			}
 		}
 		
-		IIC_Master_Stop(type);
+		if(!error_flag)
+		{
+			IIC_Master_Stop(type);
+			return 0;  //若没有出错，停止后结束函数，返回0
+		}
+		
+		error_flag = 0;  //清0发送错误标志
 	}
     
-    return 0;
+    return 1;  //发送3次都错误，返回1
 }
 
-//读设备指定长度数据，发读信号，发失败立即返回
-void IIC_Master_Read(uint8_t type, uint8_t device_adr, uint8_t reg_adr, uint8_t * data, uint8_t len)
+//读设备指定长度数据，发读信号，成功返回0，失败则重发，连续3次都失败返回1
+uint8_t IIC_Master_Read(uint8_t type, uint8_t device_adr, uint8_t reg_adr, uint8_t * data, uint8_t len)
 {
-    uint8_t i;
+    uint8_t i;  //发送数据字节数记录
+	uint8_t resend_times = 3;  //失败重发次数
     
-    IIC_Master_Start(type);
-    if(IIC_Master_SendByte(type, device_adr + 1))  //设备地址 + 读信号，bit0=0为写，bit0=1为读
-    {
-        IIC_Master_Stop(type);
-        return;
-    }
-    for(i = 0; i < len; i++)
-    {
-        *(data + i) = IIC_Master_ReceiveByte(type);
-        if(i < len - 1)
-            IIC_Master_SendAck(type, 0);  //接收一个字节，发送一个有效应答信号
-    }
-    IIC_Master_SendAck(type, 1);  //接收完数据，发送一个非应答信号
-
-    IIC_Master_Stop(type);
+	while(resend_times--)
+	{
+		IIC_Master_Start(type);
+		
+		if(IIC_Master_SendByte(type, device_adr + 1))  //设备地址 + 读信号，bit0=0为写，bit0=1为读
+		{
+			IIC_Master_Stop(type);
+			continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
+		}
+		
+		for(i = 0; i < len; i++)  //接收指定长度数据
+		{
+			*(data + i) = IIC_Master_ReceiveByte(type);
+			if(i < len - 1)
+				IIC_Master_SendAck(type, 0);  //接收一个字节，发送一个有效应答信号
+		}
+		IIC_Master_SendAck(type, 1);  //接收完数据，发送一个非应答信号
+		
+		IIC_Master_Stop(type);
+		
+		return 0;  //若没有出错，停止后结束函数，返回0
+	}
+	
+	return 1;  //发送3次都错误，返回1
 }

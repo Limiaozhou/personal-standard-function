@@ -151,7 +151,7 @@ typedef long int int32_t;
 void IIC_Master_Init(uint8_t type);  //IIC口初始化，为空闲状态
 
 uint8_t IIC_Master_Write(uint8_t type, uint8_t device_adr, uint8_t reg_adr, uint8_t * data, uint8_t len);  //写数据到设备寄存器，成功返回0，失败返回1
-void IIC_Master_Read(uint8_t type, uint8_t device_adr, uint8_t reg_adr, uint8_t * data, uint8_t len);  //读设备指定长度数据
+uint8_t IIC_Master_Read(uint8_t type, uint8_t device_adr, uint8_t reg_adr, uint8_t * data, uint8_t len);  //读设备指定长度数据
 
 #ifdef __cplusplus
 }
