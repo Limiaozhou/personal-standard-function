@@ -3,14 +3,14 @@
 //内部函数
 static void delay_us(uint16_t nus);  //延时n us，内部使用
 
-static void IIC_Master_Start(uint8_t type);  //起始信号
-static void IIC_Master_Stop(uint8_t type);  //停止信号
+static void IIC_Master_Start(uint8_t port);  //起始信号
+static void IIC_Master_Stop(uint8_t port);  //停止信号
 
-static void IIC_Master_SendAck(uint8_t type, uint8_t ack);  //发送应答信号
-static uint8_t IIC_Master_ReceiveAck(uint8_t type);  //接收应答信号
+static void IIC_Master_SendAck(uint8_t port, uint8_t ack);  //发送应答信号
+static uint8_t IIC_Master_ReceiveAck(uint8_t port);  //接收应答信号
 
-static uint8_t IIC_Master_SendByte(uint8_t type, uint8_t byte);  //发送一个字节
-static uint8_t IIC_Master_ReceiveByte(uint8_t type);  //接收一个字节
+static uint8_t IIC_Master_SendByte(uint8_t port, uint8_t byte);  //发送一个字节
+static uint8_t IIC_Master_ReceiveByte(uint8_t port, uint8_t ack);  //接收一个字节
 
 //延时n us，内部使用
 static void delay_us(uint16_t nus)
@@ -29,9 +29,9 @@ static void delay_us(uint16_t nus)
 }
 
 //初始化为空闲状态，scl与sda都为高，scl高电平收发稳定sda电平，低电平才能改sda电平
-void IIC_Master_Init(uint8_t type)
+void IIC_Master_Init(uint8_t port)
 {
-    switch(type)
+    switch(port)
     {
         case 1 :
             IIC_MASTER_SDA_DIR_OUT();  //SDA输出
@@ -75,9 +75,9 @@ void IIC_Master_Init(uint8_t type)
 }
 
 //起始信号，当SCL处于高电平时，SDA由高电平变成低电平时
-static void IIC_Master_Start(uint8_t type)
+static void IIC_Master_Start(uint8_t port)
 {
-    switch(type)
+    switch(port)
     {
         case 1 :
             IIC_MASTER_SDA_OUT(HIGH);
@@ -115,9 +115,9 @@ static void IIC_Master_Start(uint8_t type)
 }
 
 //停止信号，当SCL处于高电平时，SDA由低电平变成高电平
-static void IIC_Master_Stop(uint8_t type)
+static void IIC_Master_Stop(uint8_t port)
 {
-    switch(type)
+    switch(port)
     {
         case 1 :
             IIC_MASTER_SDA_OUT(LOW);
@@ -149,9 +149,9 @@ static void IIC_Master_Stop(uint8_t type)
 }
 
 //发送应答信号，0:ACK，1:NAK
-static void IIC_Master_SendAck(uint8_t type, uint8_t ack)
+static void IIC_Master_SendAck(uint8_t port, uint8_t ack)
 {
-    switch(type)
+    switch(port)
     {
         case 1 :
             IIC_MASTER_SDA_OUT(ack);
@@ -183,11 +183,11 @@ static void IIC_Master_SendAck(uint8_t type, uint8_t ack)
 }
 
 //接收应答信号，0:ACK，1:NAK
-static uint8_t IIC_Master_ReceiveAck(uint8_t type)
+static uint8_t IIC_Master_ReceiveAck(uint8_t port)
 {
     uint8_t ack = 1;
     
-    switch(type)
+    switch(port)
     {
         case 1 :
             IIC_MASTER_SDA_OUT(HIGH);
@@ -239,11 +239,11 @@ static uint8_t IIC_Master_ReceiveAck(uint8_t type)
 }
 
 //发送一字节，返回应答信号
-static uint8_t IIC_Master_SendByte(uint8_t type, uint8_t byte)
+static uint8_t IIC_Master_SendByte(uint8_t port, uint8_t byte)
 {
     uint8_t i, bit = 1;
     
-    switch(type)
+    switch(port)
     {
         case 1 :
             for(i = 0; i < 8; i++)
@@ -288,15 +288,15 @@ static uint8_t IIC_Master_SendByte(uint8_t type, uint8_t byte)
         break;
     }
 
-    return IIC_Master_ReceiveAck(type);
+    return IIC_Master_ReceiveAck(port);
 }
 
-//接收一字节
-static uint8_t IIC_Master_ReceiveByte(uint8_t type)
+//接收一字节，并发送应答
+static uint8_t IIC_Master_ReceiveByte(uint8_t port, uint8_t ack)
 {
     uint8_t i, byte = 0;
     
-    switch(type)
+    switch(port)
     {
         case 1 :
             IIC_MASTER_SDA_OUT(HIGH);  //释放数据线，准备读取数据
@@ -352,12 +352,14 @@ static uint8_t IIC_Master_ReceiveByte(uint8_t type)
         default :
         break;
     }
-
+	
+	IIC_Master_SendAck(port, ack);  //接收完一个字节，发送应答
+	
     return byte;
 }
 
-//写数据到设备寄存器，成功返回0，失败则重发，连续3次都失败返回1
-uint8_t IIC_Master_Write(uint8_t type, uint8_t device_adr, uint8_t reg_adr, uint8_t * data, uint8_t len)
+//写指定长度数据到设备，输入端口、地址、数据和其长度；成功返回0，失败则重发，连续3次都失败返回1
+uint8_t IIC_Master_Write(uint8_t port, uint8_t device_adr, uint8_t * data, uint8_t len)
 {
     uint8_t i;  //发送数据字节数记录
 	uint8_t resend_times = 3;  //失败重发次数
@@ -365,23 +367,18 @@ uint8_t IIC_Master_Write(uint8_t type, uint8_t device_adr, uint8_t reg_adr, uint
     
 	while(resend_times--)
 	{
-		IIC_Master_Start(type);
+		IIC_Master_Start(port);
 
-		if(IIC_Master_SendByte(type, device_adr + 0))  //设备地址 + 写信号，bit0=0为写，bit0=1为读
+		if(IIC_Master_SendByte(port, device_adr + 0))  //设备地址 + 写信号，bit0=0为写，bit0=1为读
 		{
-			IIC_Master_Stop(type);
+			IIC_Master_Stop(port);
 			continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
-		}
-		if(IIC_Master_SendByte(type, reg_adr))  //寄存器地址
-		{
-			IIC_Master_Stop(type);
-			continue;
 		}
 		for(i = 0; i < len; i++)
 		{
-			if(IIC_Master_SendByte(type, *(data++)))  //寄存器数据
+			if(IIC_Master_SendByte(port, *(data++)))  //数据
 			{
-				IIC_Master_Stop(type);
+				IIC_Master_Stop(port);
 				error_flag = 1;  //置1发送错误标志
 				break;  //发送出错就停止，跳当前for循环
 			}
@@ -389,7 +386,7 @@ uint8_t IIC_Master_Write(uint8_t type, uint8_t device_adr, uint8_t reg_adr, uint
 		
 		if(!error_flag)
 		{
-			IIC_Master_Stop(type);
+			IIC_Master_Stop(port);
 			return 0;  //若没有出错，停止后结束函数，返回0
 		}
 		
@@ -399,31 +396,31 @@ uint8_t IIC_Master_Write(uint8_t type, uint8_t device_adr, uint8_t reg_adr, uint
     return 1;  //发送3次都错误，返回1
 }
 
-//读设备指定长度数据，发读信号，成功返回0，失败则重发，连续3次都失败返回1
-uint8_t IIC_Master_Read(uint8_t type, uint8_t device_adr, uint8_t reg_adr, uint8_t * data, uint8_t len)
+//读设备指定长度数据，发读信号，输入端口、地址、数据和其长度；成功返回0，失败则重发，连续3次都失败返回1
+uint8_t IIC_Master_Read(uint8_t port, uint8_t device_adr, uint8_t * data, uint8_t len)
 {
     uint8_t i;  //发送数据字节数记录
 	uint8_t resend_times = 3;  //失败重发次数
     
 	while(resend_times--)
 	{
-		IIC_Master_Start(type);
+		IIC_Master_Start(port);
 		
-		if(IIC_Master_SendByte(type, device_adr + 1))  //设备地址 + 读信号，bit0=0为写，bit0=1为读
+		if(IIC_Master_SendByte(port, device_adr + 1))  //设备地址 + 读信号，bit0=0为写，bit0=1为读
 		{
-			IIC_Master_Stop(type);
+			IIC_Master_Stop(port);
 			continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
 		}
-		
 		for(i = 0; i < len; i++)  //接收指定长度数据
 		{
-			*(data + i) = IIC_Master_ReceiveByte(type);
+			
 			if(i < len - 1)
-				IIC_Master_SendAck(type, 0);  //接收一个字节，发送一个有效应答信号
+				*(data + i) = IIC_Master_ReceiveByte(port, 0);  //数据没接收完，发送有效应答
+			else
+				*(data + i) = IIC_Master_ReceiveByte(port, 1);  //数据接收完，发送非应答
 		}
-		IIC_Master_SendAck(type, 1);  //接收完数据，发送一个非应答信号
 		
-		IIC_Master_Stop(type);
+		IIC_Master_Stop(port);
 		
 		return 0;  //若没有出错，停止后结束函数，返回0
 	}

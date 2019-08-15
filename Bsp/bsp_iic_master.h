@@ -28,7 +28,7 @@ typedef long int int32_t;
 #define my_BV(n)  (1 << (n))  //取n位
 
 //IIC引脚配置寄存器定义
-//type = 1，IIC口1
+//port = 1，IIC口1
 #define IIC_MASTER_SDA_CR1       PB_CR1_C15  //数据线SDA控制寄存器1
 #define IIC_MASTER_SCL_CR1       PB_CR1_C14  //时钟线SCL
 
@@ -68,7 +68,7 @@ typedef long int int32_t;
 #define IIC_MASTER_SCL_DIR_OUT() my_st(IIC_MASTER_SCL_DIR |= IIC_MASTER_SCL_DIR_BV;)
 #define IIC_MASTER_SCL_DIR_IN()  my_st(IIC_MASTER_SCL_DIR &= ~(IIC_MASTER_SCL_DIR_BV);)
 
-//type = 2
+//port = 2
 #define IIC_MASTER2_SDA_CR1       PD_CR1_C13  //数据线SDA控制寄存器1
 #define IIC_MASTER2_SCL_CR1       PD_CR1_C12  //时钟线SCL
 
@@ -108,7 +108,7 @@ typedef long int int32_t;
 #define IIC_MASTER2_SCL_DIR_OUT() my_st(IIC_MASTER2_SCL_DIR |= IIC_MASTER2_SCL_DIR_BV;)
 #define IIC_MASTER2_SCL_DIR_IN()  my_st(IIC_MASTER2_SCL_DIR &= ~(IIC_MASTER2_SCL_DIR_BV);)
 
-//type = 3
+//port = 3
 #define IIC_MASTER3_SDA_CR1       PC_CR1_C17  //数据线SDA控制寄存器1
 #define IIC_MASTER3_SCL_CR1       PC_CR1_C16  //时钟线SCL
 
@@ -148,10 +148,10 @@ typedef long int int32_t;
 #define IIC_MASTER3_SCL_DIR_OUT() my_st(IIC_MASTER3_SCL_DIR |= IIC_MASTER3_SCL_DIR_BV;)
 #define IIC_MASTER3_SCL_DIR_IN()  my_st(IIC_MASTER3_SCL_DIR &= ~(IIC_MASTER3_SCL_DIR_BV);)
 
-void IIC_Master_Init(uint8_t type);  //IIC口初始化，为空闲状态
+void IIC_Master_Init(uint8_t port);  //初始化选择的IIC口，为空闲状态
 
-uint8_t IIC_Master_Write(uint8_t type, uint8_t device_adr, uint8_t reg_adr, uint8_t * data, uint8_t len);  //写数据到设备寄存器，成功返回0，失败返回1
-uint8_t IIC_Master_Read(uint8_t type, uint8_t device_adr, uint8_t reg_adr, uint8_t * data, uint8_t len);  //读设备指定长度数据
+uint8_t IIC_Master_Write(uint8_t port, uint8_t device_adr, uint8_t * data, uint8_t len);  //写指定长度数据到设备，输入端口、地址、数据和其长度；成功返回0，失败返回1
+uint8_t IIC_Master_Read(uint8_t port, uint8_t device_adr, uint8_t * data, uint8_t len);  //读设备指定长度数据，输入端口、地址、数据和其长度；成功返回0，失败返回1
 
 #ifdef __cplusplus
 }
