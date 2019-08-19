@@ -151,7 +151,10 @@ typedef long int int32_t;
 void IIC_Master_Init(uint8_t port);  //初始化选择的IIC口，为空闲状态
 
 uint8_t IIC_Master_Write(uint8_t port, uint8_t device_adr, uint8_t * data, uint8_t len);  //写指定长度数据到设备，输入端口、地址、数据和其长度；成功返回0，失败返回1
-uint8_t IIC_Master_Read(uint8_t port, uint8_t device_adr, uint8_t * data, uint8_t len);  //读设备指定长度数据，输入端口、地址、数据和其长度；成功返回0，失败返回1
+uint8_t IIC_Master_ReadDirect(uint8_t port, uint8_t device_adr, uint8_t * data, uint8_t len);  //读设备指定长度数据，输入端口、地址、数据和其长度；成功返回0，失败返回1
+
+//读设备指定长度数据，读寄存器，发读信号，输入端口、设备地址、寄存器地址和其长度、写完是否发停止标志、数据和其长度；成功返回0，失败返回1
+uint8_t IIC_Master_ReadRegister(uint8_t port, uint8_t device_adr, uint8_t * register_adr, uint8_t reg_adr_len, uint8_t write_finish_stop_flag, uint8_t * data, uint8_t len);
 
 #ifdef __cplusplus
 }
