@@ -1,15 +1,16 @@
-#ifndef __BSP_QUEUE_H
-#define __BSP_QUEUE_H
+#ifndef __QUEUE_H
+#define __QUEUE_H
 
-#include <stdlib.h>
+#include "stdlib.h"
+#include "typedef.h"
 
 //数据类型声明
-typedef unsigned char uint8_t;
-//typedef char int8_t;
-typedef unsigned int uint16_t;
-typedef int int16_t;  //8位机int为16,32位机int为32
-typedef unsigned long int uint32_t;
-typedef long int int32_t;
+// typedef unsigned char uint8_t;
+// typedef signed char int8_t;
+// typedef unsigned int uint16_t;
+// typedef signed int int16_t;  //8位机int为16,32位机int为32
+// typedef unsigned long int uint32_t;
+// typedef signed long int int32_t;
 
 typedef int32_t Data_t;  //环形队列数据的类型
 

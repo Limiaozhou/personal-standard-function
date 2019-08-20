@@ -1,7 +1,7 @@
 #include "bsp_iic_master.h"
 
 //内部函数
-static void delay_us(uint16_t nus);  //延时n us，内部使用
+__weak static void delay_us(uint16_t nus);  //延时n us，内部使用
 
 static void IIC_Master_Start(uint8_t port);  //起始信号
 static void IIC_Master_Stop(uint8_t port);  //停止信号

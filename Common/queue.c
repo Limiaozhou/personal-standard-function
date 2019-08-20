@@ -1,4 +1,4 @@
-#include "bsp_queue.h"
+#include "queue.h"
 
 //内部函数
 static uint8_t is_queue_empty(pQueue_TypeDef queue);  //判断队列是否为空

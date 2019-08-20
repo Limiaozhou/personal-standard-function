@@ -1,4 +1,3 @@
-#include "bsp_iic_master.h"
 #include "bsp_iic_slave.h"
 
 #define READ_NUM_MAX 256  //接收最大数据量2^8

@@ -2,15 +2,17 @@
 #define __BSP_SYSTEM_H
 
 //#include "stm32f7xx_hal.h"
-#include "iostm8s103F3.h"
+// #include "iostm8s103F3.h"
+#include "iostm8s207c8.h"
+#include "typedef.h"
 
 //数据类型声明
-typedef unsigned char uint8_t;
-typedef char int8_t;
-typedef unsigned int uint16_t;
-typedef int int16_t;  //8位机int为16,32位机int为32
-typedef unsigned long int uint32_t;
-typedef long int int32_t;
+// typedef unsigned char uint8_t;
+// typedef signed char int8_t;
+// typedef unsigned int uint16_t;
+// typedef signed int int16_t;  //8位机int为16,32位机int为32
+// typedef unsigned long int uint32_t;
+// typedef signed long int int32_t;
 
 #define HSI_VALUE ((uint32_t)16000000)  //内部高速时钟，16MHz
 #define LSI_VALUE ((uint32_t)128000)    //内部低速时钟，128KHz
