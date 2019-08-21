@@ -3,8 +3,8 @@
 
 //#include "stm32f7xx_hal.h"
 
-#include "delay.h"
-#include "queue.h"
+//#include "delay.h"
+//#include "queue.h"
 
 #include "bsp_system.h"
 #include "bsp_iic_master.h"

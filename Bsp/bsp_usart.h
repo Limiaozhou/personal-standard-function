@@ -2,9 +2,19 @@
 #define __BSP_USART_H
 
 //#include "stm32f7xx_hal.h"
-#include "iostm8s103F3.h"
+// #include "iostm8s103F3.h"
+#include "iostm8s207c8.h"
+#include "typedef.h"
 #include "bsp_system.h"
-#include "bsp_queue.h"
+#include "queue.h"
+
+//数据类型声明
+// typedef unsigned char uint8_t;
+// typedef signed char int8_t;
+// typedef unsigned int uint16_t;
+// typedef signed int int16_t;  //8位机int为16,32位机int为32
+// typedef unsigned long int uint32_t;
+// typedef signed long int int32_t;
 
 typedef enum
 {
@@ -32,11 +42,11 @@ typedef enum
 //#define USART1_RX_DMA_STREAM  DMA2_Stream5
 //#define USART1_RX_DMA_CHANNEL DMA_CHANNEL_4
 
-typedef void (*data_deal_cb)(unsigned char *pdata, unsigned char len);  //数据解析回调函数
+typedef void (*uart_data_deal_cb)(uint8_t *pdata, uint32_t len);  //数据解析回调函数
 
-void Uart_Init(UARTx_Select_TypeDef uartx, unsigned long int bound);
+void Uart_Init(UARTx_Select_TypeDef uartx, uint32_t bound);
 
-void uart_write(UARTx_Select_TypeDef uartx, unsigned char *pdata, unsigned char len);
-void uart_read(UARTx_Select_TypeDef uartx, data_deal_cb callback);
+void uart_write(UARTx_Select_TypeDef uartx, uint8_t *pdata, uint32_t len);
+void uart_read(UARTx_Select_TypeDef uartx, uart_data_deal_cb uart_data_deal);
 
 #endif

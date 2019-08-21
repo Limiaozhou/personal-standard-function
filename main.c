@@ -41,7 +41,7 @@ int main(void)
 //	Delay_Init(216);  //延时函数基准配置
 //	Led_GPIO_Init();  //led引脚配置
 //	Key_GPIO_Init();  //按键引脚配置
-    IIC_Master_Init(1);
+//    IIC_Master_Init(1);
 	// TIMx_Init(TIM2_Select, 4, 1000-1);  //配置通用定时器，周期1000us，1ms
 	
 	// Uart_Init(UART1_Select, 9600);  //UART1波特率9600
