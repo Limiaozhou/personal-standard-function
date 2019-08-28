@@ -2,6 +2,7 @@
 #define __INCLUDE_H
 
 //#include "stm32f7xx_hal.h"
+//#include "stm8s_gpio.h"
 
 #include "delay.h"
 //#include "queue.h"

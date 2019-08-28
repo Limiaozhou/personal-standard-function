@@ -18,7 +18,7 @@ void Delay_Init(uint8_t sysclk)
 	// fac_us = sysclk;
 }
 
-/* 延时nus，nus为要延时的us数，注意:nus的值不要大于1000（1ms），STM32时钟摘取法 */
+/* 延时nus，nus为要延时的us数，STM32注意:nus的值不要大于1000（1ms），时钟摘取法 */
 void delay_us(uint16_t nus)
 {
     //STM8

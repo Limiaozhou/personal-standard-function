@@ -36,9 +36,9 @@ int main(void)
 //	HAL_Init();
 
 	/* Configure the system clock to 16 MHz */
-	CLK_SYSCLK_Config(CLK_Source_Select_HSI, 0, 0);  //内部高速时钟，HSI和CPU时钟0分频，fcpu = 16MHz
+	CLK_SYSCLK_Config();  //内部高速时钟，HSI和CPU时钟0分频，fcpu = 16MHz
 	
-//	Delay_Init(216);  //延时函数基准配置
+	Delay_Init(16);  //延时函数基准配置
 //	Led_GPIO_Init();  //led引脚配置
 //	Key_GPIO_Init();  //按键引脚配置
 //    IIC_Master_Init(1);
@@ -53,6 +53,7 @@ int main(void)
 	/* Infinite loop */
 	while (1)
 	{
+		delay_ms(1000);
 //		key_scan(key_task);
         // uart1_send_ontime();  //UART1定时发送
 		// uart_read(UART1_Select, uart1_read_deal);

@@ -2,7 +2,9 @@
 #define __DELAY_H
 
 //#include "stm32f7xx_hal.h"
-#include "typedef.h"
+#include "stm8s.h"
+
+//#include "typedef.h"
 
 //数据类型声明
 // typedef unsigned char uint8_t;
