@@ -5,47 +5,47 @@
 //#include "iostm8s103F3.h"
 //#include "iostm8s207c8.h"
 //#include "iostm8l151k4.h"
-#include "stm8s.h"  //浣跨敤搴撳嚱鏁颁笉鑳藉寘鍚?"iostm8s103F3.h"绛?
+#include "stm8s.h"  //使用库函数不能包括"iostm8s103F3.h"
 #include "stm8s_clk.h"
 
 
-//#include "typedef.h"  //鏁版嵁绫诲瀷澹版槑
+//#include "typedef.h"  //数据类型声明
 
-//鏁版嵁绫诲瀷澹版槑
+//数据类型声明
 // typedef unsigned char uint8_t;
 // typedef signed char int8_t;
 // typedef unsigned int uint16_t;
-// typedef signed int int16_t;  //8浣嶆満int涓?16,32浣嶆満int涓?32
+// typedef signed int int16_t;  //8位机int丿16,32位机int丿32
 // typedef unsigned long int uint32_t;
 // typedef signed long int int32_t;
 
-// #define STM8S  //瀹氫箟鍚庝负浣跨敤瀵勫瓨鍣ㄩ厤缃?
+// #define STM8S  //定义后为使用寄存器配罿
 //#define STM8L
 
 #ifdef STM8S
-    #define HSI_VALUE ((uint32_t)16000000)  //鍐呴儴楂橀?熸椂閽燂紝16MHz
-    #define LSI_VALUE ((uint32_t)128000)    //鍐呴儴浣庨?熸椂閽燂紝128KHz
-    #define HSE_VALUE ((uint32_t)24000000)  //澶栭儴楂橀?熸椂閽燂紝24MHz(1-24)
+    #define HSI_VALUE ((uint32_t)16000000)  //内部高?时钟，16MHz
+    #define LSI_VALUE ((uint32_t)128000)    //内部低?时钟，128KHz
+    #define HSE_VALUE ((uint32_t)24000000)  //外部高?时钟，24MHz(1-24)
     
     typedef enum
     {
         CLK_SOURCE_HSI = (uint8_t)0xE1, /*!< Clock Source HSI. */
         CLK_SOURCE_LSI = (uint8_t)0xD2, /*!< Clock Source LSI. */
         CLK_SOURCE_HSE = (uint8_t)0xB4 /*!< Clock Source HSE. */
-    }CLK_Source_TypeDef;  //STM8 鏃堕挓婧?
+    }CLK_Source_TypeDef;  //STM8 时钟溿
     
     typedef enum
     {
-        CLK_Source_Select_HSI = 0,  //鍐呴儴楂橀?熸椂閽?
-        CLK_Source_Select_LSI,      //鍐呴儴浣庨?熸椂閽?
-        CLK_Source_Select_HSE       //澶栭儴楂橀?熸椂閽?
-    }CLK_Source_Select_TypeDef;  //涓绘椂閽熼?夋嫨鏋氫妇浣?
+        CLK_Source_Select_HSI = 0,  //内部高?时钿
+        CLK_Source_Select_LSI,      //内部低?时钿
+        CLK_Source_Select_HSE       //外部高?时钿
+    }CLK_Source_Select_TypeDef;  //主时钟?择枚举使
     
 #elif defined STM8L
-    #define HSI_VALUE ((uint32_t)16000000)  //鍐呴儴楂橀?熸椂閽燂紝16MHz
-    #define LSI_VALUE ((uint32_t)38000)     //鍐呴儴浣庨?熸椂閽燂紝38KHz
-    #define HSE_VALUE ((uint32_t)16000000)  //澶栭儴楂橀?熸椂閽燂紝16MHz(1-16)
-    #define LSE_VALUE ((uint32_t)32768)     //澶栭儴浣庨?熸椂閽燂紝32.768Hz
+    #define HSI_VALUE ((uint32_t)16000000)  //内部高?时钟，16MHz
+    #define LSI_VALUE ((uint32_t)38000)     //内部低?时钟，38KHz
+    #define HSE_VALUE ((uint32_t)16000000)  //外部高?时钟，16MHz(1-16)
+    #define LSE_VALUE ((uint32_t)32768)     //外部低?时钟，32.768Hz
     
     typedef enum
     {
@@ -53,15 +53,15 @@
         CLK_SOURCE_LSI = (uint8_t)0x02, /*!< Clock Source LSI. */
         CLK_SOURCE_HSE = (uint8_t)0x04, /*!< Clock Source HSE. */
         CLK_SOURCE_LSE = (uint8_t)0x08  /*!< Clock Source LSE. */
-    }CLK_Source_TypeDef;  //STM8 鏃堕挓婧?
+    }CLK_Source_TypeDef;  //STM8 时钟溿
     
     typedef enum
     {
-        CLK_Source_Select_HSI = 0,  //鍐呴儴楂橀?熸椂閽?
-        CLK_Source_Select_LSI,      //鍐呴儴浣庨?熸椂閽?
-        CLK_Source_Select_HSE,      //澶栭儴楂橀?熸椂閽?
-        CLK_Source_Select_LSE       //澶栭儴浣庨?熸椂閽?
-    }CLK_Source_Select_TypeDef;  //涓绘椂閽熼?夋嫨鏋氫妇浣?
+        CLK_Source_Select_HSI = 0,  //内部高?时钿
+        CLK_Source_Select_LSI,      //内部低?时钿
+        CLK_Source_Select_HSE,      //外部高?时钿
+        CLK_Source_Select_LSE       //外部低?时钿
+    }CLK_Source_Select_TypeDef;  //主时钟?择枚举使
     
 #endif
 
@@ -69,8 +69,8 @@
 //void CPU_CACHE_Enable(void);  //STM32
 
 #if defined (STM8S) || defined (STM8L)
-void CLK_SYSCLK_Config(CLK_Source_Select_TypeDef clk_sel, uint8_t hsidiv, uint8_t cpudiv);  //System Clock Configuration锛岃緭鍏ユ椂閽熼?夋嫨锛孒SI鍒嗛绯绘暟锛孋PU鍒嗛绯绘暟
-uint32_t CLK_GetMasterClock_Freq(void);  //涓绘椂閽熼鐜囪幏鍙栵紝杈撳嚭涓婚鐜?
+void CLK_SYSCLK_Config(CLK_Source_Select_TypeDef clk_sel, uint8_t hsidiv, uint8_t cpudiv);  //System Clock Configuration，输入时钟?择，HSI分频系数，CPU分频系数
+uint32_t CLK_GetMasterClock_Freq(void);  //主时钟频率获取，输出主频玿
 #else
 void CLK_SYSCLK_Config(void);
 #endif
