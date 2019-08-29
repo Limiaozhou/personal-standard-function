@@ -2,6 +2,7 @@
 
 //内部函数
 __weak static void delay_us(uint16_t nus);  //延时n us，内部使用
+__weak static void delay_ms(uint16_t nms);  //延时n ms
 
 static void IIC_Master_Start(uint8_t port);  //起始信号
 static void IIC_Master_Stop(uint8_t port);  //停止信号
@@ -13,7 +14,7 @@ static uint8_t IIC_Master_SendByte(uint8_t port, uint8_t byte);  //发送一个字节
 static uint8_t IIC_Master_ReceiveByte(uint8_t port, uint8_t ack);  //接收一个字节
 
 //延时n us，内部使用
-static void delay_us(uint16_t nus)
+__weak static void delay_us(uint16_t nus)
 {
 	while (nus--)
 	{
@@ -26,6 +27,13 @@ static void delay_us(uint16_t nus)
 		asm("NOP");
 		asm("NOP");
 	}
+}
+
+//延时n ms
+__weak static void delay_ms(uint16_t nms)
+{
+	while (nms--)
+		delay_us(1000);
 }
 
 //初始化为空闲状态，scl与sda都为高，scl高电平收发稳定sda电平，低电平才能改sda电平
@@ -427,8 +435,8 @@ uint8_t IIC_Master_ReadDirect(uint8_t port, uint8_t device_adr, uint8_t * data, 
 	return 1;  //发送3次都错误，返回1
 }
 
-//读设备指定长度数据，读寄存器，发读信号，输入端口、设备地址、寄存器地址和其长度、写完是否发停止标志、数据和其长度；成功返回0，失败则重发，连续3次都失败返回1
-uint8_t IIC_Master_ReadRegister(uint8_t port, uint8_t device_adr, uint8_t * register_adr, uint8_t reg_adr_len, uint8_t write_finish_stop_flag, uint8_t * data, uint8_t len)
+//读设备指定长度数据，读寄存器，发读信号，输入端口、设备地址、寄存器地址和其长度、是否延时及延时时间、数据和其长度；成功返回0，失败则重发，连续3次都失败返回1
+uint8_t IIC_Master_ReadRegister(uint8_t port, uint8_t device_adr, uint8_t * register_adr, uint8_t reg_adr_len, uint8_t delay_flag, uint8_t delay_nms, uint8_t * data, uint8_t len)
 {
 	uint8_t i, j;  //发送、接收数据字节数记录
 	uint8_t resend_times = 3;  //失败重发次数
@@ -457,8 +465,6 @@ uint8_t IIC_Master_ReadRegister(uint8_t port, uint8_t device_adr, uint8_t * regi
 			error_flag = 0;  //清0发送错误标志
 			continue;
 		}
-		if(write_finish_stop_flag)  //发送写结束判断是否发停止信号
-			IIC_Master_Stop(port);
 		
 		//再读数据
 		IIC_Master_Start(port);
@@ -467,6 +473,8 @@ uint8_t IIC_Master_ReadRegister(uint8_t port, uint8_t device_adr, uint8_t * regi
 			IIC_Master_Stop(port);
 			continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
 		}
+		if(delay_flag)
+			delay_ms(delay_nms);  //延时等待数据准备完成
 		for(j = 0; j < len; j++)  //接收指定长度数据
 		{
 			if(j < len - 1)

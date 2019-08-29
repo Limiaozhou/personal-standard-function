@@ -7,8 +7,10 @@ extern "C"
 #endif
 
 // #include "iostm8s103F3.h"
-#include "iostm8s207c8.h"
-#include "typedef.h"
+//#include "iostm8s207c8.h"
+#include "stm8s_gpio.h"
+
+//#include "typedef.h"
 
 //数据类型声明
 // typedef unsigned char uint8_t;
@@ -31,132 +33,206 @@ extern "C"
 
 //IIC引脚配置寄存器定义
 //port = 1，IIC口1
-#define IIC_MASTER_SDA_CR1       PB_CR1_C15  //数据线SDA控制寄存器1
-#define IIC_MASTER_SCL_CR1       PB_CR1_C14  //时钟线SCL
+#define IIC_MASTER_SDA_PIN_IN    (!!(GPIOE->IDR & GPIO_PIN_7))  //数据线SDA输入引脚
+#define IIC_MASTER_SCL_PIN_IN    (!!(GPIOE->IDR & GPIO_PIN_6))  //时钟线SCL
 
-#define IIC_MASTER_SDA_CR2       PB_CR2_C25  //数据线SDA控制寄存器2
-#define IIC_MASTER_SCL_CR2       PB_CR2_C24  //时钟线SCL
+#define IIC_MASTER_SDA_UP()      my_st(GPIOE->CR1 |= (uint8_t)GPIO_PIN_7;)  //SDA上拉输入，推挽输出
+#define IIC_MASTER_SDA_FLOAT()   my_st(GPIOE->CR1 &= (uint8_t)(~GPIO_PIN_7);)  //SDA浮空输入，开漏输出
 
-#define IIC_MASTER_SDA_PIN_OUT   PB_ODR_ODR5  //数据线SDA输出引脚
-#define IIC_MASTER_SCL_PIN_OUT   PB_ODR_ODR4  //时钟线SCL
+#define IIC_MASTER_SCL_UP()      my_st(GPIOE->CR1 |= (uint8_t)GPIO_PIN_6;)  //SCL上拉输入，推挽输出
+#define IIC_MASTER_SCL_FLOAT()   my_st(GPIOE->CR1 &= (uint8_t)(~GPIO_PIN_6);)  //SCL浮空输入，开漏输出
 
-#define IIC_MASTER_SDA_PIN_IN    PB_IDR_IDR5  //数据线SDA输入引脚
-#define IIC_MASTER_SCL_PIN_IN    PB_IDR_IDR4  //时钟线SCL
+#define IIC_MASTER_SDA_IQ_ON()   my_st(GPIOE->CR2 |= (uint8_t)GPIO_PIN_7;)  //SDA中断输入开，高速输出
+#define IIC_MASTER_SDA_IQ_OFF()  my_st(GPIOE->CR2 &= (uint8_t)(~GPIO_PIN_7);)  //SDA中断输入关，低速输出
 
-#define IIC_MASTER_SDA_DIR       PB_DDR  //SDA输入/输出选择寄存器
-#define IIC_MASTER_SCL_DIR       PB_DDR
+#define IIC_MASTER_SCL_IQ_ON()   my_st(GPIOE->CR2 |= (uint8_t)GPIO_PIN_6;)  //SCL中断输入开，高速输出
+#define IIC_MASTER_SCL_IQ_OFF()  my_st(GPIOE->CR2 &= (uint8_t)(~GPIO_PIN_6);)  //SCL中断输入关，低速输出
 
-#define IIC_MASTER_SDA_DIR_BV    my_BV(5)  //SDA输入/输出寄存器位选择
-#define IIC_MASTER_SCL_DIR_BV    my_BV(4)
+#define IIC_MASTER_SDA_OUT(a)    my_st(if(a) GPIOE->ODR |= (uint8_t)GPIO_PIN_7; else GPIOE->ODR &= (uint8_t)(~GPIO_PIN_7);)  //SDA输出电平
+#define IIC_MASTER_SCL_OUT(a)    my_st(if(a) GPIOE->ODR |= (uint8_t)GPIO_PIN_6; else GPIOE->ODR &= (uint8_t)(~GPIO_PIN_6);)
 
-#define IIC_MASTER_SDA_UP()      my_st(IIC_MASTER_SDA_CR1 = 1;)  //SDA上拉输入，推挽输出
-#define IIC_MASTER_SDA_FLOAT()   my_st(IIC_MASTER_SDA_CR1 = 0;)  //SDA浮空输入，开漏输出
+#define IIC_MASTER_SDA_DIR_OUT() my_st(GPIOE->DDR |= (uint8_t)GPIO_PIN_7;)  //SDA输出模式
+#define IIC_MASTER_SDA_DIR_IN()  my_st(GPIOE->DDR &= (uint8_t)(~GPIO_PIN_7);)
 
-#define IIC_MASTER_SCL_UP()      my_st(IIC_MASTER_SCL_CR1 = 1;)  //SCL上拉输入，推挽输出
-#define IIC_MASTER_SCL_FLOAT()   my_st(IIC_MASTER_SCL_CR1 = 0;)  //SCL浮空输入，开漏输出
+#define IIC_MASTER_SCL_DIR_OUT() my_st(GPIOE->DDR |= (uint8_t)GPIO_PIN_6;)
+#define IIC_MASTER_SCL_DIR_IN()  my_st(GPIOE->DDR &= (uint8_t)(~GPIO_PIN_6);)
 
-#define IIC_MASTER_SDA_IQ_ON()   my_st(IIC_MASTER_SDA_CR2 = 1;)  //SDA中断输入开，高速输出
-#define IIC_MASTER_SDA_IQ_OFF()  my_st(IIC_MASTER_SDA_CR2 = 0;)  //SDA中断输入关，低速输出
+// #define IIC_MASTER_SDA_CR1       PB_CR1_C15  //数据线SDA控制寄存器1
+// #define IIC_MASTER_SCL_CR1       PB_CR1_C14  //时钟线SCL
 
-#define IIC_MASTER_SCL_IQ_ON()   my_st(IIC_MASTER_SCL_CR2 = 1;)  //SCL中断输入开，高速输出
-#define IIC_MASTER_SCL_IQ_OFF()  my_st(IIC_MASTER_SCL_CR2 = 0;)  //SCL中断输入关，低速输出
+// #define IIC_MASTER_SDA_CR2       PB_CR2_C25  //数据线SDA控制寄存器2
+// #define IIC_MASTER_SCL_CR2       PB_CR2_C24  //时钟线SCL
 
-#define IIC_MASTER_SDA_OUT(a)    my_st(IIC_MASTER_SDA_PIN_OUT = a;)  //SDA输出电平
-#define IIC_MASTER_SCL_OUT(a)    my_st(IIC_MASTER_SCL_PIN_OUT = a;)
+// #define IIC_MASTER_SDA_PIN_OUT   PB_ODR_ODR5  //数据线SDA输出引脚
+// #define IIC_MASTER_SCL_PIN_OUT   PB_ODR_ODR4  //时钟线SCL
 
-#define IIC_MASTER_SDA_DIR_OUT() my_st(IIC_MASTER_SDA_DIR |= IIC_MASTER_SDA_DIR_BV;)  //SDA输出模式
-#define IIC_MASTER_SDA_DIR_IN()  my_st(IIC_MASTER_SDA_DIR &= ~(IIC_MASTER_SDA_DIR_BV);)
+// #define IIC_MASTER_SDA_PIN_IN    PB_IDR_IDR5  //数据线SDA输入引脚
+// #define IIC_MASTER_SCL_PIN_IN    PB_IDR_IDR4  //时钟线SCL
 
-#define IIC_MASTER_SCL_DIR_OUT() my_st(IIC_MASTER_SCL_DIR |= IIC_MASTER_SCL_DIR_BV;)
-#define IIC_MASTER_SCL_DIR_IN()  my_st(IIC_MASTER_SCL_DIR &= ~(IIC_MASTER_SCL_DIR_BV);)
+// #define IIC_MASTER_SDA_DIR       PB_DDR  //SDA输入/输出选择寄存器
+// #define IIC_MASTER_SCL_DIR       PB_DDR
+
+// #define IIC_MASTER_SDA_DIR_BV    my_BV(5)  //SDA输入/输出寄存器位选择
+// #define IIC_MASTER_SCL_DIR_BV    my_BV(4)
+
+// #define IIC_MASTER_SDA_UP()      my_st(IIC_MASTER_SDA_CR1 = 1;)  //SDA上拉输入，推挽输出
+// #define IIC_MASTER_SDA_FLOAT()   my_st(IIC_MASTER_SDA_CR1 = 0;)  //SDA浮空输入，开漏输出
+
+// #define IIC_MASTER_SCL_UP()      my_st(IIC_MASTER_SCL_CR1 = 1;)  //SCL上拉输入，推挽输出
+// #define IIC_MASTER_SCL_FLOAT()   my_st(IIC_MASTER_SCL_CR1 = 0;)  //SCL浮空输入，开漏输出
+
+// #define IIC_MASTER_SDA_IQ_ON()   my_st(IIC_MASTER_SDA_CR2 = 1;)  //SDA中断输入开，高速输出
+// #define IIC_MASTER_SDA_IQ_OFF()  my_st(IIC_MASTER_SDA_CR2 = 0;)  //SDA中断输入关，低速输出
+
+// #define IIC_MASTER_SCL_IQ_ON()   my_st(IIC_MASTER_SCL_CR2 = 1;)  //SCL中断输入开，高速输出
+// #define IIC_MASTER_SCL_IQ_OFF()  my_st(IIC_MASTER_SCL_CR2 = 0;)  //SCL中断输入关，低速输出
+
+// #define IIC_MASTER_SDA_OUT(a)    my_st(IIC_MASTER_SDA_PIN_OUT = a;)  //SDA输出电平
+// #define IIC_MASTER_SCL_OUT(a)    my_st(IIC_MASTER_SCL_PIN_OUT = a;)
+
+// #define IIC_MASTER_SDA_DIR_OUT() my_st(IIC_MASTER_SDA_DIR |= IIC_MASTER_SDA_DIR_BV;)  //SDA输出模式
+// #define IIC_MASTER_SDA_DIR_IN()  my_st(IIC_MASTER_SDA_DIR &= ~(IIC_MASTER_SDA_DIR_BV);)
+
+// #define IIC_MASTER_SCL_DIR_OUT() my_st(IIC_MASTER_SCL_DIR |= IIC_MASTER_SCL_DIR_BV;)
+// #define IIC_MASTER_SCL_DIR_IN()  my_st(IIC_MASTER_SCL_DIR &= ~(IIC_MASTER_SCL_DIR_BV);)
+
 
 //port = 2
-#define IIC_MASTER2_SDA_CR1       PD_CR1_C13  //数据线SDA控制寄存器1
-#define IIC_MASTER2_SCL_CR1       PD_CR1_C12  //时钟线SCL
+#define IIC_MASTER2_SDA_PIN_IN    (!!(GPIOE->IDR & GPIO_PIN_7))  //数据线SDA输入引脚
+#define IIC_MASTER2_SCL_PIN_IN    (!!(GPIOE->IDR & GPIO_PIN_6))  //时钟线SCL
 
-#define IIC_MASTER2_SDA_CR2       PD_CR2_C23  //数据线SDA控制寄存器2
-#define IIC_MASTER2_SCL_CR2       PD_CR2_C22  //时钟线SCL
+#define IIC_MASTER2_SDA_UP()      my_st(GPIOE->CR1 |= (uint8_t)GPIO_PIN_7;)  //SDA上拉输入，推挽输出
+#define IIC_MASTER2_SDA_FLOAT()   my_st(GPIOE->CR1 &= (uint8_t)(~GPIO_PIN_7);)  //SDA浮空输入，开漏输出
 
-#define IIC_MASTER2_SDA_PIN_OUT   PD_ODR_ODR3  //数据线SDA输出引脚
-#define IIC_MASTER2_SCL_PIN_OUT   PD_ODR_ODR2  //时钟线SCL
+#define IIC_MASTER2_SCL_UP()      my_st(GPIOE->CR1 |= (uint8_t)GPIO_PIN_6;)  //SCL上拉输入，推挽输出
+#define IIC_MASTER2_SCL_FLOAT()   my_st(GPIOE->CR1 &= (uint8_t)(~GPIO_PIN_6);)  //SCL浮空输入，开漏输出
 
-#define IIC_MASTER2_SDA_PIN_IN    PD_IDR_IDR3  //数据线SDA输入引脚
-#define IIC_MASTER2_SCL_PIN_IN    PD_IDR_IDR2  //时钟线SCL
+#define IIC_MASTER2_SDA_IQ_ON()   my_st(GPIOE->CR2 |= (uint8_t)GPIO_PIN_7;)  //SDA中断输入开，高速输出
+#define IIC_MASTER2_SDA_IQ_OFF()  my_st(GPIOE->CR2 &= (uint8_t)(~GPIO_PIN_7);)  //SDA中断输入关，低速输出
 
-#define IIC_MASTER2_SDA_DIR       PD_DDR  //SDA输入/输出选择寄存器
-#define IIC_MASTER2_SCL_DIR       PD_DDR
+#define IIC_MASTER2_SCL_IQ_ON()   my_st(GPIOE->CR2 |= (uint8_t)GPIO_PIN_6;)  //SCL中断输入开，高速输出
+#define IIC_MASTER2_SCL_IQ_OFF()  my_st(GPIOE->CR2 &= (uint8_t)(~GPIO_PIN_6);)  //SCL中断输入关，低速输出
 
-#define IIC_MASTER2_SDA_DIR_BV    my_BV(3)  //SDA输入/输出寄存器位选择
-#define IIC_MASTER2_SCL_DIR_BV    my_BV(2)
+#define IIC_MASTER2_SDA_OUT(a)    my_st(if(a) GPIOE->ODR |= (uint8_t)GPIO_PIN_7; else GPIOE->ODR &= (uint8_t)(~GPIO_PIN_7);)  //SDA输出电平
+#define IIC_MASTER2_SCL_OUT(a)    my_st(if(a) GPIOE->ODR |= (uint8_t)GPIO_PIN_6; else GPIOE->ODR &= (uint8_t)(~GPIO_PIN_6);)
 
-#define IIC_MASTER2_SDA_UP()      my_st(IIC_MASTER2_SDA_CR1 = 1;)  //SDA上拉输入，推挽输出
-#define IIC_MASTER2_SDA_FLOAT()   my_st(IIC_MASTER2_SDA_CR1 = 0;)  //SDA浮空输入，开漏输出
+#define IIC_MASTER2_SDA_DIR_OUT() my_st(GPIOE->DDR |= (uint8_t)GPIO_PIN_7;)  //SDA输出模式
+#define IIC_MASTER2_SDA_DIR_IN()  my_st(GPIOE->DDR &= (uint8_t)(~GPIO_PIN_7);)
 
-#define IIC_MASTER2_SCL_UP()      my_st(IIC_MASTER2_SCL_CR1 = 1;)  //SCL上拉输入，推挽输出
-#define IIC_MASTER2_SCL_FLOAT()   my_st(IIC_MASTER2_SCL_CR1 = 0;)  //SCL浮空输入，开漏输出
+#define IIC_MASTER2_SCL_DIR_OUT() my_st(GPIOE->DDR |= (uint8_t)GPIO_PIN_6;)
+#define IIC_MASTER2_SCL_DIR_IN()  my_st(GPIOE->DDR &= (uint8_t)(~GPIO_PIN_6);)
 
-#define IIC_MASTER2_SDA_IQ_ON()   my_st(IIC_MASTER2_SDA_CR2 = 1;)  //SDA中断输入开，高速输出
-#define IIC_MASTER2_SDA_IQ_OFF()  my_st(IIC_MASTER2_SDA_CR2 = 0;)  //SDA中断输入关，低速输出
+// #define IIC_MASTER2_SDA_CR1       PD_CR1_C13  //数据线SDA控制寄存器1
+// #define IIC_MASTER2_SCL_CR1       PD_CR1_C12  //时钟线SCL
 
-#define IIC_MASTER2_SCL_IQ_ON()   my_st(IIC_MASTER2_SCL_CR2 = 1;)  //SCL中断输入开，高速输出
-#define IIC_MASTER2_SCL_IQ_OFF()  my_st(IIC_MASTER2_SCL_CR2 = 0;)  //SCL中断输入关，低速输出
+// #define IIC_MASTER2_SDA_CR2       PD_CR2_C23  //数据线SDA控制寄存器2
+// #define IIC_MASTER2_SCL_CR2       PD_CR2_C22  //时钟线SCL
 
-#define IIC_MASTER2_SDA_OUT(a)    my_st(IIC_MASTER2_SDA_PIN_OUT = a;)  //SDA输出电平
-#define IIC_MASTER2_SCL_OUT(a)    my_st(IIC_MASTER2_SCL_PIN_OUT = a;)
+// #define IIC_MASTER2_SDA_PIN_OUT   PD_ODR_ODR3  //数据线SDA输出引脚
+// #define IIC_MASTER2_SCL_PIN_OUT   PD_ODR_ODR2  //时钟线SCL
 
-#define IIC_MASTER2_SDA_DIR_OUT() my_st(IIC_MASTER2_SDA_DIR |= IIC_MASTER2_SDA_DIR_BV;)  //SDA输出模式
-#define IIC_MASTER2_SDA_DIR_IN()  my_st(IIC_MASTER2_SDA_DIR &= ~(IIC_MASTER2_SDA_DIR_BV);)
+// #define IIC_MASTER2_SDA_PIN_IN    PD_IDR_IDR3  //数据线SDA输入引脚
+// #define IIC_MASTER2_SCL_PIN_IN    PD_IDR_IDR2  //时钟线SCL
 
-#define IIC_MASTER2_SCL_DIR_OUT() my_st(IIC_MASTER2_SCL_DIR |= IIC_MASTER2_SCL_DIR_BV;)
-#define IIC_MASTER2_SCL_DIR_IN()  my_st(IIC_MASTER2_SCL_DIR &= ~(IIC_MASTER2_SCL_DIR_BV);)
+// #define IIC_MASTER2_SDA_DIR       PD_DDR  //SDA输入/输出选择寄存器
+// #define IIC_MASTER2_SCL_DIR       PD_DDR
+
+// #define IIC_MASTER2_SDA_DIR_BV    my_BV(3)  //SDA输入/输出寄存器位选择
+// #define IIC_MASTER2_SCL_DIR_BV    my_BV(2)
+
+// #define IIC_MASTER2_SDA_UP()      my_st(IIC_MASTER2_SDA_CR1 = 1;)  //SDA上拉输入，推挽输出
+// #define IIC_MASTER2_SDA_FLOAT()   my_st(IIC_MASTER2_SDA_CR1 = 0;)  //SDA浮空输入，开漏输出
+
+// #define IIC_MASTER2_SCL_UP()      my_st(IIC_MASTER2_SCL_CR1 = 1;)  //SCL上拉输入，推挽输出
+// #define IIC_MASTER2_SCL_FLOAT()   my_st(IIC_MASTER2_SCL_CR1 = 0;)  //SCL浮空输入，开漏输出
+
+// #define IIC_MASTER2_SDA_IQ_ON()   my_st(IIC_MASTER2_SDA_CR2 = 1;)  //SDA中断输入开，高速输出
+// #define IIC_MASTER2_SDA_IQ_OFF()  my_st(IIC_MASTER2_SDA_CR2 = 0;)  //SDA中断输入关，低速输出
+
+// #define IIC_MASTER2_SCL_IQ_ON()   my_st(IIC_MASTER2_SCL_CR2 = 1;)  //SCL中断输入开，高速输出
+// #define IIC_MASTER2_SCL_IQ_OFF()  my_st(IIC_MASTER2_SCL_CR2 = 0;)  //SCL中断输入关，低速输出
+
+// #define IIC_MASTER2_SDA_OUT(a)    my_st(IIC_MASTER2_SDA_PIN_OUT = a;)  //SDA输出电平
+// #define IIC_MASTER2_SCL_OUT(a)    my_st(IIC_MASTER2_SCL_PIN_OUT = a;)
+
+// #define IIC_MASTER2_SDA_DIR_OUT() my_st(IIC_MASTER2_SDA_DIR |= IIC_MASTER2_SDA_DIR_BV;)  //SDA输出模式
+// #define IIC_MASTER2_SDA_DIR_IN()  my_st(IIC_MASTER2_SDA_DIR &= ~(IIC_MASTER2_SDA_DIR_BV);)
+
+// #define IIC_MASTER2_SCL_DIR_OUT() my_st(IIC_MASTER2_SCL_DIR |= IIC_MASTER2_SCL_DIR_BV;)
+// #define IIC_MASTER2_SCL_DIR_IN()  my_st(IIC_MASTER2_SCL_DIR &= ~(IIC_MASTER2_SCL_DIR_BV);)
+
 
 //port = 3
-#define IIC_MASTER3_SDA_CR1       PC_CR1_C17  //数据线SDA控制寄存器1
-#define IIC_MASTER3_SCL_CR1       PC_CR1_C16  //时钟线SCL
+#define IIC_MASTER3_SDA_PIN_IN    (!!(GPIOE->IDR & GPIO_PIN_7))  //数据线SDA输入引脚
+#define IIC_MASTER3_SCL_PIN_IN    (!!(GPIOE->IDR & GPIO_PIN_6))  //时钟线SCL
 
-#define IIC_MASTER3_SDA_CR2       PC_CR2_C27  //数据线SDA控制寄存器2
-#define IIC_MASTER3_SCL_CR2       PC_CR2_C26  //时钟线SCL
+#define IIC_MASTER3_SDA_UP()      my_st(GPIOE->CR1 |= (uint8_t)GPIO_PIN_7;)  //SDA上拉输入，推挽输出
+#define IIC_MASTER3_SDA_FLOAT()   my_st(GPIOE->CR1 &= (uint8_t)(~GPIO_PIN_7);)  //SDA浮空输入，开漏输出
 
-#define IIC_MASTER3_SDA_PIN_OUT   PC_ODR_ODR7  //数据线SDA输出引脚
-#define IIC_MASTER3_SCL_PIN_OUT   PC_ODR_ODR6  //时钟线SCL
+#define IIC_MASTER3_SCL_UP()      my_st(GPIOE->CR1 |= (uint8_t)GPIO_PIN_6;)  //SCL上拉输入，推挽输出
+#define IIC_MASTER3_SCL_FLOAT()   my_st(GPIOE->CR1 &= (uint8_t)(~GPIO_PIN_6);)  //SCL浮空输入，开漏输出
 
-#define IIC_MASTER3_SDA_PIN_IN    PC_IDR_IDR7  //数据线SDA输入引脚
-#define IIC_MASTER3_SCL_PIN_IN    PC_IDR_IDR6  //时钟线SCL
+#define IIC_MASTER3_SDA_IQ_ON()   my_st(GPIOE->CR2 |= (uint8_t)GPIO_PIN_7;)  //SDA中断输入开，高速输出
+#define IIC_MASTER3_SDA_IQ_OFF()  my_st(GPIOE->CR2 &= (uint8_t)(~GPIO_PIN_7);)  //SDA中断输入关，低速输出
 
-#define IIC_MASTER3_SDA_DIR       PC_DDR  //SDA输入/输出选择寄存器
-#define IIC_MASTER3_SCL_DIR       PC_DDR
+#define IIC_MASTER3_SCL_IQ_ON()   my_st(GPIOE->CR2 |= (uint8_t)GPIO_PIN_6;)  //SCL中断输入开，高速输出
+#define IIC_MASTER3_SCL_IQ_OFF()  my_st(GPIOE->CR2 &= (uint8_t)(~GPIO_PIN_6);)  //SCL中断输入关，低速输出
 
-#define IIC_MASTER3_SDA_DIR_BV    my_BV(7)  //SDA输入/输出寄存器位选择
-#define IIC_MASTER3_SCL_DIR_BV    my_BV(6)
+#define IIC_MASTER3_SDA_OUT(a)    my_st(if(a) GPIOE->ODR |= (uint8_t)GPIO_PIN_7; else GPIOE->ODR &= (uint8_t)(~GPIO_PIN_7);)  //SDA输出电平
+#define IIC_MASTER3_SCL_OUT(a)    my_st(if(a) GPIOE->ODR |= (uint8_t)GPIO_PIN_6; else GPIOE->ODR &= (uint8_t)(~GPIO_PIN_6);)
 
-#define IIC_MASTER3_SDA_UP()      my_st(IIC_MASTER3_SDA_CR1 = 1;)  //SDA上拉输入，推挽输出
-#define IIC_MASTER3_SDA_FLOAT()   my_st(IIC_MASTER3_SDA_CR1 = 0;)  //SDA浮空输入，开漏输出
+#define IIC_MASTER3_SDA_DIR_OUT() my_st(GPIOE->DDR |= (uint8_t)GPIO_PIN_7;)  //SDA输出模式
+#define IIC_MASTER3_SDA_DIR_IN()  my_st(GPIOE->DDR &= (uint8_t)(~GPIO_PIN_7);)
 
-#define IIC_MASTER3_SCL_UP()      my_st(IIC_MASTER3_SCL_CR1 = 1;)  //SCL上拉输入，推挽输出
-#define IIC_MASTER3_SCL_FLOAT()   my_st(IIC_MASTER3_SCL_CR1 = 0;)  //SCL浮空输入，开漏输出
+#define IIC_MASTER3_SCL_DIR_OUT() my_st(GPIOE->DDR |= (uint8_t)GPIO_PIN_6;)
+#define IIC_MASTER3_SCL_DIR_IN()  my_st(GPIOE->DDR &= (uint8_t)(~GPIO_PIN_6);)
 
-#define IIC_MASTER3_SDA_IQ_ON()   my_st(IIC_MASTER3_SDA_CR2 = 1;)  //SDA中断输入开，高速输出
-#define IIC_MASTER3_SDA_IQ_OFF()  my_st(IIC_MASTER3_SDA_CR2 = 0;)  //SDA中断输入关，低速输出
+// #define IIC_MASTER3_SDA_CR1       PC_CR1_C17  //数据线SDA控制寄存器1
+// #define IIC_MASTER3_SCL_CR1       PC_CR1_C16  //时钟线SCL
 
-#define IIC_MASTER3_SCL_IQ_ON()   my_st(IIC_MASTER3_SCL_CR2 = 1;)  //SCL中断输入开，高速输出
-#define IIC_MASTER3_SCL_IQ_OFF()  my_st(IIC_MASTER3_SCL_CR2 = 0;)  //SCL中断输入关，低速输出
+// #define IIC_MASTER3_SDA_CR2       PC_CR2_C27  //数据线SDA控制寄存器2
+// #define IIC_MASTER3_SCL_CR2       PC_CR2_C26  //时钟线SCL
 
-#define IIC_MASTER3_SDA_OUT(a)    my_st(IIC_MASTER3_SDA_PIN_OUT = a;)  //SDA输出电平
-#define IIC_MASTER3_SCL_OUT(a)    my_st(IIC_MASTER3_SCL_PIN_OUT = a;)
+// #define IIC_MASTER3_SDA_PIN_OUT   PC_ODR_ODR7  //数据线SDA输出引脚
+// #define IIC_MASTER3_SCL_PIN_OUT   PC_ODR_ODR6  //时钟线SCL
 
-#define IIC_MASTER3_SDA_DIR_OUT() my_st(IIC_MASTER3_SDA_DIR |= IIC_MASTER3_SDA_DIR_BV;)  //SDA输出模式
-#define IIC_MASTER3_SDA_DIR_IN()  my_st(IIC_MASTER3_SDA_DIR &= ~(IIC_MASTER3_SDA_DIR_BV);)
+// #define IIC_MASTER3_SDA_PIN_IN    PC_IDR_IDR7  //数据线SDA输入引脚
+// #define IIC_MASTER3_SCL_PIN_IN    PC_IDR_IDR6  //时钟线SCL
 
-#define IIC_MASTER3_SCL_DIR_OUT() my_st(IIC_MASTER3_SCL_DIR |= IIC_MASTER3_SCL_DIR_BV;)
-#define IIC_MASTER3_SCL_DIR_IN()  my_st(IIC_MASTER3_SCL_DIR &= ~(IIC_MASTER3_SCL_DIR_BV);)
+// #define IIC_MASTER3_SDA_DIR       PC_DDR  //SDA输入/输出选择寄存器
+// #define IIC_MASTER3_SCL_DIR       PC_DDR
+
+// #define IIC_MASTER3_SDA_DIR_BV    my_BV(7)  //SDA输入/输出寄存器位选择
+// #define IIC_MASTER3_SCL_DIR_BV    my_BV(6)
+
+// #define IIC_MASTER3_SDA_UP()      my_st(IIC_MASTER3_SDA_CR1 = 1;)  //SDA上拉输入，推挽输出
+// #define IIC_MASTER3_SDA_FLOAT()   my_st(IIC_MASTER3_SDA_CR1 = 0;)  //SDA浮空输入，开漏输出
+
+// #define IIC_MASTER3_SCL_UP()      my_st(IIC_MASTER3_SCL_CR1 = 1;)  //SCL上拉输入，推挽输出
+// #define IIC_MASTER3_SCL_FLOAT()   my_st(IIC_MASTER3_SCL_CR1 = 0;)  //SCL浮空输入，开漏输出
+
+// #define IIC_MASTER3_SDA_IQ_ON()   my_st(IIC_MASTER3_SDA_CR2 = 1;)  //SDA中断输入开，高速输出
+// #define IIC_MASTER3_SDA_IQ_OFF()  my_st(IIC_MASTER3_SDA_CR2 = 0;)  //SDA中断输入关，低速输出
+
+// #define IIC_MASTER3_SCL_IQ_ON()   my_st(IIC_MASTER3_SCL_CR2 = 1;)  //SCL中断输入开，高速输出
+// #define IIC_MASTER3_SCL_IQ_OFF()  my_st(IIC_MASTER3_SCL_CR2 = 0;)  //SCL中断输入关，低速输出
+
+// #define IIC_MASTER3_SDA_OUT(a)    my_st(IIC_MASTER3_SDA_PIN_OUT = a;)  //SDA输出电平
+// #define IIC_MASTER3_SCL_OUT(a)    my_st(IIC_MASTER3_SCL_PIN_OUT = a;)
+
+// #define IIC_MASTER3_SDA_DIR_OUT() my_st(IIC_MASTER3_SDA_DIR |= IIC_MASTER3_SDA_DIR_BV;)  //SDA输出模式
+// #define IIC_MASTER3_SDA_DIR_IN()  my_st(IIC_MASTER3_SDA_DIR &= ~(IIC_MASTER3_SDA_DIR_BV);)
+
+// #define IIC_MASTER3_SCL_DIR_OUT() my_st(IIC_MASTER3_SCL_DIR |= IIC_MASTER3_SCL_DIR_BV;)
+// #define IIC_MASTER3_SCL_DIR_IN()  my_st(IIC_MASTER3_SCL_DIR &= ~(IIC_MASTER3_SCL_DIR_BV);)
 
 void IIC_Master_Init(uint8_t port);  //初始化选择的IIC口，为空闲状态
 
 uint8_t IIC_Master_Write(uint8_t port, uint8_t device_adr, uint8_t * data, uint8_t len);  //写指定长度数据到设备，输入端口、地址、数据和其长度；成功返回0，失败返回1
 uint8_t IIC_Master_ReadDirect(uint8_t port, uint8_t device_adr, uint8_t * data, uint8_t len);  //读设备指定长度数据，输入端口、地址、数据和其长度；成功返回0，失败返回1
 
-//读设备指定长度数据，读寄存器，发读信号，输入端口、设备地址、寄存器地址和其长度、写完是否发停止标志、数据和其长度；成功返回0，失败返回1
-uint8_t IIC_Master_ReadRegister(uint8_t port, uint8_t device_adr, uint8_t * register_adr, uint8_t reg_adr_len, uint8_t write_finish_stop_flag, uint8_t * data, uint8_t len);
+//读设备指定长度数据，读寄存器，发读信号，输入端口、设备地址、寄存器地址和其长度、是否延时及延时时间、数据和其长度；成功返回0，失败则重发，连续3次都失败返回1
+uint8_t IIC_Master_ReadRegister(uint8_t port, uint8_t device_adr, uint8_t * register_adr, uint8_t reg_adr_len, uint8_t delay_flag, uint8_t delay_nms, uint8_t * data, uint8_t len);
 
 #ifdef __cplusplus
 }

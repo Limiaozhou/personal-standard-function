@@ -26,6 +26,7 @@
 /* Main program */
 int main(void)
 {
+	float light_data = 0;
 	/* STM32 Configure the MPU attributes as Write Through */
 //	MPU_Config();
 
@@ -41,7 +42,7 @@ int main(void)
 	Delay_Init(16);  //延时函数基准配置
 //	Led_GPIO_Init();  //led引脚配置
 //	Key_GPIO_Init();  //按键引脚配置
-//    IIC_Master_Init(1);
+	IIC_Master_Init(1);
 	// TIMx_Init(TIM2_Select, 4, 1000-1);  //配置通用定时器，周期1000us，1ms
 	
 	// Uart_Init(UART1_Select, 9600);  //UART1波特率9600
@@ -57,7 +58,7 @@ int main(void)
 //		key_scan(key_task);
         // uart1_send_ontime();  //UART1定时发送
 		// uart_read(UART1_Select, uart1_read_deal);
-        
+		light_data = light_read();
 	}
 }
 
