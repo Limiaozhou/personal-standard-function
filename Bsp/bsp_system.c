@@ -214,9 +214,8 @@ uint32_t CLK_GetMasterClock_Freq(void)
 void CLK_SYSCLK_Config(void)
 {
 	//STN8
-	CLK_DeInit();
-	CLK_HSICmd(ENABLE);
-	
+	CLK_DeInit();  //复位时钟配置，HSI 8分频，2MHz
+	CLK_SYSCLKConfig(CLK_PRESCALER_HSIDIV1);  //改HSI 1分频，16MHz
 	
 	// //STM32
     // RCC_ClkInitTypeDef RCC_ClkInitStruct;
