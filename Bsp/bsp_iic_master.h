@@ -20,6 +20,20 @@ extern "C"
 // typedef unsigned long int uint32_t;
 // typedef signed long int int32_t;
 
+typedef struct
+{
+	uint8_t port;  //IIC端口
+	uint8_t device_adr;  //IIC从机设备地址
+	uint8_t * register_adr;  //IIC从机寄存器地址指针
+	uint8_t reg_adr_len;  //IIC从机寄存器地址长度
+	uint8_t read_delay_flag;  //IIC发送读信号后是否延时标志
+	uint32_t read_delay_nms;  //IIC发送读信号后延时时间 ms
+	uint8_t * data;    //IIC读写数据指针
+	uint32_t len;  //IIC读写数据长度
+}IIC_Master_WRInfo_TypeDef;  //IIC主机读写信息
+
+typedef IIC_Master_WRInfo_TypeDef* pIIC_Master_WRInfo_TypeDef;  //IIC主机读写信息指针
+
 #define HIGH 1  //引脚输出电平-高
 #define LOW  0
 
@@ -228,11 +242,9 @@ extern "C"
 
 void IIC_Master_Init(uint8_t port);  //初始化选择的IIC口，为空闲状态
 
-uint8_t IIC_Master_Write(uint8_t port, uint8_t device_adr, uint8_t * data, uint8_t len);  //写指定长度数据到设备，输入端口、地址、数据和其长度；成功返回0，失败返回1
-uint8_t IIC_Master_ReadDirect(uint8_t port, uint8_t device_adr, uint8_t * data, uint8_t len);  //读设备指定长度数据，输入端口、地址、数据和其长度；成功返回0，失败返回1
-
-//读设备指定长度数据，读寄存器，发读信号，输入端口、设备地址、寄存器地址和其长度、是否延时及延时时间、数据和其长度；成功返回0，失败则重发，连续3次都失败返回1
-uint8_t IIC_Master_ReadRegister(uint8_t port, uint8_t device_adr, uint8_t * register_adr, uint8_t reg_adr_len, uint8_t delay_flag, uint8_t delay_nms, uint8_t * data, uint8_t len);
+uint8_t IIC_Master_Write(pIIC_Master_WRInfo_TypeDef piic);  //写设备，成功返回0，失败返回1
+uint8_t IIC_Master_ReadDirect(pIIC_Master_WRInfo_TypeDef piic);  //读设备，成功返回0，失败返回1
+uint8_t IIC_Master_ReadRegister(pIIC_Master_WRInfo_TypeDef piic);  //读设备寄存器，成功返回0，失败返回1
 
 #ifdef __cplusplus
 }

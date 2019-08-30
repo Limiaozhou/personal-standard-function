@@ -16,6 +16,6 @@
 
 void Delay_Init(uint8_t sysclk);  //延时基准初始化
 void delay_us(uint16_t nus);  //延时n us
-void delay_ms(uint16_t nms);  //延时n ms
+void delay_ms(uint32_t nms);  //延时n ms
 
 #endif

@@ -65,7 +65,7 @@ void delay_us(uint16_t nus)
 }
 
 /* 延时nms，nms:要延时的ms数 */
-void delay_ms(uint16_t nms)
+void delay_ms(uint32_t nms)
 {
 	//STM8
 	//减少while判断与跳转使用，增加准确性
