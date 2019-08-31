@@ -2,9 +2,9 @@
 #define __DELAY_H
 
 //#include "stm32f7xx_hal.h"
-#include "stm8s.h"
+#include "stm8s.h"  //数据类型重定义包含头文件
 
-//#include "typedef.h"
+//#include "typedef.h"  //数据类型重定义包含头文件
 
 //数据类型声明
 // typedef unsigned char uint8_t;

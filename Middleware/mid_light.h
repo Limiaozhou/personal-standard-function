@@ -3,6 +3,7 @@
 
 #include "bsp_iic_master.h"
 
-float light_read(void);
+void Light_Init(void);  //光照度传感器初始化
+float light_read(void);  //读取光照度，返回光照度数据
 
 #endif

@@ -57,7 +57,7 @@ static void queue_write_single(pQueue_TypeDef pqueue, Data_t data)
 }
 
 /* 写入队列指定长度数据，顺移尾指针，成功返回0，失败返回1 */
-void uint8_t queue_write(pQueue_TypeDef pqueue, Data_t *pdata, uint32_t len)
+uint8_t queue_write(pQueue_TypeDef pqueue, Data_t* pdata, uint32_t len)
 {
 	if(len <= (pqueue->size - pqueue->len))  //要写的长度 <= 队列中空余数据长度
 	{
@@ -88,7 +88,7 @@ static Data_t queue_read_sigle(pQueue_TypeDef pqueue)
 }
 
 /* 读出队列指定长度数据，顺移头指针，并清0已读出的数据，成功返回0，失败返回1 */
-void uint8_t queue_read(pQueue_TypeDef pqueue, Data_t *pdata, uint32_t len)
+uint8_t queue_read(pQueue_TypeDef pqueue, Data_t* pdata, uint32_t len)
 {
 	if(len <= pqueue->len)  //要读的长度 <= 队列中数据长度
 	{
@@ -113,7 +113,7 @@ uint32_t get_queue_len(pQueue_TypeDef pqueue)
 }
 
 /* 计算队列中保存的数据之和 */
-Data_t queue_data_sum(pQueue_TypeDef pqueue)
+uint32_t queue_data_sum(pQueue_TypeDef pqueue)
 {
 	Data_t data, sum = 0;  //数据、数据和
 	uint32_t  len;  //数据长度
@@ -124,9 +124,9 @@ Data_t queue_data_sum(pQueue_TypeDef pqueue)
 	
 	while(len--)
 	{
-		data = pqueue->data[phead];  //取每帧长
+		data = pqueue->data[phead];  //取数据
 		phead = (phead + 1) % pqueue->size;
-		sum += data;  //计算已报存的总帧长
+		sum += data;  //计算数据和
 	}
 	
 	return sum;

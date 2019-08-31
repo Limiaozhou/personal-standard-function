@@ -23,13 +23,15 @@ extern "C"
 typedef struct
 {
 	uint8_t port;  //IIC端口
-	uint8_t device_adr;  //IIC从机设备地址
-	uint8_t * register_adr;  //IIC从机寄存器地址指针
-	uint8_t reg_adr_len;  //IIC从机寄存器地址长度
+	uint16_t device_adr;  //IIC从机设备地址
+    uint8_t dev_adr_tenbit_flag;  //IIC从机设备10位地址模式标志位
+	uint16_t register_adr;  //IIC从机寄存器地址
+	uint8_t reg_adr_twobyte_flag;  //IIC从机2字节寄存器地址标志位
 	uint8_t read_delay_flag;  //IIC发送读信号后是否延时标志
 	uint32_t read_delay_nms;  //IIC发送读信号后延时时间 ms
 	uint8_t * data;    //IIC读写数据指针
 	uint32_t len;  //IIC读写数据长度
+    uint8_t error_resend_times;  //失败重发次数
 }IIC_Master_WRInfo_TypeDef;  //IIC主机读写信息
 
 typedef IIC_Master_WRInfo_TypeDef* pIIC_Master_WRInfo_TypeDef;  //IIC主机读写信息指针

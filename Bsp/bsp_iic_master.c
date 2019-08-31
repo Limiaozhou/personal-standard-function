@@ -366,22 +366,37 @@ static uint8_t IIC_Master_ReceiveByte(uint8_t port, uint8_t ack)
     return byte;
 }
 
-//写设备，结构体输入端口、地址、数据和其长度；成功返回0，失败则重发，连续3次都失败返回1
+//写设备，结构体输入端口、设备地址及其10位地址模式标志、数据和其长度；成功返回0，失败则重发，都失败返回1
 uint8_t IIC_Master_Write(pIIC_Master_WRInfo_TypeDef piic)
 {
     uint8_t i;  //发送数据字节数记录
-	uint8_t resend_times = 3;  //失败重发次数
 	uint8_t error_flag = 0;  //发送错误标志
     
-	while(resend_times--)
+	while(piic->error_resend_times--)
 	{
 		IIC_Master_Start(piic->port);
-
-		if(IIC_Master_SendByte(piic->port, piic->device_adr + 0))  //设备地址 + 写信号，bit0=0为写，bit0=1为读
-		{
-			IIC_Master_Stop(piic->port);
-			continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
-		}
+        
+        if(piic->dev_adr_tenbit_flag)  //从机为10位地址模式判断
+        {
+            if(IIC_Master_SendByte(piic->port, (uint8_t)(piic->device_adr >> 8)))  //设备高地址
+            {
+                IIC_Master_Stop(piic->port);
+                continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
+            }
+            if(IIC_Master_SendByte(piic->port, (uint8_t)(piic->device_adr & 0xFE)))  //设备低地址 + 写信号，bit0=0为写，bit0=1为读
+            {
+                IIC_Master_Stop(piic->port);
+                continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
+            }
+        }
+        else
+        {
+            if(IIC_Master_SendByte(piic->port, (uint8_t)(piic->device_adr & 0xFE)))  //设备地址 + 写信号，bit0=0为写，bit0=1为读
+            {
+                IIC_Master_Stop(piic->port);
+                continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
+            }
+        }
 		for(i = 0; i < piic->len; i++)
 		{
 			if(IIC_Master_SendByte(piic->port, *(piic->data++)))  //数据
@@ -404,21 +419,36 @@ uint8_t IIC_Master_Write(pIIC_Master_WRInfo_TypeDef piic)
     return 1;  //发送3次都错误，返回1
 }
 
-//读设备，结构体输入端口、地址、数据和其长度；成功返回0，失败则重发，连续3次都失败返回1
+//读设备，结构体输入端口、设备地址及其10位地址模式标志、数据和其长度；成功返回0，失败则重发，都失败返回1
 uint8_t IIC_Master_ReadDirect(pIIC_Master_WRInfo_TypeDef piic)
 {
     uint8_t i;  //接收数据字节数记录
-	uint8_t resend_times = 3;  //失败重发次数
     
-	while(resend_times--)
+	while(piic->error_resend_times--)
 	{
 		IIC_Master_Start(piic->port);
 		
-		if(IIC_Master_SendByte(piic->port, piic->device_adr + 1))  //设备地址 + 读信号，bit0=0为写，bit0=1为读
-		{
-			IIC_Master_Stop(piic->port);
-			continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
-		}
+        if(piic->dev_adr_tenbit_flag)  //从机为10位地址模式判断
+        {
+            if(IIC_Master_SendByte(piic->port, (uint8_t)(piic->device_adr >> 8)))  //设备高地址
+            {
+                IIC_Master_Stop(piic->port);
+                continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
+            }
+            if(IIC_Master_SendByte(piic->port, (uint8_t)(piic->device_adr & 0xFE + 1)))  //设备低地址 + 读信号，bit0=0为写，bit0=1为读
+            {
+                IIC_Master_Stop(piic->port);
+                continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
+            }
+        }
+        else
+        {
+            if(IIC_Master_SendByte(piic->port, (uint8_t)(piic->device_adr & 0xFE + 1)))  //设备地址 + 读信号，bit0=0为写，bit0=1为读
+            {
+                IIC_Master_Stop(piic->port);
+                continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
+            }
+        }
 		for(i = 0; i < piic->len; i++)  //接收指定长度数据
 		{
 			if(i < piic->len - 1)
@@ -435,52 +465,89 @@ uint8_t IIC_Master_ReadDirect(pIIC_Master_WRInfo_TypeDef piic)
 	return 1;  //发送3次都错误，返回1
 }
 
-//读设备寄存器，结构体输入端口、设备地址、寄存器地址和其长度、是否延时及延时时间、数据和其长度；成功返回0，失败则重发，连续3次都失败返回1
+//读设备寄存器，结构体输入端口、设备地址及其10位地址模式标志、寄存器地址和其长度、是否延时及延时时间、数据和其长度；成功返回0，失败则重发，都失败返回1
 uint8_t IIC_Master_ReadRegister(pIIC_Master_WRInfo_TypeDef piic)
 {
-	uint8_t i, j;  //发送、接收数据字节数记录
-	uint8_t resend_times = 3;  //失败重发次数
-	uint8_t error_flag = 0;  //发送错误标志
+	uint8_t i;  //接收数据字节数记录
     
-	while(resend_times--)
+	while(piic->error_resend_times--)
 	{
 		//先写寄存器地址
 		IIC_Master_Start(piic->port);
-		if(IIC_Master_SendByte(piic->port, piic->device_adr + 0))  //设备地址 + 写信号，bit0=0为写，bit0=1为读
+        if(piic->dev_adr_tenbit_flag)  //从机为10位地址模式判断
+        {
+            if(IIC_Master_SendByte(piic->port, (uint8_t)(piic->device_adr >> 8)))  //设备高地址
+            {
+                IIC_Master_Stop(piic->port);
+                continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
+            }
+            if(IIC_Master_SendByte(piic->port, (uint8_t)(piic->device_adr & 0xFE)))  //设备低地址 + 写信号，bit0=0为写，bit0=1为读
+            {
+                IIC_Master_Stop(piic->port);
+                continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
+            }
+        }
+        else
+        {
+            if(IIC_Master_SendByte(piic->port, (uint8_t)(piic->device_adr & 0xFE)))  //设备地址 + 写信号，bit0=0为写，bit0=1为读
+            {
+                IIC_Master_Stop(piic->port);
+                continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
+            }
+        }
+		if(piic->reg_adr_twobyte_flag)  //从机2字节寄存器地址模式判断
 		{
-			IIC_Master_Stop(piic->port);
-			continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
-		}
-		for(i = 0; i < piic->reg_adr_len; i++)
-		{
-			if(IIC_Master_SendByte(piic->port, *(piic->register_adr++)))  //寄存器地址
+			if(IIC_Master_SendByte(piic->port, (uint8_t)(piic->register_adr >> 8)))  //寄存器高地址
 			{
 				IIC_Master_Stop(piic->port);
-				error_flag = 1;  //置1发送错误标志
-				break;  //发送出错就停止，跳当前for循环
+				continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
 			}
+            if(IIC_Master_SendByte(piic->port, (uint8_t)(piic->register_adr & 0xFF)))  //寄存器低地址
+            {
+                IIC_Master_Stop(piic->port);
+                continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
+            }
 		}
-		if(error_flag)  //若发送寄存器地址出错，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
-		{
-			error_flag = 0;  //清0发送错误标志
-			continue;
-		}
+        else
+        {
+            if(IIC_Master_SendByte(piic->port, (uint8_t)(piic->register_adr & 0xFF)))  //寄存器地址
+            {
+                IIC_Master_Stop(piic->port);
+                continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
+            }
+        }
 		
 		//再读数据
 		IIC_Master_Start(piic->port);
-		if(IIC_Master_SendByte(piic->port, piic->device_adr + 1))  //设备地址 + 读信号，bit0=0为写，bit0=1为读
-		{
-			IIC_Master_Stop(piic->port);
-			continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
-		}
+        if(piic->dev_adr_tenbit_flag)  //从机为10位地址模式判断
+        {
+            if(IIC_Master_SendByte(piic->port, (uint8_t)(piic->device_adr >> 8)))  //设备高地址
+            {
+                IIC_Master_Stop(piic->port);
+                continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
+            }
+            if(IIC_Master_SendByte(piic->port, (uint8_t)(piic->device_adr & 0xFE + 1)))  //设备低地址 + 读信号，bit0=0为写，bit0=1为读
+            {
+                IIC_Master_Stop(piic->port);
+                continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
+            }
+        }
+        else
+        {
+            if(IIC_Master_SendByte(piic->port, (uint8_t)(piic->device_adr & 0xFE + 1)))  //设备地址 + 读信号，bit0=0为写，bit0=1为读
+            {
+                IIC_Master_Stop(piic->port);
+                continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
+            }
+        }
 		if(piic->read_delay_flag)
 			delay_ms(piic->read_delay_nms);  //延时等待数据准备完成
-		for(j = 0; j < piic->len; j++)  //接收指定长度数据
+		for(i = 0; i < piic->len; i++)  //接收指定长度数据
 		{
-			if(j < piic->len - 1)
-				*(piic->data + j) = IIC_Master_ReceiveByte(piic->port, 0);  //数据没接收完，发送有效应答
+			if(i < piic->len - 1)
+				*(piic->data + i) = IIC_Master_ReceiveByte(piic->port, 0);  //数据没接收完，发送有效应答
 			else
-				*(piic->data + j) = IIC_Master_ReceiveByte(piic->port, 1);  //数据接收完，发送非应答
+				*(piic->data + i) = IIC_Master_ReceiveByte(piic->port, 1);  //数据接收完，发送非应答
 		}
 		IIC_Master_Stop(piic->port);
 		
