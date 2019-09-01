@@ -27,6 +27,8 @@
 int main(void)
 {
 	float light_data = 0;
+    uint8_t buf1[] = {0x12, 0x34, 0x56, 0x78, 0x90};
+    uint16_t data = 0x1234;
 	/* STM32 Configure the MPU attributes as Write Through */
 //	MPU_Config();
 
@@ -45,7 +47,7 @@ int main(void)
 	Light_Init();
 	// TIMx_Init(TIM2_Select, 4, 1000-1);  //配置通用定时器，周期1000us，1ms
 	
-	// Uart_Init(UART1_Select, 9600);  //UART1波特率9600
+	Uart_Init(UART1_Select, 9600, NULL);  //UART1波特率9600
     
     // uart1_send_ontime_int();  //UART1定时发送初始化，注册定时器
 	
@@ -58,7 +60,8 @@ int main(void)
 //		key_scan(key_task);
         // uart1_send_ontime();  //UART1定时发送
 		// uart_read(UART1_Select, uart1_read_deal);
-		light_data = light_read();
+//		light_data = light_read();
+        uart_write(UART1_Select, (uint8_t*)&data, 2);
 	}
 }
 

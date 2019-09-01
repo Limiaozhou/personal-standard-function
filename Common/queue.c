@@ -7,12 +7,43 @@ static void queue_write_single(pQueue_TypeDef pqueue, Data_t data);  //写入队
 static Data_t queue_read_sigle(pQueue_TypeDef pqueue);  //读出队列单个数据
 
 /* 队列初始化，设置队列数据尺寸并分配数据空间 */
-void queue_init(pQueue_TypeDef pqueue, uint32_t size)
+void queue_init(pQueue_TypeDef pqueue, uint32_t size, DataType_Typedef datatype)
 {
 	pqueue->head = 0;
 	pqueue->tail = 0;
 	pqueue->len = 0;
 	pqueue->size = size;
+    pqueue->data_type = datatype;
+    switch(pqueue->data_type)
+    {
+        case Uint8_Type:
+            typedef uint8_t Data_t;
+        break;
+        
+        case Int8_Type:
+            typedef int8_t Data_t;
+        break;
+        
+        case Uint16_Type:
+            typedef uint16_t Data_t;
+        break;
+        
+        case Int16_Type:
+            typedef int16_t Data_t;
+        break;
+        
+        case Uint32_Type:
+            typedef uint32_t Data_t;
+        break;
+        
+        case Int32_Type:
+            typedef int32_t Data_t;
+        break;
+        
+        default:
+            typedef uint8_t Data_t;
+        break;
+    }
 	pqueue->data = (Data_t*) malloc(size * sizeof(Data_t));  //为data分配内存
 }
 

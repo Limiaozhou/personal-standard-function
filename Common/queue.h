@@ -14,7 +14,7 @@
 // typedef unsigned long int uint32_t;
 // typedef signed long int int32_t;
 
-typedef uint8_t Data_t;  //环形队列数据的类型
+//typedef uint8_t Data_t;  //环形队列数据的类型
 
 typedef enum
 {
@@ -34,16 +34,17 @@ typedef struct
 	uint32_t len;  //队列已保存数据长度
 	uint32_t size;  //队列数据最大尺寸
 	
-	Data_t * data;  //数据位
+	void * data;  //数据位
+    DataType_Typedef data_type;
 }Queue_TypeDef;  //数据队列结构体
 
 typedef Queue_TypeDef* pQueue_TypeDef;  //指向队列结构体的指针
 
-void queue_init(pQueue_TypeDef pqueue, uint32_t size);  //队列初始化，设置队列数据尺寸并分配数据空间
+void queue_init(pQueue_TypeDef pqueue, uint32_t size, DataType_Typedef datatype);  //队列初始化，设置队列数据尺寸并分配数据空间
 void queue_delete(pQueue_TypeDef pqueue);  //队列删除，删除分配的数据空间
 
-uint8_t queue_write(pQueue_TypeDef pqueue, Data_t* pdata, uint32_t len);  //写入队列指定长度数据，成功返回0，失败返回1
-uint8_t queue_read(pQueue_TypeDef pqueue, Data_t* pdata, uint32_t len);  //读出队列指定长度数据，并清0已读出的数据，成功返回0，失败返回1
+uint8_t queue_write(pQueue_TypeDef pqueue, void* pdata, uint32_t len);  //写入队列指定长度数据，成功返回0，失败返回1
+uint8_t queue_read(pQueue_TypeDef pqueue, void* pdata, uint32_t len);  //读出队列指定长度数据，并清0已读出的数据，成功返回0，失败返回1
 
 uint32_t get_queue_len(pQueue_TypeDef pqueue);  //计算队列中数据长度
 uint32_t queue_data_sum(pQueue_TypeDef pqueue);  //计算队列中保存的数据之和

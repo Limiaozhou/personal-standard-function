@@ -5,6 +5,7 @@
 // #include "iostm8s103F3.h"
 // #include "iostm8s207c8.h"
 #include "stm8s_uart1.h"
+#include "stm8s_it.h"
 
 // #include "bsp_system.h"
 #include "queue.h"

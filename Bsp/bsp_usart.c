@@ -62,7 +62,7 @@ static void Uart_Port_Init(UARTx_Select_TypeDef uartx, uint32_t bound)
             //配置波特率、8位数据位、1位停止位、无校验、失能同步、使能收发
 			UART1_Init(bound, UART1_WORDLENGTH_8D, UART1_STOPBITS_1, UART1_PARITY_NO,
                        UART1_SYNCMODE_CLOCK_DISABLE, UART1_MODE_TXRX_ENABLE);
-            UART1_ITConfig(UART1_IT_RXNE, ENABLE);  //使能接收中断
+            UART1_ITConfig(UART1_IT_RXNE_OR, ENABLE);  //使能接收中断
             UART1_ITConfig(UART1_IT_IDLE, ENABLE);  //使能空闲中断
             // UART1_CR1 &= ~0x10;  //M，一个起始位，8个数据位，无校验
             // UART1_CR3 |= 0x00;  //STOP，1个停止位
@@ -237,7 +237,8 @@ void uart_read(UARTx_Select_TypeDef uartx)
 				if((!queue_read(&Queue_Uart1_Rx_Num, &rx1_frame_len, 1)) && rx1_frame_len)  //每帧长
 				{
 					queue_read(&Queue_Uart1_Rx, rx1_data, rx1_frame_len);  //取出一帧数据保存到rdata数组
-					uart1_data_deal(rx1_data, rx1_frame_len);  //将数据指针和帧长传给回调函数去解析
+                    if(uart1_data_deal != NULL)
+                        uart1_data_deal(rx1_data, rx1_frame_len);  //将数据指针和帧长传给回调函数去解析
 				}
 			}
 		}break;
@@ -277,7 +278,7 @@ void uart_read(UARTx_Select_TypeDef uartx)
 INTERRUPT_HANDLER(UART1_RX_IRQHandler, 18)
 {
     uint8_t data = 0;  //数据缓存
-    unsigned char len_now = 0;  //当前帧长度
+    uint8_t frame_len_now = 0;  //当前帧长度
     
     if(UART1_GetFlagStatus(UART1_FLAG_RXNE))  //接收标志位
     {
@@ -291,8 +292,8 @@ INTERRUPT_HANDLER(UART1_RX_IRQHandler, 18)
         data = UART1_ReceiveData8();  //顺序读完后，清0空闲IDLE标志位
         
         UART1_ITConfig(UART1_IT_IDLE, DISABLE);  //失能空闲中断，防止咬尾
-        len_now = Queue_Uart1_Rx.len - queue_data_sum(&Queue_Uart1_Rx_Num);  //当前帧长度 = 当前数据队列长度 - 已保存的总长度
-        queue_write(&Queue_Uart1_Rx_Num, &len_now, 1);  //保存当前数据帧长度
+        frame_len_now = Queue_Uart1_Rx.len - queue_data_sum(&Queue_Uart1_Rx_Num);  //当前帧长度 = 当前数据队列长度 - 已保存的总长度
+        queue_write(&Queue_Uart1_Rx_Num, &frame_len_now, 1);  //保存当前数据帧长度
         uart_read(UART1_Select);
         UART1_ITConfig(UART1_IT_IDLE, ENABLE);  //使能空闲中断
     }
