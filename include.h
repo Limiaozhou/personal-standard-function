@@ -13,6 +13,7 @@
 #include "bsp_usart.h"
 
 #include "mid_light.h"
+#include "mid_uart.h"
 
 //#include "app_key_task.h"
 //#include "app_uart.h"

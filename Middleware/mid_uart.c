@@ -1,22 +1,20 @@
 #include "mid_uart.h"
 
 /* uart1读取数据处理， pdata：数据指针， len：数据长度 */
-void uart1_read_deal(unsigned char *pdata, unsigned char len)
+void uart1_read_deal(uint8_t * pdata, uint32_t len)
 {
-	unsigned char i;
-	unsigned char tdata[100];
+	uint32_t i;
+	uint8_t tdata[500];
 	
-	if((pdata[0] == 0x66) && (pdata[1] == 0x06) && (pdata[2] == (len - 4)) && (pdata[len - 1] == 0x060))
-	{  //66 06 01 00 60，01为数据长度，00为数据，顺序输出
+	if((pdata[0] == 'f') && (pdata[1] == 'r'))
+	{
 		for(i = 0; i < len; i++)
-		{
 			tdata[i] = pdata[i];
-		}
 		
 		uart_write(UART1_Select, tdata, len);
 	}
-	else if((pdata[0] == 0x77) && (pdata[1] == 0x07) && (pdata[2] == (len - 4)) && (pdata[len - 1] == 0x070))
-	{  //77 07 01 00 70，01为数据长度，00为数据，倒序输出
+	else if((pdata[0] == 'b') && (pdata[1] == 'a'))
+	{
 		for(i = 0; i < len; i++)
 			tdata[i] = pdata[len - 1 - i];
 		

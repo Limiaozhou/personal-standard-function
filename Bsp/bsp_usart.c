@@ -30,8 +30,8 @@ static void Uart_Queue_Init(UARTx_Select_TypeDef uartx)
 	switch(uartx)
 	{
 		case UART1_Select :
-			queue_init(&Queue_Uart1_Rx, 100);  //初始化接收uart1数据队列，100字节长度
-			queue_init(&Queue_Uart1_Rx_Num, 10);  //初始化接收uart1帧数队列，10字节长度
+			queue_init(&Queue_Uart1_Rx, 500, Uint8_Type);  //初始化接收uart1数据队列，500字节长度，注意分配堆heap要足够大
+			queue_init(&Queue_Uart1_Rx_Num, 10, Uint32_Type);  //初始化接收uart1帧数队列，10字节长度
 		break;
 		
 		default :
@@ -227,8 +227,9 @@ void uart_read(UARTx_Select_TypeDef uartx)
 	{
 		case UART1_Select :
 		{
-            Data_t rx1_data[100] = {0};  //队列数据缓存数组
-            uint8_t rx1_frame_len = 0, rx1_frame_num = 0;  //每帧长、帧数
+            uint8_t rx1_data[500] = {0};  //队列数据缓存数组
+            uint32_t rx1_frame_len = 0;  //每帧长
+            uint8_t rx1_frame_num = 0;  //帧数
             
 			rx1_frame_num = Queue_Uart1_Rx_Num.len;  //帧数
 			
@@ -278,7 +279,7 @@ void uart_read(UARTx_Select_TypeDef uartx)
 INTERRUPT_HANDLER(UART1_RX_IRQHandler, 18)
 {
     uint8_t data = 0;  //数据缓存
-    uint8_t frame_len_now = 0;  //当前帧长度
+    uint32_t frame_len_now = 0;  //当前帧长度
     
     if(UART1_GetFlagStatus(UART1_FLAG_RXNE))  //接收标志位
     {

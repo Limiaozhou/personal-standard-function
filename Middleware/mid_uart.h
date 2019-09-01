@@ -1,6 +1,8 @@
 #ifndef __MID_UART_H
 #define __MID_UART_H
 
-void uart1_read_deal(unsigned char *pdata, unsigned char len);
+#include "bsp_usart.h"
+
+void uart1_read_deal(uint8_t * pdata, uint32_t len);
 
 #endif

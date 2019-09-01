@@ -47,7 +47,7 @@ int main(void)
 	Light_Init();
 	// TIMx_Init(TIM2_Select, 4, 1000-1);  //配置通用定时器，周期1000us，1ms
 	
-	Uart_Init(UART1_Select, 9600, NULL);  //UART1波特率9600
+	Uart_Init(UART1_Select, 9600, uart1_read_deal);  //UART1波特率9600
     
     // uart1_send_ontime_int();  //UART1定时发送初始化，注册定时器
 	

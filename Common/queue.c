@@ -3,11 +3,11 @@
 //内部函数
 static uint8_t is_queue_empty(pQueue_TypeDef pqueue);  //判断队列是否为空，是返回1，否返回0
 static uint8_t is_queue_full(pQueue_TypeDef pqueue);  //判断队列是否为满，是返回1，否返回0
-static void queue_write_single(pQueue_TypeDef pqueue, Data_t data);  //写入队列单个数据
-static Data_t queue_read_sigle(pQueue_TypeDef pqueue);  //读出队列单个数据
+static void queue_write_single(pQueue_TypeDef pqueue, void* pdata);  //写入队列单个数据
+static void queue_read_single(pQueue_TypeDef pqueue, void* pdata);  //读出队列单个数据
 
 /* 队列初始化，设置队列数据尺寸并分配数据空间 */
-void queue_init(pQueue_TypeDef pqueue, uint32_t size, DataType_Typedef datatype)
+void queue_init(pQueue_TypeDef pqueue, uint32_t size, DataType_Select_Typedef datatype)
 {
 	pqueue->head = 0;
 	pqueue->tail = 0;
@@ -17,34 +17,33 @@ void queue_init(pQueue_TypeDef pqueue, uint32_t size, DataType_Typedef datatype)
     switch(pqueue->data_type)
     {
         case Uint8_Type:
-            typedef uint8_t Data_t;
+            pqueue->data.data_uint8 = (uint8_t*) malloc(size * sizeof(uint8_t));  //为data分配内存
         break;
         
         case Int8_Type:
-            typedef int8_t Data_t;
+            pqueue->data.data_int8 = (int8_t*) malloc(size * sizeof(int8_t));
         break;
         
         case Uint16_Type:
-            typedef uint16_t Data_t;
+            pqueue->data.data_uint16 = (uint16_t*) malloc(size * sizeof(uint16_t));
         break;
         
         case Int16_Type:
-            typedef int16_t Data_t;
+            pqueue->data.data_int16 = (int16_t*) malloc(size * sizeof(int16_t));
         break;
         
         case Uint32_Type:
-            typedef uint32_t Data_t;
+            pqueue->data.data_uint32 = (uint32_t*) malloc(size * sizeof(uint32_t));
         break;
         
         case Int32_Type:
-            typedef int32_t Data_t;
+            pqueue->data.data_int32 = (int32_t*) malloc(size * sizeof(int32_t));
         break;
         
         default:
-            typedef uint8_t Data_t;
+            pqueue->data.data_uint8 = (uint8_t*) malloc(size * sizeof(uint8_t));
         break;
     }
-	pqueue->data = (Data_t*) malloc(size * sizeof(Data_t));  //为data分配内存
 }
 
 /* 队列删除，删除分配的数据空间 */
@@ -54,7 +53,36 @@ void queue_delete(pQueue_TypeDef pqueue)
 	pqueue->tail = 0;
 	pqueue->len = 0;
 	pqueue->size = 0;
-	free(pqueue->data);  //释放data内存
+    switch(pqueue->data_type)
+    {
+        case Uint8_Type:
+            free(pqueue->data.data_uint8);  //释放data内存
+        break;
+        
+        case Int8_Type:
+            free(pqueue->data.data_int8);
+        break;
+        
+        case Uint16_Type:
+            free(pqueue->data.data_uint16);
+        break;
+        
+        case Int16_Type:
+            free(pqueue->data.data_int16);
+        break;
+        
+        case Uint32_Type:
+            free(pqueue->data.data_uint32);
+        break;
+        
+        case Int32_Type:
+            free(pqueue->data.data_int32);
+        break;
+        
+        default:
+            free(pqueue->data.data_uint8);
+        break;
+    }
 }
 
 /* 判断队列是否为空，是返回1，否返回0 */
@@ -76,24 +104,109 @@ static uint8_t is_queue_full(pQueue_TypeDef pqueue)
 }
 
 /* 写入队列单个数据，移动尾指针 */
-static void queue_write_single(pQueue_TypeDef pqueue, Data_t data)
+static void queue_write_single(pQueue_TypeDef pqueue, void* pdata)
 {
 	if(is_queue_full(pqueue))
 		return;  //队列满时不能写
 	
-	pqueue->data[pqueue->tail] = data;  //写队列尾指针数据
+    switch(pqueue->data_type)
+    {
+        case Uint8_Type:
+            pqueue->data.data_uint8[pqueue->tail] = *(uint8_t*)pdata;  //写队列尾指针数据
+        break;
+        
+        case Int8_Type:
+            pqueue->data.data_int8[pqueue->tail] = *(int8_t*)pdata;  //写队列尾指针数据
+        break;
+        
+        case Uint16_Type:
+            pqueue->data.data_uint16[pqueue->tail] = *(uint16_t*)pdata;  //写队列尾指针数据
+        break;
+        
+        case Int16_Type:
+            pqueue->data.data_int16[pqueue->tail] = *(int16_t*)pdata;  //写队列尾指针数据
+        break;
+        
+        case Uint32_Type:
+            pqueue->data.data_uint32[pqueue->tail] = *(uint32_t*)pdata;  //写队列尾指针数据
+        break;
+        
+        case Int32_Type:
+            pqueue->data.data_int32[pqueue->tail] = *(int32_t*)pdata;  //写队列尾指针数据
+        break;
+        
+        default:
+            pqueue->data.data_uint8[pqueue->tail] = *(uint8_t*)pdata;  //写队列尾指针数据
+        break;
+    }
 	
 	pqueue->tail = (pqueue->tail + 1) % pqueue->size;  //队列尾指针到最大尺寸后从0开始
 	pqueue->len++;  //记录队列中数据长度
 }
 
 /* 写入队列指定长度数据，顺移尾指针，成功返回0，失败返回1 */
-uint8_t queue_write(pQueue_TypeDef pqueue, Data_t* pdata, uint32_t len)
+uint8_t queue_write(pQueue_TypeDef pqueue, void* pdata, uint32_t len)
 {
 	if(len <= (pqueue->size - pqueue->len))  //要写的长度 <= 队列中空余数据长度
 	{
-		while(len--)
-			queue_write_single(pqueue, *(pdata++));
+        switch(pqueue->data_type)
+        {
+            case Uint8_Type:
+                while(len--)
+                {
+                    queue_write_single(pqueue, pdata);
+                    pdata = (uint8_t*)pdata + 1;
+                }
+            break;
+            
+            case Int8_Type:
+                while(len--)
+                {
+                    queue_write_single(pqueue, pdata);
+                    pdata = (int8_t*)pdata + 1;
+                }
+            break;
+            
+            case Uint16_Type:
+                while(len--)
+                {
+                    queue_write_single(pqueue, pdata);
+                    pdata = (uint16_t*)pdata + 1;
+                }
+            break;
+            
+            case Int16_Type:
+                while(len--)
+                {
+                    queue_write_single(pqueue, pdata);
+                    pdata = (int16_t*)pdata + 1;
+                }
+            break;
+            
+            case Uint32_Type:
+                while(len--)
+                {
+                    queue_write_single(pqueue, pdata);
+                    pdata = (uint32_t*)pdata + 1;
+                }
+            break;
+            
+            case Int32_Type:
+                while(len--)
+                {
+                    queue_write_single(pqueue, pdata);
+                    pdata = (int32_t*)pdata + 1;
+                }
+            break;
+            
+            default:
+                while(len--)
+                {
+                    queue_write_single(pqueue, pdata);
+                    pdata = (uint8_t*)pdata + 1;
+                }
+            break;
+        }
 		
 		return 0;  //成功返回0
 	}
@@ -102,29 +215,116 @@ uint8_t queue_write(pQueue_TypeDef pqueue, Data_t* pdata, uint32_t len)
 }
 
 /* 读出队列单个数据，移动头指针，并清0已读出的数据 */
-static Data_t queue_read_sigle(pQueue_TypeDef pqueue)
+static void queue_read_single(pQueue_TypeDef pqueue, void* pdata)
 {
-	Data_t data;
-	
 	if(is_queue_empty(pqueue))
-		return 0;  //队列空时不能读
+		return;  //队列空时不能读
 	
-	data = pqueue->data[pqueue->head];  //读队列头指针数据
-	pqueue->data[pqueue->head] = 0;  //清0读出后的指针数据
+    switch(pqueue->data_type)
+    {
+        case Uint8_Type:
+            *(uint8_t*)pdata = pqueue->data.data_uint8[pqueue->head];  //读队列头指针数据
+            pqueue->data.data_uint8[pqueue->head] = 0;  //清0读出后的指针数据
+        break;
+        
+        case Int8_Type:
+            *(int8_t*)pdata = pqueue->data.data_int8[pqueue->head];  //读队列头指针数据
+            pqueue->data.data_int8[pqueue->head] = 0;  //清0读出后的指针数据
+        break;
+        
+        case Uint16_Type:
+            *(uint16_t*)pdata = pqueue->data.data_uint16[pqueue->head];  //读队列头指针数据
+            pqueue->data.data_uint16[pqueue->head] = 0;  //清0读出后的指针数据
+        break;
+        
+        case Int16_Type:
+            *(int16_t*)pdata = pqueue->data.data_int16[pqueue->head];  //读队列头指针数据
+            pqueue->data.data_int16[pqueue->head] = 0;  //清0读出后的指针数据
+        break;
+        
+        case Uint32_Type:
+            *(uint32_t*)pdata = pqueue->data.data_uint32[pqueue->head];  //读队列头指针数据
+            pqueue->data.data_uint32[pqueue->head] = 0;  //清0读出后的指针数据
+        break;
+        
+        case Int32_Type:
+            *(int32_t*)pdata = pqueue->data.data_int32[pqueue->head];  //读队列头指针数据
+            pqueue->data.data_int32[pqueue->head] = 0;  //清0读出后的指针数据
+        break;
+        
+        default:
+            *(uint8_t*)pdata = pqueue->data.data_uint8[pqueue->head];  //读队列头指针数据
+            pqueue->data.data_uint8[pqueue->head] = 0;  //清0读出后的指针数据
+        break;
+    }
 	
 	pqueue->head = (pqueue->head + 1) % pqueue->size;  //队列头指针到最大尺寸后从0开始
 	pqueue->len--;  //记录队列中数据长度
-	
-	return data;
 }
 
 /* 读出队列指定长度数据，顺移头指针，并清0已读出的数据，成功返回0，失败返回1 */
-uint8_t queue_read(pQueue_TypeDef pqueue, Data_t* pdata, uint32_t len)
+uint8_t queue_read(pQueue_TypeDef pqueue, void* pdata, uint32_t len)
 {
 	if(len <= pqueue->len)  //要读的长度 <= 队列中数据长度
 	{
-		while(len--)
-			*(pdata++) = queue_read_sigle(pqueue);
+        switch(pqueue->data_type)
+        {
+            case Uint8_Type:
+                while(len--)
+                {
+                    queue_read_single(pqueue, pdata);
+                    pdata = (uint8_t*)pdata + 1;
+                }
+            break;
+            
+            case Int8_Type:
+                while(len--)
+                {
+                    queue_read_single(pqueue, pdata);
+                    pdata = (int8_t*)pdata + 1;
+                }
+            break;
+            
+            case Uint16_Type:
+                while(len--)
+                {
+                    queue_read_single(pqueue, pdata);
+                    pdata = (uint16_t*)pdata + 1;
+                }
+            break;
+            
+            case Int16_Type:
+                while(len--)
+                {
+                    queue_read_single(pqueue, pdata);
+                    pdata = (int16_t*)pdata + 1;
+                }
+            break;
+            
+            case Uint32_Type:
+                while(len--)
+                {
+                    queue_read_single(pqueue, pdata);
+                    pdata = (uint32_t*)pdata + 1;
+                }
+            break;
+            
+            case Int32_Type:
+                while(len--)
+                {
+                    queue_read_single(pqueue, pdata);
+                    pdata = (int32_t*)pdata + 1;
+                }
+            break;
+            
+            default:
+                while(len--)
+                {
+                    queue_read_single(pqueue, pdata);
+                    pdata = (uint8_t*)pdata + 1;
+                }
+            break;
+        }
 		
 		return 0;  //成功返回0
 	}
@@ -146,19 +346,71 @@ uint32_t get_queue_len(pQueue_TypeDef pqueue)
 /* 计算队列中保存的数据之和 */
 uint32_t queue_data_sum(pQueue_TypeDef pqueue)
 {
-	Data_t data, sum = 0;  //数据、数据和
+	uint32_t sum = 0;  //数据、数据和
 	uint32_t  len;  //数据长度
 	uint32_t phead;  //队列头指针缓存
 	
 	len = pqueue->len;  //取已保存数据长度
 	phead = pqueue->head;
 	
-	while(len--)
-	{
-		data = pqueue->data[phead];  //取数据
-		phead = (phead + 1) % pqueue->size;
-		sum += data;  //计算数据和
-	}
+    switch(pqueue->data_type)
+    {
+        case Uint8_Type:
+            while(len--)
+            {
+                sum += pqueue->data.data_uint8[phead];  //取数据并计算数据和
+                phead = (phead + 1) % pqueue->size;
+            }
+        break;
+        
+        case Int8_Type:
+            while(len--)
+            {
+                sum += pqueue->data.data_int8[phead];  //取数据并计算数据和
+                phead = (phead + 1) % pqueue->size;
+            }
+        break;
+        
+        case Uint16_Type:
+            while(len--)
+            {
+                sum += pqueue->data.data_uint16[phead];  //取数据并计算数据和
+                phead = (phead + 1) % pqueue->size;
+            }
+        break;
+        
+        case Int16_Type:
+            while(len--)
+            {
+                sum += pqueue->data.data_int16[phead];  //取数据并计算数据和
+                phead = (phead + 1) % pqueue->size;
+            }
+        break;
+        
+        case Uint32_Type:
+            while(len--)
+            {
+                sum += pqueue->data.data_uint32[phead];  //取数据并计算数据和
+                phead = (phead + 1) % pqueue->size;
+            }
+        break;
+        
+        case Int32_Type:
+            while(len--)
+            {
+                sum += pqueue->data.data_int32[phead];  //取数据并计算数据和
+                phead = (phead + 1) % pqueue->size;
+            }
+        break;
+        
+        default:
+            while(len--)
+            {
+                sum += pqueue->data.data_uint8[phead];  //取数据并计算数据和
+                phead = (phead + 1) % pqueue->size;
+            }
+        break;
+    }
 	
 	return sum;
 }
