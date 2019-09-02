@@ -540,8 +540,8 @@ uint8_t IIC_Master_ReadRegister(pIIC_Master_WRInfo_TypeDef piic)
                 continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
             }
         }
-		if(piic->read_delay_flag)
-			delay_ms(piic->read_delay_nms);  //延时等待数据准备完成
+		if(piic->readreg_delay_flag)
+			delay_ms(piic->readreg_delay_nms);  //延时等待数据准备完成
 		for(i = 0; i < piic->len; i++)  //接收指定长度数据
 		{
 			if(i < piic->len - 1)

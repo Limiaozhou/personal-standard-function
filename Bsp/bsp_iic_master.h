@@ -27,8 +27,8 @@ typedef struct
     uint8_t dev_adr_tenbit_flag;  //IIC´Ó»úÉè±¸10Î»µØÖ·Ä£Ê½±êÖ¾Î»
 	uint16_t register_adr;  //IIC´Ó»ú¼Ä´æÆ÷µØÖ·
 	uint8_t reg_adr_twobyte_flag;  //IIC´Ó»ú2×Ö½Ú¼Ä´æÆ÷µØÖ·±êÖ¾Î»
-	uint8_t read_delay_flag;  //IIC·¢ËÍ¶ÁÐÅºÅºóÊÇ·ñÑÓÊ±±êÖ¾
-	uint32_t read_delay_nms;  //IIC·¢ËÍ¶ÁÐÅºÅºóÑÓÊ±Ê±¼ä ms
+	uint8_t readreg_delay_flag;  //IIC¶Á¼Ä´æÆ÷·¢ËÍ¶ÁÐÅºÅºóÊÇ·ñÑÓÊ±±êÖ¾
+	uint32_t readreg_delay_nms;  //IIC¶Á¼Ä´æÆ÷·¢ËÍ¶ÁÐÅºÅºóÑÓÊ±Ê±¼ä ms
 	uint8_t * data;    //IIC¶ÁÐ´Êý¾ÝÖ¸Õë
 	uint32_t len;  //IIC¶ÁÐ´Êý¾Ý³¤¶È
     uint8_t error_resend_times;  //Ê§°ÜÖØ·¢´ÎÊý
@@ -114,29 +114,29 @@ typedef IIC_Master_WRInfo_TypeDef* pIIC_Master_WRInfo_TypeDef;  //IICÖ÷»ú¶ÁÐ´ÐÅÏ
 
 
 //port = 2
-#define IIC_MASTER2_SDA_PIN_IN    (!!(GPIOE->IDR & GPIO_PIN_7))  //Êý¾ÝÏßSDAÊäÈëÒý½Å
-#define IIC_MASTER2_SCL_PIN_IN    (!!(GPIOE->IDR & GPIO_PIN_6))  //Ê±ÖÓÏßSCL
+#define IIC_MASTER2_SDA_PIN_IN    (!!(GPIOB->IDR & GPIO_PIN_4))  //Êý¾ÝÏßSDAÊäÈëÒý½Å
+#define IIC_MASTER2_SCL_PIN_IN    (!!(GPIOB->IDR & GPIO_PIN_5))  //Ê±ÖÓÏßSCL
 
-#define IIC_MASTER2_SDA_UP()      my_st(GPIOE->CR1 |= (uint8_t)GPIO_PIN_7;)  //SDAÉÏÀ­ÊäÈë£¬ÍÆÍìÊä³ö
-#define IIC_MASTER2_SDA_FLOAT()   my_st(GPIOE->CR1 &= (uint8_t)(~GPIO_PIN_7);)  //SDA¸¡¿ÕÊäÈë£¬¿ªÂ©Êä³ö
+#define IIC_MASTER2_SDA_UP()      my_st(GPIOB->CR1 |= (uint8_t)GPIO_PIN_4;)  //SDAÉÏÀ­ÊäÈë£¬ÍÆÍìÊä³ö
+#define IIC_MASTER2_SDA_FLOAT()   my_st(GPIOB->CR1 &= (uint8_t)(~GPIO_PIN_4);)  //SDA¸¡¿ÕÊäÈë£¬¿ªÂ©Êä³ö
 
-#define IIC_MASTER2_SCL_UP()      my_st(GPIOE->CR1 |= (uint8_t)GPIO_PIN_6;)  //SCLÉÏÀ­ÊäÈë£¬ÍÆÍìÊä³ö
-#define IIC_MASTER2_SCL_FLOAT()   my_st(GPIOE->CR1 &= (uint8_t)(~GPIO_PIN_6);)  //SCL¸¡¿ÕÊäÈë£¬¿ªÂ©Êä³ö
+#define IIC_MASTER2_SCL_UP()      my_st(GPIOB->CR1 |= (uint8_t)GPIO_PIN_5;)  //SCLÉÏÀ­ÊäÈë£¬ÍÆÍìÊä³ö
+#define IIC_MASTER2_SCL_FLOAT()   my_st(GPIOB->CR1 &= (uint8_t)(~GPIO_PIN_5);)  //SCL¸¡¿ÕÊäÈë£¬¿ªÂ©Êä³ö
 
-#define IIC_MASTER2_SDA_IQ_ON()   my_st(GPIOE->CR2 |= (uint8_t)GPIO_PIN_7;)  //SDAÖÐ¶ÏÊäÈë¿ª£¬¸ßËÙÊä³ö
-#define IIC_MASTER2_SDA_IQ_OFF()  my_st(GPIOE->CR2 &= (uint8_t)(~GPIO_PIN_7);)  //SDAÖÐ¶ÏÊäÈë¹Ø£¬µÍËÙÊä³ö
+#define IIC_MASTER2_SDA_IQ_ON()   my_st(GPIOB->CR2 |= (uint8_t)GPIO_PIN_4;)  //SDAÖÐ¶ÏÊäÈë¿ª£¬¸ßËÙÊä³ö
+#define IIC_MASTER2_SDA_IQ_OFF()  my_st(GPIOB->CR2 &= (uint8_t)(~GPIO_PIN_4);)  //SDAÖÐ¶ÏÊäÈë¹Ø£¬µÍËÙÊä³ö
 
-#define IIC_MASTER2_SCL_IQ_ON()   my_st(GPIOE->CR2 |= (uint8_t)GPIO_PIN_6;)  //SCLÖÐ¶ÏÊäÈë¿ª£¬¸ßËÙÊä³ö
-#define IIC_MASTER2_SCL_IQ_OFF()  my_st(GPIOE->CR2 &= (uint8_t)(~GPIO_PIN_6);)  //SCLÖÐ¶ÏÊäÈë¹Ø£¬µÍËÙÊä³ö
+#define IIC_MASTER2_SCL_IQ_ON()   my_st(GPIOB->CR2 |= (uint8_t)GPIO_PIN_5;)  //SCLÖÐ¶ÏÊäÈë¿ª£¬¸ßËÙÊä³ö
+#define IIC_MASTER2_SCL_IQ_OFF()  my_st(GPIOB->CR2 &= (uint8_t)(~GPIO_PIN_5);)  //SCLÖÐ¶ÏÊäÈë¹Ø£¬µÍËÙÊä³ö
 
-#define IIC_MASTER2_SDA_OUT(a)    my_st(if(a) GPIOE->ODR |= (uint8_t)GPIO_PIN_7; else GPIOE->ODR &= (uint8_t)(~GPIO_PIN_7);)  //SDAÊä³öµçÆ½
-#define IIC_MASTER2_SCL_OUT(a)    my_st(if(a) GPIOE->ODR |= (uint8_t)GPIO_PIN_6; else GPIOE->ODR &= (uint8_t)(~GPIO_PIN_6);)
+#define IIC_MASTER2_SDA_OUT(a)    my_st(if(a) GPIOB->ODR |= (uint8_t)GPIO_PIN_4; else GPIOB->ODR &= (uint8_t)(~GPIO_PIN_4);)  //SDAÊä³öµçÆ½
+#define IIC_MASTER2_SCL_OUT(a)    my_st(if(a) GPIOB->ODR |= (uint8_t)GPIO_PIN_5; else GPIOB->ODR &= (uint8_t)(~GPIO_PIN_5);)
 
-#define IIC_MASTER2_SDA_DIR_OUT() my_st(GPIOE->DDR |= (uint8_t)GPIO_PIN_7;)  //SDAÊä³öÄ£Ê½
-#define IIC_MASTER2_SDA_DIR_IN()  my_st(GPIOE->DDR &= (uint8_t)(~GPIO_PIN_7);)
+#define IIC_MASTER2_SDA_DIR_OUT() my_st(GPIOB->DDR |= (uint8_t)GPIO_PIN_4;)  //SDAÊä³öÄ£Ê½
+#define IIC_MASTER2_SDA_DIR_IN()  my_st(GPIOB->DDR &= (uint8_t)(~GPIO_PIN_4);)
 
-#define IIC_MASTER2_SCL_DIR_OUT() my_st(GPIOE->DDR |= (uint8_t)GPIO_PIN_6;)
-#define IIC_MASTER2_SCL_DIR_IN()  my_st(GPIOE->DDR &= (uint8_t)(~GPIO_PIN_6);)
+#define IIC_MASTER2_SCL_DIR_OUT() my_st(GPIOB->DDR |= (uint8_t)GPIO_PIN_5;)
+#define IIC_MASTER2_SCL_DIR_IN()  my_st(GPIOB->DDR &= (uint8_t)(~GPIO_PIN_5);)
 
 // #define IIC_MASTER2_SDA_CR1       PD_CR1_C13  //Êý¾ÝÏßSDA¿ØÖÆ¼Ä´æÆ÷1
 // #define IIC_MASTER2_SCL_CR1       PD_CR1_C12  //Ê±ÖÓÏßSCL

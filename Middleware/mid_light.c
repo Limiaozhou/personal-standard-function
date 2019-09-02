@@ -19,8 +19,8 @@ float light_read(void)
         .dev_adr_tenbit_flag = 0,
 		.register_adr = 0x00,
 		.reg_adr_twobyte_flag = 0,
-		.read_delay_flag = 1,
-		.read_delay_nms = 15,
+		.readreg_delay_flag = 1,
+		.readreg_delay_nms = 15,
 		.data = buf,
 		.len = 4,
         .error_resend_times = 3
