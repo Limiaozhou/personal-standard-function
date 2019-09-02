@@ -27,8 +27,8 @@
 int main(void)
 {
 	float light_data = 0;
-    uint8_t buf1[] = {0x12, 0x34, 0x56, 0x78, 0x90};
-    uint16_t data = 0x1234;
+    uint32_t len = 0;
+    uint8_t buf1[100] = {0};
 	/* STM32 Configure the MPU attributes as Write Through */
 //	MPU_Config();
 
@@ -60,8 +60,9 @@ int main(void)
 //		key_scan(key_task);
         // uart1_send_ontime();  //UART1¶¨Ê±·¢ËÍ
 		// uart_read(UART1_Select, uart1_read_deal);
-//		light_data = light_read();
-        uart_write(UART1_Select, (uint8_t*)&data, 2);
+		light_data = light_read();
+        len = sprintf((char*)buf1, "light = %.2f", light_data);
+        uart_write(UART1_Select, buf1, len);
 	}
 }
 

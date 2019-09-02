@@ -435,7 +435,7 @@ uint8_t IIC_Master_ReadDirect(pIIC_Master_WRInfo_TypeDef piic)
                 IIC_Master_Stop(piic->port);
                 continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
             }
-            if(IIC_Master_SendByte(piic->port, (uint8_t)(piic->device_adr & 0xFE + 1)))  //设备低地址 + 读信号，bit0=0为写，bit0=1为读
+            if(IIC_Master_SendByte(piic->port, (uint8_t)((piic->device_adr & 0xFE) + 1)))  //设备低地址 + 读信号，bit0=0为写，bit0=1为读，注意运算符优先级+高于&
             {
                 IIC_Master_Stop(piic->port);
                 continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
@@ -443,7 +443,7 @@ uint8_t IIC_Master_ReadDirect(pIIC_Master_WRInfo_TypeDef piic)
         }
         else
         {
-            if(IIC_Master_SendByte(piic->port, (uint8_t)(piic->device_adr & 0xFE + 1)))  //设备地址 + 读信号，bit0=0为写，bit0=1为读
+            if(IIC_Master_SendByte(piic->port, (uint8_t)((piic->device_adr & 0xFE) + 1)))  //设备地址 + 读信号，bit0=0为写，bit0=1为读
             {
                 IIC_Master_Stop(piic->port);
                 continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
@@ -526,7 +526,7 @@ uint8_t IIC_Master_ReadRegister(pIIC_Master_WRInfo_TypeDef piic)
                 IIC_Master_Stop(piic->port);
                 continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
             }
-            if(IIC_Master_SendByte(piic->port, (uint8_t)(piic->device_adr & 0xFE + 1)))  //设备低地址 + 读信号，bit0=0为写，bit0=1为读
+            if(IIC_Master_SendByte(piic->port, (uint8_t)((piic->device_adr & 0xFE) + 1)))  //设备低地址 + 读信号，bit0=0为写，bit0=1为读
             {
                 IIC_Master_Stop(piic->port);
                 continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
@@ -534,7 +534,7 @@ uint8_t IIC_Master_ReadRegister(pIIC_Master_WRInfo_TypeDef piic)
         }
         else
         {
-            if(IIC_Master_SendByte(piic->port, (uint8_t)(piic->device_adr & 0xFE + 1)))  //设备地址 + 读信号，bit0=0为写，bit0=1为读
+            if(IIC_Master_SendByte(piic->port, (uint8_t)((piic->device_adr & 0xFE) + 1)))  //设备地址 + 读信号，bit0=0为写，bit0=1为读
             {
                 IIC_Master_Stop(piic->port);
                 continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
