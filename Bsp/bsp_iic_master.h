@@ -6,20 +6,37 @@ extern "C"
 {
 #endif
 
-// #include "iostm8s103F3.h"
-//#include "iostm8s207c8.h"
 #include "stm8s_gpio.h"
 #include "delay.h"
 
 //#include "typedef.h"
 
 //数据类型声明
-// typedef unsigned char uint8_t;
-// typedef signed char int8_t;
-// typedef unsigned int uint16_t;
-// typedef signed int int16_t;  //8位机int为16,32位机int为32
-// typedef unsigned long int uint32_t;
-// typedef signed long int int32_t;
+//typedef unsigned char uint8_t;
+//typedef signed char int8_t;
+//typedef unsigned int uint16_t;
+//typedef signed int int16_t;  //8位机int为16,32位机int为32
+//typedef unsigned long int uint32_t;
+//typedef signed long int int32_t;
+
+typedef void (*gpio_init)(GPIO_TypeDef* GPIOx, GPIO_Pin_TypeDef PortPins);
+typedef void (*gpio_out)(GPIO_TypeDef* GPIOx, GPIO_Pin_TypeDef PortPins, uint8_t mode);
+typedef void (*gpio_dir)(GPIO_TypeDef* GPIOx, GPIO_Pin_TypeDef PortPins, uint8_t dir);
+typedef uint8_t (*gpio_in)(GPIO_TypeDef* GPIOx, GPIO_Pin_TypeDef PortPins);
+
+typedef struct
+{
+    GPIO_TypeDef gpiox;
+    GPIO_Pin_TypeDef pin;
+    struct function
+    {
+        gpio_init iic_init;
+        gpio_out sda_out;
+        gpio_out scl_out;
+        gpio_dir sda_dir;
+        gpio_in sda_in;
+    }func;
+}IIC_Analog_Master_TypeDef;
 
 typedef struct
 {
