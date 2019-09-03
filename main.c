@@ -27,6 +27,7 @@
 int main(void)
 {
 	float light_data = 0;
+    float pressure = 0, pres_temperature = 0;
     uint32_t len = 0;
     uint8_t buf1[100] = {0};
 	/* STM32 Configure the MPU attributes as Write Through */
@@ -44,7 +45,8 @@ int main(void)
 	Delay_Init(16);  //延时函数基准配置
 //	Led_GPIO_Init();  //led引脚配置
 //	Key_GPIO_Init();  //按键引脚配置
-	Light_Init();
+    IIC_Master_Init(1);
+    IIC_Master_Init(2);
 	// TIMx_Init(TIM2_Select, 4, 1000-1);  //配置通用定时器，周期1000us，1ms
 	
 	Uart_Init(UART1_Select, 9600, uart1_read_deal);  //UART1波特率9600
@@ -60,8 +62,14 @@ int main(void)
 //		key_scan(key_task);
         // uart1_send_ontime();  //UART1定时发送
 		// uart_read(UART1_Select, uart1_read_deal);
-		light_data = light_read();
-        len = sprintf((char*)buf1, "light = %.2f", light_data);
+		if(light_read(&light_data))
+			light_data = 0;
+        if(pres_temp_read(&pressure, &pres_temperature))
+		{
+			pressure = 0;
+			pres_temperature = 0;
+		}
+        len = sprintf((char*)buf1, "light = %.2f, pres = %.2f, temp = %.2f", light_data, pressure, pres_temperature);
         uart_write(UART1_Select, buf1, len);
 	}
 }

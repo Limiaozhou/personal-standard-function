@@ -9,6 +9,7 @@ extern "C"
 // #include "iostm8s103F3.h"
 //#include "iostm8s207c8.h"
 #include "stm8s_gpio.h"
+#include "delay.h"
 
 //#include "typedef.h"
 
@@ -25,6 +26,18 @@ typedef struct
 	uint8_t port;  //IIC端口
 	uint16_t device_adr;  //IIC从机设备地址
     uint8_t dev_adr_tenbit_flag;  //IIC从机设备10位地址模式标志位
+	uint8_t * data;    //IIC读写数据指针
+	uint32_t len;  //IIC读写数据长度
+    uint8_t error_resend_times;  //失败重发次数
+}IIC_Master_WRInfo_TypeDef;  //IIC主机读写信息
+
+typedef IIC_Master_WRInfo_TypeDef* pIIC_Master_WRInfo_TypeDef;  //IIC主机读写信息指针
+
+typedef struct
+{
+	uint8_t port;  //IIC端口
+	uint16_t device_adr;  //IIC从机设备地址
+    uint8_t dev_adr_tenbit_flag;  //IIC从机设备10位地址模式标志位
 	uint16_t register_adr;  //IIC从机寄存器地址
 	uint8_t reg_adr_twobyte_flag;  //IIC从机2字节寄存器地址标志位
 	uint8_t readreg_delay_flag;  //IIC读寄存器发送读信号后是否延时标志
@@ -32,9 +45,9 @@ typedef struct
 	uint8_t * data;    //IIC读写数据指针
 	uint32_t len;  //IIC读写数据长度
     uint8_t error_resend_times;  //失败重发次数
-}IIC_Master_WRInfo_TypeDef;  //IIC主机读写信息
+}IIC_Master_ReadReg_Info_TypeDef;  //IIC主机读寄存器信息
 
-typedef IIC_Master_WRInfo_TypeDef* pIIC_Master_WRInfo_TypeDef;  //IIC主机读写信息指针
+typedef IIC_Master_ReadReg_Info_TypeDef* pIIC_Master_ReadReg_Info_TypeDef;  //IIC主机读寄存器信息指针
 
 #define HIGH 1  //引脚输出电平-高
 #define LOW  0
@@ -246,7 +259,8 @@ void IIC_Master_Init(uint8_t port);  //初始化选择的IIC口，为空闲状态
 
 uint8_t IIC_Master_Write(pIIC_Master_WRInfo_TypeDef piic);  //写设备，成功返回0，失败返回1
 uint8_t IIC_Master_ReadDirect(pIIC_Master_WRInfo_TypeDef piic);  //读设备，成功返回0，失败返回1
-uint8_t IIC_Master_ReadRegister(pIIC_Master_WRInfo_TypeDef piic);  //读设备寄存器，成功返回0，失败返回1
+
+uint8_t IIC_Master_ReadRegister(pIIC_Master_ReadReg_Info_TypeDef piic);  //读设备寄存器，成功返回0，失败返回1
 
 #ifdef __cplusplus
 }

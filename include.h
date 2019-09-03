@@ -14,6 +14,7 @@
 
 #include "mid_light.h"
 #include "mid_uart.h"
+#include "mid_pressure.h"
 
 //#include "app_key_task.h"
 //#include "app_uart.h"

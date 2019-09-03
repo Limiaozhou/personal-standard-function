@@ -3,10 +3,13 @@
 
 #include "bsp_iic_master.h"
 
-#define PRES_DEVICE_ADDRESS 0xEE  //设备地址
-#define DELAY_CONVERSION 12  //ADC转化时间
+typedef unsigned long long int uint64_t;
+typedef signed long long int int64_t;
 
-uint8_t pressure_read(float * data);  //读取气压，返回光气压数据
-uint8_t pres_dev_reset(void);  //设备复位，成功返回0，失败返回1
+#define PRES_DEVICE_ADDRESS 0xEE  //设备地址
+#define DELAY_CONVERSION 10  //等待ADC转化延时时间
+
+//气压及其温度读取函数，成功返回0，失败返回1
+uint8_t pres_temp_read(float * pres_data, float * temp_data);
 
 #endif
