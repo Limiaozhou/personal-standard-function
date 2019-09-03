@@ -39,21 +39,9 @@ static void Uart_Queue_Init(UARTx_Select_TypeDef uartx)
 	}
 }
 
-/* 串口端口初始化
- *STM8如波特率9600：16M / 9600 = 1667 = 0683h，BRR1：68h，BRR2：03h
- */
+/* 串口端口初始化 */
 static void Uart_Port_Init(UARTx_Select_TypeDef uartx, uint32_t bound)
 {
-    //STM8
-    // uint32_t clock_uart = 0;  //串口时钟频率
-    // uint32_t uart_div = 0;  //分频倍数
-    // uint8_t brr1 = 0, brr2 = 0;  //波特率寄存器值缓存
-    
-    // clock_uart = CLK_GetMasterClock_Freq();  //获取串口时钟频率
-    // uart_div = (uint32_t)((float)clock_uart / bound + 0.5);  //计算分频倍数，四舍五入
-    // brr1 = (uart_div & 0x0FF0) >> 4;  //波特率寄存器BRR1值缓存
-    // brr2 = ((uart_div & 0xF000) >> 8) | (uart_div & 0x0F);  //波特率寄存器BRR2值缓存
-    
 	switch(uartx)
 	{
 		case UART1_Select :
@@ -64,14 +52,6 @@ static void Uart_Port_Init(UARTx_Select_TypeDef uartx, uint32_t bound)
                        UART1_SYNCMODE_CLOCK_DISABLE, UART1_MODE_TXRX_ENABLE);
             UART1_ITConfig(UART1_IT_RXNE_OR, ENABLE);  //使能接收中断
             UART1_ITConfig(UART1_IT_IDLE, ENABLE);  //使能空闲中断
-            // UART1_CR1 &= ~0x10;  //M，一个起始位，8个数据位，无校验
-            // UART1_CR3 |= 0x00;  //STOP，1个停止位
-            // UART1_BRR2 = brr2;
-            // UART1_BRR1 = brr1;
-            // UART1_CR2 |= 0x04;  //REN，接收使能，SR:RXNE
-            // UART1_CR2 |= 0x20;  //RIEN，接收中断使能，SR:RXNE
-            // UART1_CR2 |= 0x10;  //ILIEN，接收空闲中断使能，SR:IDLE
-            // UART1_CR2 |= 0x08;  //TEN，发送使能，SR:TXE,TC
             
             //STM32
 //			Uart1_Handle.Instance = USART1;  //UART号
@@ -206,8 +186,6 @@ void uart_write(UARTx_Select_TypeDef uartx, uint8_t * pdata, uint32_t len)
                 //STM8
                 UART1_SendData8(*(pdata++));  //发送数据
                 while(!UART1_GetFlagStatus(UART1_FLAG_TXE));  //发送寄存器空标志，发完和复位值为1，写UART1_DR会清0
-//                UART1_DR = *(pdata++);  //发送数据
-//                while(!UART1_SR_TXE);  //发送寄存器空标志，发完和复位值为1，写UART1_DR会清0
                 
                 //STM32
 //				USART1->TDR = *(pdata++);
@@ -274,8 +252,6 @@ void uart_read(UARTx_Select_TypeDef uartx)
 //}
 
 //STM8 串口接收中断函数
-//#pragma vector=UART1_R_OR_vector  //20
-//__interrupt void UART1_R_OR_IRQHandler(void)
 INTERRUPT_HANDLER(UART1_RX_IRQHandler, 18)
 {
     uint8_t data = 0;  //数据缓存

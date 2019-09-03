@@ -1,7 +1,6 @@
 #ifndef __INCLUDE_H
 #define __INCLUDE_H
 
-//#include "stm32f7xx_hal.h"
 #include "stdio.h"
 
 #include "delay.h"

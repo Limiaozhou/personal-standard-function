@@ -2,12 +2,9 @@
 #define __BSP_USART_H
 
 //#include "stm32f7xx_hal.h"
-// #include "iostm8s103F3.h"
-// #include "iostm8s207c8.h"
 #include "stm8s_uart1.h"
 #include "stm8s_it.h"
 
-// #include "bsp_system.h"
 #include "queue.h"
 
 // #include "typedef.h"
