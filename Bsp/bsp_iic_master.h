@@ -50,18 +50,20 @@ typedef struct
 
 typedef IIC_Master_WRInfo_TypeDef* pIIC_Master_WRInfo_TypeDef;  //IIC主机读写信息指针
 
+typedef enum
+{
+	Delay_No = 0,  //不延时
+	Delay_Front,  //读之前延时
+	Delay_Back  //读之后延时
+}Delay_ReadReg_TypeDef;  //读寄存器延时
+
 typedef struct
 {
-	uint8_t port;  //IIC端口
-	uint16_t device_adr;  //IIC从机设备地址
-    uint8_t dev_adr_tenbit_flag;  //IIC从机设备10位地址模式标志位
+	IIC_Master_WRInfo_TypeDef wr_info;  //IIC主机读写信息
 	uint16_t register_adr;  //IIC从机寄存器地址
 	uint8_t reg_adr_twobyte_flag;  //IIC从机2字节寄存器地址标志位
-	uint8_t readreg_delay_flag;  //IIC读寄存器发送读信号后是否延时标志
-	uint32_t readreg_delay_nms;  //IIC读寄存器发送读信号后延时时间 ms
-	uint8_t * data;    //IIC读写数据指针
-	uint32_t len;  //IIC读写数据长度
-    uint8_t error_resend_times;  //失败重发次数
+	Delay_ReadReg_TypeDef readreg_delay_flag;  //IIC读寄存器发送读信号前后延时标志
+	uint32_t readreg_delay_nms;  //IIC读寄存器发送读信号前后延时时间 ms
 }IIC_Master_ReadReg_Info_TypeDef;  //IIC主机读寄存器信息
 
 typedef IIC_Master_ReadReg_Info_TypeDef* pIIC_Master_ReadReg_Info_TypeDef;  //IIC主机读寄存器信息指针
@@ -209,29 +211,29 @@ typedef IIC_Master_ReadReg_Info_TypeDef* pIIC_Master_ReadReg_Info_TypeDef;  //II
 
 
 //port = 3
-#define IIC_MASTER3_SDA_PIN_IN    (!!(GPIOE->IDR & GPIO_PIN_7))  //数据线SDA输入引脚
-#define IIC_MASTER3_SCL_PIN_IN    (!!(GPIOE->IDR & GPIO_PIN_6))  //时钟线SCL
+#define IIC_MASTER3_SDA_PIN_IN    (!!(GPIOB->IDR & GPIO_PIN_7))  //数据线SDA输入引脚
+#define IIC_MASTER3_SCL_PIN_IN    (!!(GPIOB->IDR & GPIO_PIN_6))  //时钟线SCL
 
-#define IIC_MASTER3_SDA_UP()      my_st(GPIOE->CR1 |= (uint8_t)GPIO_PIN_7;)  //SDA上拉输入，推挽输出
-#define IIC_MASTER3_SDA_FLOAT()   my_st(GPIOE->CR1 &= (uint8_t)(~GPIO_PIN_7);)  //SDA浮空输入，开漏输出
+#define IIC_MASTER3_SDA_UP()      my_st(GPIOB->CR1 |= (uint8_t)GPIO_PIN_7;)  //SDA上拉输入，推挽输出
+#define IIC_MASTER3_SDA_FLOAT()   my_st(GPIOB->CR1 &= (uint8_t)(~GPIO_PIN_7);)  //SDA浮空输入，开漏输出
 
-#define IIC_MASTER3_SCL_UP()      my_st(GPIOE->CR1 |= (uint8_t)GPIO_PIN_6;)  //SCL上拉输入，推挽输出
-#define IIC_MASTER3_SCL_FLOAT()   my_st(GPIOE->CR1 &= (uint8_t)(~GPIO_PIN_6);)  //SCL浮空输入，开漏输出
+#define IIC_MASTER3_SCL_UP()      my_st(GPIOB->CR1 |= (uint8_t)GPIO_PIN_6;)  //SCL上拉输入，推挽输出
+#define IIC_MASTER3_SCL_FLOAT()   my_st(GPIOB->CR1 &= (uint8_t)(~GPIO_PIN_6);)  //SCL浮空输入，开漏输出
 
-#define IIC_MASTER3_SDA_IQ_ON()   my_st(GPIOE->CR2 |= (uint8_t)GPIO_PIN_7;)  //SDA中断输入开，高速输出
-#define IIC_MASTER3_SDA_IQ_OFF()  my_st(GPIOE->CR2 &= (uint8_t)(~GPIO_PIN_7);)  //SDA中断输入关，低速输出
+#define IIC_MASTER3_SDA_IQ_ON()   my_st(GPIOB->CR2 |= (uint8_t)GPIO_PIN_7;)  //SDA中断输入开，高速输出
+#define IIC_MASTER3_SDA_IQ_OFF()  my_st(GPIOB->CR2 &= (uint8_t)(~GPIO_PIN_7);)  //SDA中断输入关，低速输出
 
-#define IIC_MASTER3_SCL_IQ_ON()   my_st(GPIOE->CR2 |= (uint8_t)GPIO_PIN_6;)  //SCL中断输入开，高速输出
-#define IIC_MASTER3_SCL_IQ_OFF()  my_st(GPIOE->CR2 &= (uint8_t)(~GPIO_PIN_6);)  //SCL中断输入关，低速输出
+#define IIC_MASTER3_SCL_IQ_ON()   my_st(GPIOB->CR2 |= (uint8_t)GPIO_PIN_6;)  //SCL中断输入开，高速输出
+#define IIC_MASTER3_SCL_IQ_OFF()  my_st(GPIOB->CR2 &= (uint8_t)(~GPIO_PIN_6);)  //SCL中断输入关，低速输出
 
-#define IIC_MASTER3_SDA_OUT(a)    my_st(if(a) GPIOE->ODR |= (uint8_t)GPIO_PIN_7; else GPIOE->ODR &= (uint8_t)(~GPIO_PIN_7);)  //SDA输出电平
-#define IIC_MASTER3_SCL_OUT(a)    my_st(if(a) GPIOE->ODR |= (uint8_t)GPIO_PIN_6; else GPIOE->ODR &= (uint8_t)(~GPIO_PIN_6);)
+#define IIC_MASTER3_SDA_OUT(a)    my_st(if(a) GPIOB->ODR |= (uint8_t)GPIO_PIN_7; else GPIOB->ODR &= (uint8_t)(~GPIO_PIN_7);)  //SDA输出电平
+#define IIC_MASTER3_SCL_OUT(a)    my_st(if(a) GPIOB->ODR |= (uint8_t)GPIO_PIN_6; else GPIOB->ODR &= (uint8_t)(~GPIO_PIN_6);)
 
-#define IIC_MASTER3_SDA_DIR_OUT() my_st(GPIOE->DDR |= (uint8_t)GPIO_PIN_7;)  //SDA输出模式
-#define IIC_MASTER3_SDA_DIR_IN()  my_st(GPIOE->DDR &= (uint8_t)(~GPIO_PIN_7);)
+#define IIC_MASTER3_SDA_DIR_OUT() my_st(GPIOB->DDR |= (uint8_t)GPIO_PIN_7;)  //SDA输出模式
+#define IIC_MASTER3_SDA_DIR_IN()  my_st(GPIOB->DDR &= (uint8_t)(~GPIO_PIN_7);)
 
-#define IIC_MASTER3_SCL_DIR_OUT() my_st(GPIOE->DDR |= (uint8_t)GPIO_PIN_6;)
-#define IIC_MASTER3_SCL_DIR_IN()  my_st(GPIOE->DDR &= (uint8_t)(~GPIO_PIN_6);)
+#define IIC_MASTER3_SCL_DIR_OUT() my_st(GPIOB->DDR |= (uint8_t)GPIO_PIN_6;)
+#define IIC_MASTER3_SCL_DIR_IN()  my_st(GPIOB->DDR &= (uint8_t)(~GPIO_PIN_6);)
 
 // #define IIC_MASTER3_SDA_CR1       PC_CR1_C17  //数据线SDA控制寄存器1
 // #define IIC_MASTER3_SCL_CR1       PC_CR1_C16  //时钟线SCL

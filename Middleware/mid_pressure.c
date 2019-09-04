@@ -6,7 +6,7 @@ typedef enum
 	Temperature_Select
 }Pres_Temp_Sele_TypeDef;
 
-IIC_Master_WRInfo_TypeDef iic_info =
+static IIC_Master_WRInfo_TypeDef iic_info =
 {
 	.port = 2,  //端口2
 	.device_adr = PRES_DEVICE_ADDRESS,  //地址0xEE
@@ -35,6 +35,7 @@ uint8_t pres_temp_read(float * pres_data, float * temp_data)
 			return 1;
 		reset_flag = 0;
 		cali_get_flag = 1;
+		delay_ms(1000);
 	}
 	
 	if(cali_get_flag)
@@ -192,7 +193,8 @@ static uint8_t pres_temp_convert(float * pres_data, float * temp_data)
 		return 1;
 	
 	dt = d2 - ((uint32_t)c5 << 8);  //d2 - c5 * 2^8，优先级+高于<<
-	temp = 2000 + (dt * c6 >> 23);  //2000 + dt * c6 / 2^23
+	temp = 2000 + ((dt >> 8) * (c6 >> 8) >> 7);  //2000 + dt * c6 / 2^23
+	// temp = 2000 + (dt * c6 >> 23);  //2000 + dt * c6 / 2^23
 	if(temp < 2000)
 	{
 		t2 = dt * dt >> 31;
@@ -207,11 +209,14 @@ static uint8_t pres_temp_convert(float * pres_data, float * temp_data)
 	}
 	temp = temp - t2;
 	
-	off = ((uint64_t)c2 << 16) + (c4 * dt >> 7);
-	sens = ((uint64_t)c1 << 15) + (c3 * dt >> 8);
+	off = ((uint64_t)c2 << 16) + ((c4>>3) * (dt>>4));
+	sens = ((uint64_t)c1 << 15) + ((c3>>4) * (dt>>4));
+	// off = ((uint64_t)c2 << 16) + (c4 * dt >> 7);
+	// sens = ((uint64_t)c1 << 15) + (c3 * dt >> 8);
 	off = off - off2;
 	sens = sens - sens2;
-	p = ((d1 * sens >> 21) - off) >> 15;
+	p = (((d1 >> 11) * (sens >> 10)) - off) >> 15;
+	// p = ((d1 * sens >> 21) - off) >> 15;
 	
 	*pres_data = p / 1000.0;  //mbar->KPa，1mbar = 100Pa = 0.1KPa
 	*temp_data = temp / 100.0;

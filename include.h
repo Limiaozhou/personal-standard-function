@@ -14,6 +14,10 @@
 #include "mid_light.h"
 #include "mid_uart.h"
 #include "mid_pressure.h"
+#include "mid_temperature.h"
+
+#include "co2.h"
+#include "i2c_eeprom.h"
 
 //#include "app_key_task.h"
 //#include "app_uart.h"
