@@ -18,6 +18,7 @@
 
 #include "co2.h"
 #include "i2c_eeprom.h"
+#include "data.h"
 
 //#include "app_key_task.h"
 //#include "app_uart.h"

@@ -4,11 +4,18 @@ u16 CO2_cnt=0,CO2_cnt_save=0;
 u32 CO2temp_s=0;
 
 
-
+int mlml;
 void init_Co2()
 {
-    GPIO_Init(GPIOD, GPIO_PIN_7, GPIO_MODE_IN_FL_IT);//设置串口浮空输入使能外部中断
-    EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOD, EXTI_SENSITIVITY_RISE_ONLY);//端口D仅上升沿触发中断
+    GPIO_Init(GPIOD, GPIO_PIN_7,GPIO_MODE_IN_FL_NO_IT);//设置串口浮空输入使能外部中断
+    EXTI_SetTLISensitivity(EXTI_TLISENSITIVITY_RISE_ONLY);
+    //EXTI_GetTLISensitivity();
+    //EXTI_SetTLISensitivity(EXTI_TLISENSITIVITY_FALL_ONLY);
+    GPIO_Init(GPIOD, GPIO_PIN_7,GPIO_MODE_IN_FL_IT);
+     
+    //EXTI_GetTLISensitivity();
+     
+//端口D仅上升沿触发中断
 }
 
 
