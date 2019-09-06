@@ -8,7 +8,12 @@
 Queue_TypeDef Queue_Uart1_Rx;  //uart1接收数据缓存队列
 Queue_TypeDef Queue_Uart1_Rx_Num;  //uart1接收帧长队列，保存每帧长度
 
+Queue_TypeDef Queue_Uart3_Rx;  //uart3接收数据缓存队列
+Queue_TypeDef Queue_Uart3_Rx_Num;  //uart3接收帧长队列，保存每帧长度
+
 uart_data_deal_cb uart1_data_deal;
+
+uart_data_deal_cb uart3_data_deal;
 
 static void Uart_Queue_Init(UARTx_Select_TypeDef uartx);  //uart收发缓存数据队列初始化
 static void Uart_Port_Init(UARTx_Select_TypeDef uartx, uint32_t bound);  //uart端口初始化
@@ -30,8 +35,13 @@ static void Uart_Queue_Init(UARTx_Select_TypeDef uartx)
 	switch(uartx)
 	{
 		case UART1_Select :
-			queue_init(&Queue_Uart1_Rx, 500, Uint8_Type);  //初始化接收uart1数据队列，500字节长度，注意分配堆heap要足够大
+			queue_init(&Queue_Uart1_Rx, 200, Uint8_Type);  //初始化接收uart1数据队列，500字节长度，注意分配堆heap要足够大
 			queue_init(&Queue_Uart1_Rx_Num, 10, Uint32_Type);  //初始化接收uart1帧数队列，10字节长度
+		break;
+        
+        case UART3_Select :
+			queue_init(&Queue_Uart3_Rx, 200, Uint8_Type);  //初始化接收uart1数据队列，500字节长度，注意分配堆heap要足够大
+			queue_init(&Queue_Uart3_Rx_Num, 10, Uint32_Type);  //初始化接收uart1帧数队列，10字节长度
 		break;
 		
 		default :
