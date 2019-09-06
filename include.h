@@ -2,6 +2,7 @@
 #define __INCLUDE_H
 
 #include "stdio.h"
+#include "stm8s_rst.h"
 
 #include "delay.h"
 

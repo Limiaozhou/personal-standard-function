@@ -39,12 +39,9 @@ int main(void)
 	CLK_SYSCLK_Config();  //内部高速时钟，HSI和CPU时钟0分频，fcpu = 16MHz
 	
 	Delay_Init(16);  //延时函数基准配置
-//	Led_GPIO_Init();  //led引脚配置
-//	Key_GPIO_Init();  //按键引脚配置
     IIC_Master_Init(1);
     IIC_Master_Init(2);
     IIC_Master_Init(3);
-	// TIMx_Init(TIM2_Select, 4, 1000-1);  //配置通用定时器，周期1000us，1ms
 	
 	Uart_Init(UART1_Select, 9600, uart1_read_deal);  //UART1波特率9600
     
@@ -53,18 +50,19 @@ int main(void)
     I2C_MASTERMODE_Init(STANDARDSPEED);
 	IWDG_init();
     
-    // uart1_send_ontime_int();  //UART1定时发送初始化，注册定时器
-	
     asm("rim");//开全局中断，sim为关中断
     
 	/* Infinite loop */
 	while (1)
 	{
 		delay_ms(2000);
-//		key_scan(key_task);
-        // uart1_send_ontime();  //UART1定时发送
-		// uart_read(UART1_Select, uart1_read_deal);
 		data_deal();
+        if(RST_GetFlagStatus(RST_FLAG_IWDGF))
+        {
+            uart_write(UART1_Select, "IWDGF_RST", 10);
+            RST_ClearFlag(RST_FLAG_IWDGF);
+        }
+            
 	}
 }
 

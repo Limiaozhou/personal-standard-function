@@ -44,8 +44,8 @@ void package_send(void)
 	
 	Check_CalaCRC16(send_dat, len-2);
 	
-//	len = sprintf((char*)send_dat, "light = %.2f, pres = %.2f, pres_temp = %.2f, temp = %.2f, humi = %.2f, co2 = %.2f, tvoc = %.2f, tovcco2 = %.2f", 
-//                      Evndat.light_bhvi, Evndat.press, Evndat.press_temp, Evndat.temp20, Evndat.humi20, Evndat.co2, Evndat.TVOC, Evndat.tvocco2);
+	len = sprintf((char*)send_dat, "light = %.2f, pres = %.2f, pres_temp = %.2f, temp = %.2f, humi = %.2f, co2 = %.2f, tvoc = %.2f, tovcco2 = %.2f", 
+                      Evndat.light_bhvi, Evndat.press, Evndat.press_temp, Evndat.temp20, Evndat.humi20, Evndat.co2, Evndat.TVOC, Evndat.tvocco2);
 	
 	uart_write(UART1_Select, send_dat, len);
 	
