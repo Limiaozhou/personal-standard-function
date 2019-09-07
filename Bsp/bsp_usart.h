@@ -3,6 +3,7 @@
 
 //#include "stm32f7xx_hal.h"
 #include "stm8s_uart1.h"
+#include "stm8s_uart3.h"
 #include "stm8s_it.h"
 
 #include "queue.h"

@@ -44,6 +44,7 @@ int main(void)
     IIC_Master_Init(3);
 	
 	Uart_Init(UART1_Select, 9600, uart1_read_deal);  //UART1波特率9600
+    Uart_Init(UART3_Select, 9600, uart3_read_deal);  //UART3波特率9600
     
     init_Co2();
     Init_Timer4();
@@ -62,7 +63,6 @@ int main(void)
             uart_write(UART1_Select, "IWDGF_RST", 10);
             RST_ClearFlag(RST_FLAG_IWDGF);
         }
-            
 	}
 }
 

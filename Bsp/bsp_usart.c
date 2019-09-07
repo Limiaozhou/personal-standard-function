@@ -35,12 +35,12 @@ static void Uart_Queue_Init(UARTx_Select_TypeDef uartx)
 	switch(uartx)
 	{
 		case UART1_Select :
-			queue_init(&Queue_Uart1_Rx, 200, Uint8_Type);  //初始化接收uart1数据队列，500字节长度，注意分配堆heap要足够大
+			queue_init(&Queue_Uart1_Rx, 200, Uint8_Type);  //初始化接收uart1数据队列，200字节长度，注意分配堆heap要足够大
 			queue_init(&Queue_Uart1_Rx_Num, 10, Uint32_Type);  //初始化接收uart1帧数队列，10字节长度
 		break;
         
         case UART3_Select :
-			queue_init(&Queue_Uart3_Rx, 200, Uint8_Type);  //初始化接收uart1数据队列，500字节长度，注意分配堆heap要足够大
+			queue_init(&Queue_Uart3_Rx, 200, Uint8_Type);  //初始化接收uart1数据队列，200字节长度，注意分配堆heap要足够大
 			queue_init(&Queue_Uart3_Rx_Num, 10, Uint32_Type);  //初始化接收uart1帧数队列，10字节长度
 		break;
 		
@@ -60,7 +60,7 @@ static void Uart_Port_Init(UARTx_Select_TypeDef uartx, uint32_t bound)
             //配置波特率、8位数据位、1位停止位、无校验、失能同步、使能收发
 			UART1_Init(bound, UART1_WORDLENGTH_8D, UART1_STOPBITS_1, UART1_PARITY_NO,
                        UART1_SYNCMODE_CLOCK_DISABLE, UART1_MODE_TXRX_ENABLE);
-            UART1_ITConfig(UART1_IT_RXNE_OR, ENABLE);  //使能接收中断
+            UART1_ITConfig(UART1_IT_RXNE_OR, ENABLE);  //使能接收和过载中断
             UART1_ITConfig(UART1_IT_IDLE, ENABLE);  //使能空闲中断
             
             //STM32
@@ -82,6 +82,15 @@ static void Uart_Port_Init(UARTx_Select_TypeDef uartx, uint32_t bound)
 //			
 ////			HAL_UART_Receive_DMA(&Uart1_Handle, Queue_Uart1_Rx.data, Queue_Uart1_Rx.size);  //打开串口DMA接收中断，并将数据存在Queue_Uart1_Rx.data
 //			HAL_UART_Receive_DMA(&Uart1_Handle, DMA_DATA_RXaa, 160);
+        break;
+        
+        case UART3_Select :
+            //STM8
+			UART3_DeInit();  //复位uart1串口默认配置
+            //配置波特率、8位数据位、1位停止位、无校验、使能收发
+			UART3_Init(bound, UART3_WORDLENGTH_8D, UART3_STOPBITS_1, UART3_PARITY_NO, UART3_MODE_TXRX_ENABLE);
+            UART3_ITConfig(UART3_IT_RXNE_OR, ENABLE);  //使能接收和过载中断
+            UART3_ITConfig(UART3_IT_IDLE, ENABLE);  //使能空闲中断
         break;
         
 		default :
@@ -179,6 +188,10 @@ static void uart_deal_register(UARTx_Select_TypeDef uartx, uart_data_deal_cb uar
             uart1_data_deal = uartx_data_deal;
         break;
         
+        case UART3_Select :
+            uart3_data_deal = uartx_data_deal;
+        break;
+        
         default :
 			break;
     }
@@ -202,6 +215,16 @@ void uart_write(UARTx_Select_TypeDef uartx, uint8_t * pdata, uint32_t len)
 //				while(__HAL_UART_GET_IT(&Uart1_Handle, UART_IT_TXE) == RESET);
 			}
 		}break;
+        
+        case UART3_Select :
+		{
+			while(len--)
+			{
+                //STM8
+                UART3_SendData8(*(pdata++));  //发送数据
+                while(!UART3_GetFlagStatus(UART3_FLAG_TXE));  //发送寄存器空标志，发完和复位值为1，写UART1_DR会清0
+			}
+		}break;
 		
 		default :
 			break;
@@ -215,7 +238,7 @@ void uart_read(UARTx_Select_TypeDef uartx)
 	{
 		case UART1_Select :
 		{
-            uint8_t rx1_data[500] = {0};  //队列数据缓存数组
+            uint8_t rx1_data[200] = {0};  //队列数据缓存数组
             uint32_t rx1_frame_len = 0;  //每帧长
             uint8_t rx1_frame_num = 0;  //帧数
             
@@ -228,6 +251,25 @@ void uart_read(UARTx_Select_TypeDef uartx)
 					queue_read(&Queue_Uart1_Rx, rx1_data, rx1_frame_len);  //取出一帧数据保存到rdata数组
                     if(uart1_data_deal != NULL)
                         uart1_data_deal(rx1_data, rx1_frame_len);  //将数据指针和帧长传给回调函数去解析
+				}
+			}
+		}break;
+        
+        case UART3_Select :
+		{
+            uint8_t rx3_data[200] = {0};  //队列数据缓存数组
+            uint32_t rx3_frame_len = 0;  //每帧长
+            uint8_t rx3_frame_num = 0;  //帧数
+            
+			rx3_frame_num = Queue_Uart3_Rx_Num.len;  //帧数
+			
+			while(rx3_frame_num--)  //完整取去每帧数据
+			{
+				if((!queue_read(&Queue_Uart3_Rx_Num, &rx3_frame_len, 1)) && rx3_frame_len)  //每帧长
+				{
+					queue_read(&Queue_Uart3_Rx, rx3_data, rx3_frame_len);  //取出一帧数据保存到rdata数组
+                    if(uart3_data_deal != NULL)
+                        uart3_data_deal(rx3_data, rx3_frame_len);  //将数据指针和帧长传给回调函数去解析
 				}
 			}
 		}break;
@@ -273,6 +315,12 @@ INTERRUPT_HANDLER(UART1_RX_IRQHandler, 18)
         queue_write(&Queue_Uart1_Rx, &data, 1);  //将读出的数据保存到接收队列
     }
     
+    if(UART1_GetFlagStatus(UART1_FLAG_OR))  //接收过载标志位
+    {
+        data = UART1->SR;
+        data = UART1_ReceiveData8();  //顺序读完后，清0过载OR标志位
+    }
+    
     if(UART1_GetFlagStatus(UART1_FLAG_IDLE))  //空闲标志位
     {
         data = UART1->SR;
@@ -283,5 +331,35 @@ INTERRUPT_HANDLER(UART1_RX_IRQHandler, 18)
         queue_write(&Queue_Uart1_Rx_Num, &frame_len_now, 1);  //保存当前数据帧长度
         uart_read(UART1_Select);
         UART1_ITConfig(UART1_IT_IDLE, ENABLE);  //使能空闲中断
+    }
+}
+
+INTERRUPT_HANDLER(UART3_RX_IRQHandler, 21)
+{
+    uint8_t data = 0;  //数据缓存
+    uint32_t frame_len_now = 0;  //当前帧长度
+    
+    if(UART3_GetFlagStatus(UART3_FLAG_RXNE))  //接收标志位
+    {
+        data = UART3_ReceiveData8();  //读DR同时会清0接收标志位
+        queue_write(&Queue_Uart3_Rx, &data, 1);  //将读出的数据保存到接收队列
+    }
+    
+    if(UART3_GetFlagStatus(UART3_FLAG_OR_LHE))  //接收过载标志位
+    {
+        data = UART3->SR;
+        data = UART3_ReceiveData8();  //顺序读完后，清0过载OR标志位
+    }
+    
+    if(UART3_GetFlagStatus(UART3_FLAG_IDLE))  //空闲标志位
+    {
+        data = UART3->SR;
+        data = UART3_ReceiveData8();  //顺序读完后，清0空闲IDLE标志位
+        
+        UART3_ITConfig(UART3_IT_IDLE, DISABLE);  //失能空闲中断，防止咬尾
+        frame_len_now = Queue_Uart3_Rx.len - queue_data_sum(&Queue_Uart3_Rx_Num);  //当前帧长度 = 当前数据队列长度 - 已保存的总长度
+        queue_write(&Queue_Uart3_Rx_Num, &frame_len_now, 1);  //保存当前数据帧长度
+        uart_read(UART3_Select);
+        UART3_ITConfig(UART3_IT_IDLE, ENABLE);  //使能空闲中断
     }
 }

@@ -27,6 +27,8 @@ typedef struct
 	float press_temp;  //ÆøÑ¹ÎÂ¶È
 }EVNDAT;
 
+extern EVNDAT Evndat;
+
 void data_deal(void);
 
 #endif
