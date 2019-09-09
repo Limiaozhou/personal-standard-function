@@ -532,8 +532,8 @@ uint8_t IIC_Master_ReadRegister(pIIC_Master_ReadReg_Info_TypeDef piic)
 //I2C中断处理
 INTERRUPT_HANDLER(I2C_IRQHandler, 19)
 {
-	static uint8_t i = 0;  //发送接收状态缓存
-	static int8_t wr_flag = -1;  //发送接收状态缓存
+	static uint8_t i = 0, j = 0;  //发、收数据数索引
+	static int8_t write_read_flag = -1;  //发送接收状态缓存
 	if(I2C_GetFlagStatus(I2C_FLAG_STARTDETECTION))  //判断开始
 	{
 		if(iic_wrinfo.dev_adr_tenbit_flag)  //10位地址模式，先发送高位字节
@@ -544,8 +544,8 @@ INTERRUPT_HANDLER(I2C_IRQHandler, 19)
 	if(I2C_GetFlagStatus(I2C_FLAG_HEADERSENT))  //判断10位地址高字节已发送
 		I2C_Send7bitAddress((uint8_t)(iic_wrinfo.device_adr & 0xFE), I2C_DIRECTION_TX);  //发低地址
 	if(I2C_GetFlagStatus(I2C_FLAG_ADDRESSSENTMATCHED))  //判断地址发送完成
-		wr_flag = I2C_GetFlagStatus(I2C_FLAG_TRANSMITTERRECEIVER)  //判断发送接收状态，1为接收，0为发送
-	if(wr_flag == 0)  //判断为发送
+		write_read_flag = I2C_GetFlagStatus(I2C_FLAG_TRANSMITTERRECEIVER)  //判断发送接收状态，1为接收，0为发送
+	if(write_read_flag == 0)  //判断为发送
 	{
 		if(I2C_GetFlagStatus(I2C_FLAG_TXEMPTY))  //判断发送数据寄存器为空
 		{
@@ -557,8 +557,34 @@ INTERRUPT_HANDLER(I2C_IRQHandler, 19)
 			else
 			{
 				if(I2C_GetFlagStatus(I2C_FLAG_TRANSFERFINISHED))  //判断发送完成，且没写入新数据
+				{
 					I2C_GenerateSTOP(ENABLE);  //停止
+					i = 0;
+				}
 			}
+		}
+	}
+	else if(write_read_flag == 1)  //判断为接收
+	{
+		// I2C_AcknowledgeConfig(I2C_ACK_CURR);  //当前字节返回应答
+		if(I2C_GetFlagStatus(I2C_FLAG_RXNOTEMPTY))  //判断接收数据寄存器非空
+		{
+			*(iic_wrinfo.data++) = I2C_ReceiveData();  //接收数据
+			j++;
+			if(j++ == iic_wrinfo.len - 2)
+			{
+				I2C_AcknowledgeConfig(I2C_ACK_NONE);  //当前字节返回应答
+				I2C_GenerateSTOP(ENABLE);  //停止
+			}
+			// if(j < iic_wrinfo.len - 1)
+			// {
+				// *(iic_wrinfo.data++) = I2C_ReceiveData();  //接收数据
+				// j++;
+			// }
+			// else
+			// {
+				
+			// }
 		}
 	}
 }
