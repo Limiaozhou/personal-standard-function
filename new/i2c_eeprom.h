@@ -22,6 +22,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm8s.h"
 #include "stm8s_i2c.h"
+#include "delay.h"
 
 /* Private typedef -----------------------------------------------------------*/
 typedef enum{

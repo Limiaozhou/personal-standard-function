@@ -1,5 +1,8 @@
 #include "bsp_iic.h"
 
+IIC_Hard_Master_WRInfo_TypeDef iic_wrinfo;
+IIC_Hard_Master_ReadReg_Info_TypeDef iic_reginfo;
+
 //内部函数
 //__weak static void delay_us(uint16_t nus);  //延时n us，内部使用
 //__weak static void delay_ms(uint16_t nms);  //延时n ms
@@ -43,7 +46,7 @@ void IIC_Hard_Init(uint32_t OutputClockFrequencyHz, uint16_t OwnAddress, I2C_Add
 	//配置输出时钟、本机作从机的地址、高速模式占空比、应答模式、地址模式、输入时钟
 	I2C_Init(OutputClockFrequencyHz, OwnAddress, I2C_DUTYCYCLE_2, I2C_ACK_CURR, AddMode, CLK_GetClockFreq()/1000000);
 	I2C_Cmd(ENABLE);
-	I2C_ITConfig(I2C_IT_EVT | I2C_IT_BUF, ENABLE);  //使能事件、收发中断
+	I2C_ITConfig(I2C_IT_EVT | I2C_IT_BUF | I2C_IT_ERR, ENABLE);  //使能事件、收发、错误中断
 }
 
 //起始信号，当SCL处于高电平时，SDA由高电平变成低电平时
@@ -336,11 +339,12 @@ uint8_t IIC_Hard_Master_Write(pIIC_Hard_Master_WRInfo_TypeDef piic)
     uint8_t i;  //发送数据字节数记录
 	uint8_t error_flag = 0;  //发送错误标志
     
-	
-	
 	while(piic->error_resend_times--)
 	{
-		I2C_GenerateSTART(ENABLE);
+		if(I2C_GetFlagStatus(I2C_FLAG_BUSBUSY))  //判断总线忙，
+			continue;
+		
+		I2C_GenerateSTART(ENABLE);  //开始
         
         if(piic->dev_adr_tenbit_flag)  //从机为10位地址模式判断
         {
@@ -523,4 +527,38 @@ uint8_t IIC_Master_ReadRegister(pIIC_Master_ReadReg_Info_TypeDef piic)
 	}
     
     return 1;  //发送3次都错误，返回1
+}
+
+//I2C中断处理
+INTERRUPT_HANDLER(I2C_IRQHandler, 19)
+{
+	static uint8_t i = 0;  //发送接收状态缓存
+	static int8_t wr_flag = -1;  //发送接收状态缓存
+	if(I2C_GetFlagStatus(I2C_FLAG_STARTDETECTION))  //判断开始
+	{
+		if(iic_wrinfo.dev_adr_tenbit_flag)  //10位地址模式，先发送高位字节
+			I2C_SendData((uint8_t)(iic_wrinfo.device_adr >> 8));
+		else
+			I2C_Send7bitAddress((uint8_t)(iic_wrinfo.device_adr & 0xFE), I2C_DIRECTION_TX);  //发低地址
+	}
+	if(I2C_GetFlagStatus(I2C_FLAG_HEADERSENT))  //判断10位地址高字节已发送
+		I2C_Send7bitAddress((uint8_t)(iic_wrinfo.device_adr & 0xFE), I2C_DIRECTION_TX);  //发低地址
+	if(I2C_GetFlagStatus(I2C_FLAG_ADDRESSSENTMATCHED))  //判断地址发送完成
+		wr_flag = I2C_GetFlagStatus(I2C_FLAG_TRANSMITTERRECEIVER)  //判断发送接收状态，1为接收，0为发送
+	if(wr_flag == 0)  //判断为发送
+	{
+		if(I2C_GetFlagStatus(I2C_FLAG_TXEMPTY))  //判断发送数据寄存器为空
+		{
+			if(i < iic_wrinfo.len)
+			{
+				I2C_SendData(*(iic_wrinfo.data++));  //发送数据
+				i++;
+			}
+			else
+			{
+				if(I2C_GetFlagStatus(I2C_FLAG_TRANSFERFINISHED))  //判断发送完成，且没写入新数据
+					I2C_GenerateSTOP(ENABLE);  //停止
+			}
+		}
+	}
 }

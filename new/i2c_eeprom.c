@@ -137,13 +137,20 @@ void Read_8816(u8 *pBuffer, u8 index, u8 NumByteToRead)
 
 }
 
+
 void IIC_TVOC(unsigned char *buf,char len)
 {
+  uint8_t i = 0;
   I2C->CR2 |= 0x01; //产生起始位        
   while(!(I2C->SR1 & 0x01)); //检测起始位是否成功
   I2C->DR = 0xA3;  //发送MLX90615器件地址(最后一位是0,表示发送)
-  while(!(I2C->SR1 & 0x02));  //等特7位器件地址发送完并且收到ack,ADDR置1
-
+  while(!(I2C->SR1 & 0x02))  //等特7位器件地址发送完并且收到ack,ADDR置1
+  {
+    delay_us(1);
+    i++;
+    if(i >= 100)
+      return;
+  }
   I2C->SR1; 
   I2C->SR3; //清空标志位
      

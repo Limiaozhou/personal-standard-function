@@ -35,13 +35,13 @@ static void Uart_Queue_Init(UARTx_Select_TypeDef uartx)
 	switch(uartx)
 	{
 		case UART1_Select :
-			queue_init(&Queue_Uart1_Rx, 200, Uint8_Type);  //初始化接收uart1数据队列，200字节长度，注意分配堆heap要足够大
+			queue_init(&Queue_Uart1_Rx, 100, Uint8_Type);  //初始化接收uart1数据队列，100字节长度，注意分配堆heap要足够大
 			queue_init(&Queue_Uart1_Rx_Num, 10, Uint32_Type);  //初始化接收uart1帧数队列，10字节长度
 		break;
         
         case UART3_Select :
-			queue_init(&Queue_Uart3_Rx, 200, Uint8_Type);  //初始化接收uart1数据队列，200字节长度，注意分配堆heap要足够大
-			queue_init(&Queue_Uart3_Rx_Num, 10, Uint32_Type);  //初始化接收uart1帧数队列，10字节长度
+			queue_init(&Queue_Uart3_Rx, 100, Uint8_Type);
+			queue_init(&Queue_Uart3_Rx_Num, 10, Uint32_Type);
 		break;
 		
 		default :
