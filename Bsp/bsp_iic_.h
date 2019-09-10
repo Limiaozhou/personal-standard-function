@@ -49,6 +49,8 @@ typedef struct
 
 typedef IIC_Hard_Master_ReadReg_Info_TypeDef* pIIC_Hard_Master_ReadReg_Info_TypeDef;  //IIC主机读寄存器信息指针
 
+typedef void (*piic_hard_master_write_read)(pIIC_Hard_Master_WRInfo_TypeDef piic);
+
 void IIC_Hard_Init(uint32_t OutputClockFrequencyHz, uint16_t OwnAddress, I2C_AddMode_TypeDef AddMode);  //初始化IIC口
 
 uint8_t IIC_Hard_Master_Write(pIIC_Hard_Master_WRInfo_TypeDef piic);  //写设备，成功返回0，失败返回1

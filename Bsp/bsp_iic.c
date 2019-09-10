@@ -7,15 +7,6 @@ IIC_Hard_Master_ReadReg_Info_TypeDef iic_reginfo;
 //__weak static void delay_us(uint16_t nus);  //延时n us，内部使用
 //__weak static void delay_ms(uint16_t nms);  //延时n ms
 
-static void IIC_Master_Start(uint8_t port);  //起始信号
-static void IIC_Master_Stop(uint8_t port);  //停止信号
-
-static void IIC_Master_SendAck(uint8_t port, uint8_t ack);  //发送应答信号
-static uint8_t IIC_Master_ReceiveAck(uint8_t port);  //接收应答信号
-
-static uint8_t IIC_Master_SendByte(uint8_t port, uint8_t byte);  //发送一个字节
-static uint8_t IIC_Master_ReceiveByte(uint8_t port, uint8_t ack);  //接收一个字节
-
 //延时n us，内部使用
 //__weak static void delay_us(uint16_t nus)
 //{
@@ -49,344 +40,91 @@ void IIC_Hard_Init(uint32_t OutputClockFrequencyHz, uint16_t OwnAddress, I2C_Add
 	I2C_ITConfig(I2C_IT_EVT | I2C_IT_BUF | I2C_IT_ERR, ENABLE);  //使能事件、收发、错误中断
 }
 
-//起始信号，当SCL处于高电平时，SDA由高电平变成低电平时
-static void IIC_Master_Start(uint8_t port)
+//启动IIC读写
+uint8_t IIC_Hard_Master_Write_Read(pIIC_Hard_Master_WRInfo_TypeDef piic, piic_hard_master_write_read pfun)
 {
-    switch(port)
-    {
-        case 1 :
-            IIC_MASTER_SDA_OUT(HIGH);
-            IIC_MASTER_SCL_OUT(HIGH);
-            delay_us(DELAY_US_IIC);
-            IIC_MASTER_SDA_OUT(LOW);
-            delay_us(DELAY_US_IIC);
-            IIC_MASTER_SCL_OUT(LOW);
-            delay_us(DELAY_US_IIC);
-        break;
-        
-        case 2 :
-            IIC_MASTER2_SDA_OUT(HIGH);
-            IIC_MASTER2_SCL_OUT(HIGH);
-            delay_us(DELAY_US_IIC);
-            IIC_MASTER2_SDA_OUT(LOW);
-            delay_us(DELAY_US_IIC);
-            IIC_MASTER2_SCL_OUT(LOW);
-            delay_us(DELAY_US_IIC);
-        break;
-        
-        case 3 :
-            IIC_MASTER3_SDA_OUT(HIGH);
-            IIC_MASTER3_SCL_OUT(HIGH);
-            delay_us(DELAY_US_IIC);
-            IIC_MASTER3_SDA_OUT(LOW);
-            delay_us(DELAY_US_IIC);
-            IIC_MASTER3_SCL_OUT(LOW);
-            delay_us(DELAY_US_IIC);
-        break;
-        
-        default :
-        break;
-    }
-}
-
-//停止信号，当SCL处于高电平时，SDA由低电平变成高电平
-static void IIC_Master_Stop(uint8_t port)
-{
-    switch(port)
-    {
-        case 1 :
-            IIC_MASTER_SDA_OUT(LOW);
-            IIC_MASTER_SCL_OUT(HIGH);
-            delay_us(DELAY_US_IIC);
-            IIC_MASTER_SDA_OUT(HIGH);
-            delay_us(DELAY_US_IIC);
-        break;
-        
-        case 2 :
-            IIC_MASTER2_SDA_OUT(LOW);
-            IIC_MASTER2_SCL_OUT(HIGH);
-            delay_us(DELAY_US_IIC);
-            IIC_MASTER2_SDA_OUT(HIGH);
-            delay_us(DELAY_US_IIC);
-        break;
-        
-        case 3 :
-            IIC_MASTER3_SDA_OUT(LOW);
-            IIC_MASTER3_SCL_OUT(HIGH);
-            delay_us(DELAY_US_IIC);
-            IIC_MASTER3_SDA_OUT(HIGH);
-            delay_us(DELAY_US_IIC);
-        break;
-        
-        default :
-        break;
-    }
-}
-
-//发送应答信号，0:ACK，1:NAK
-static void IIC_Master_SendAck(uint8_t port, uint8_t ack)
-{
-    switch(port)
-    {
-        case 1 :
-            IIC_MASTER_SDA_OUT(ack);
-            IIC_MASTER_SCL_OUT(HIGH);
-            delay_us(DELAY_US_IIC);
-            IIC_MASTER_SCL_OUT(LOW);
-            delay_us(DELAY_US_IIC);
-        break;
-        
-        case 2 :
-            IIC_MASTER2_SDA_OUT(ack);
-            IIC_MASTER2_SCL_OUT(HIGH);
-            delay_us(DELAY_US_IIC);
-            IIC_MASTER2_SCL_OUT(LOW);
-            delay_us(DELAY_US_IIC);
-        break;
-        
-        case 3 :
-            IIC_MASTER3_SDA_OUT(ack);
-            IIC_MASTER3_SCL_OUT(HIGH);
-            delay_us(DELAY_US_IIC);
-            IIC_MASTER3_SCL_OUT(LOW);
-            delay_us(DELAY_US_IIC);
-        break;
-        
-        default :
-        break;
-    }
-}
-
-//接收应答信号，0:ACK，1:NAK
-static uint8_t IIC_Master_ReceiveAck(uint8_t port)
-{
-    uint8_t ack = 1;
-    
-    switch(port)
-    {
-        case 1 :
-            IIC_MASTER_SDA_OUT(HIGH);
-
-            IIC_MASTER_SDA_DIR_IN();
-
-            IIC_MASTER_SCL_OUT(HIGH);
-            delay_us(DELAY_US_IIC);
-            ack = IIC_MASTER_SDA_PIN_IN;
-            IIC_MASTER_SCL_OUT(LOW);
-            delay_us(DELAY_US_IIC);
-
-            IIC_MASTER_SDA_DIR_OUT();
-        break;
-        
-        case 2 :
-            IIC_MASTER2_SDA_OUT(HIGH);
-
-            IIC_MASTER2_SDA_DIR_IN();
-
-            IIC_MASTER2_SCL_OUT(HIGH);
-            delay_us(DELAY_US_IIC);
-            ack = IIC_MASTER2_SDA_PIN_IN;
-            IIC_MASTER2_SCL_OUT(LOW);
-            delay_us(DELAY_US_IIC);
-
-            IIC_MASTER2_SDA_DIR_OUT();
-        break;
-        
-        case 3 :
-            IIC_MASTER3_SDA_OUT(HIGH);
-
-            IIC_MASTER3_SDA_DIR_IN();
-
-            IIC_MASTER3_SCL_OUT(HIGH);
-            delay_us(DELAY_US_IIC);
-            ack = IIC_MASTER3_SDA_PIN_IN;
-            IIC_MASTER3_SCL_OUT(LOW);
-            delay_us(DELAY_US_IIC);
-
-            IIC_MASTER3_SDA_DIR_OUT();
-        break;
-        
-        default :
-        break;
-    }
-
-    return ack;
-}
-
-//发送一字节，返回应答信号
-static uint8_t IIC_Master_SendByte(uint8_t port, uint8_t byte)
-{
-    uint8_t i, bit = 1;
-    
-    switch(port)
-    {
-        case 1 :
-            for(i = 0; i < 8; i++)
-            {
-                bit = !!(byte & (0x80 >> i));  //取逻辑值0或1，否则P0_0=bit时，只读取bit数据的最低位bit0的值
-                IIC_MASTER_SDA_OUT(bit);
-                delay_us(DELAY_US_IIC);
-                IIC_MASTER_SCL_OUT(HIGH);
-                delay_us(DELAY_US_IIC);
-                IIC_MASTER_SCL_OUT(LOW);
-                delay_us(DELAY_US_IIC);
-            }
-        break;
-        
-        case 2 :
-            for(i = 0; i < 8; i++)
-            {
-                bit = !!(byte & (0x80 >> i));
-                IIC_MASTER2_SDA_OUT(bit);
-                delay_us(DELAY_US_IIC);
-                IIC_MASTER2_SCL_OUT(HIGH);
-                delay_us(DELAY_US_IIC);
-                IIC_MASTER2_SCL_OUT(LOW);
-                delay_us(DELAY_US_IIC);
-            }
-        break;
-        
-        case 3 :
-            for(i = 0; i < 8; i++)
-            {
-                bit = !!(byte & (0x80 >> i));
-                IIC_MASTER3_SDA_OUT(bit);
-                delay_us(DELAY_US_IIC);
-                IIC_MASTER3_SCL_OUT(HIGH);
-                delay_us(DELAY_US_IIC);
-                IIC_MASTER3_SCL_OUT(LOW);
-                delay_us(DELAY_US_IIC);
-            }
-        break;
-        
-        default :
-        break;
-    }
-
-    return IIC_Master_ReceiveAck(port);
-}
-
-//接收一字节，并发送应答
-static uint8_t IIC_Master_ReceiveByte(uint8_t port, uint8_t ack)
-{
-    uint8_t i, byte = 0;
-    
-    switch(port)
-    {
-        case 1 :
-            IIC_MASTER_SDA_OUT(HIGH);  //释放数据线，准备读取数据
-
-            IIC_MASTER_SDA_DIR_IN();
-
-            for(i = 0; i < 8; i++)
-            {
-                IIC_MASTER_SCL_OUT(HIGH);
-                delay_us(DELAY_US_IIC);
-                byte |= IIC_MASTER_SDA_PIN_IN << (7 - i);
-                IIC_MASTER_SCL_OUT(LOW);
-                delay_us(DELAY_US_IIC);
-            }
-
-            IIC_MASTER_SDA_DIR_OUT();
-        break;
-        
-        case 2 :
-            IIC_MASTER2_SDA_OUT(HIGH);  //释放数据线，准备读取数据
-
-            IIC_MASTER2_SDA_DIR_IN();
-
-            for(i = 0; i < 8; i++)
-            {
-                IIC_MASTER2_SCL_OUT(HIGH);
-                delay_us(DELAY_US_IIC);
-                byte |= IIC_MASTER2_SDA_PIN_IN << (7 - i);
-                IIC_MASTER2_SCL_OUT(LOW);
-                delay_us(DELAY_US_IIC);
-            }
-
-            IIC_MASTER2_SDA_DIR_OUT();
-        break;
-        
-        case 3 :
-            IIC_MASTER3_SDA_OUT(HIGH);  //释放数据线，准备读取数据
-
-            IIC_MASTER3_SDA_DIR_IN();
-
-            for(i = 0; i < 8; i++)
-            {
-                IIC_MASTER3_SCL_OUT(HIGH);
-                delay_us(DELAY_US_IIC);
-                byte |= IIC_MASTER3_SDA_PIN_IN << (7 - i);
-                IIC_MASTER3_SCL_OUT(LOW);
-                delay_us(DELAY_US_IIC);
-            }
-
-            IIC_MASTER3_SDA_DIR_OUT();
-        break;
-        
-        default :
-        break;
-    }
+	iic_wrinfo = *piic;
 	
-	IIC_Master_SendAck(port, ack);  //接收完一个字节，发送应答
-	
-    return byte;
-}
-
-//写设备，结构体输入端口、设备地址及其10位地址模式标志、数据和其长度；成功返回0，失败则重发，都失败返回1
-uint8_t IIC_Hard_Master_Write(pIIC_Hard_Master_WRInfo_TypeDef piic)
-{
-    uint8_t i;  //发送数据字节数记录
-	uint8_t error_flag = 0;  //发送错误标志
-    
-	while(piic->error_resend_times--)
+	while(iic_wrinfo.error_resend_times--)
 	{
 		if(I2C_GetFlagStatus(I2C_FLAG_BUSBUSY))  //判断总线忙，
 			continue;
 		
 		I2C_GenerateSTART(ENABLE);  //开始
-        
-        if(piic->dev_adr_tenbit_flag)  //从机为10位地址模式判断
-        {
-            if(I2C_SendData((uint8_t)(piic->device_adr >> 8)))  //设备高地址
-            {
-                I2C_GenerateSTOP(ENABLE);
-                continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
-            }
-            if(IIC_Master_SendByte(piic->port, (uint8_t)(piic->device_adr & 0xFE)))  //设备低地址 + 写信号，bit0=0为写，bit0=1为读
-            {
-                IIC_Master_Stop(piic->port);
-                continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
-            }
-        }
-        else
-        {
-            if(IIC_Master_SendByte(piic->port, (uint8_t)(piic->device_adr & 0xFE)))  //设备地址 + 写信号，bit0=0为写，bit0=1为读
-            {
-                IIC_Master_Stop(piic->port);
-                continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
-            }
-        }
-		for(i = 0; i < piic->len; i++)
+		
+		return 0;
+	}
+	
+	return 1;
+}
+
+//写设备，结构体输入设备地址及其10位地址模式标志、数据和其长度；成功返回0，失败则重发，都失败返回1
+uint8_t IIC_Hard_Master_Write(pIIC_Hard_Master_WRInfo_TypeDef piic)
+{
+	static uint8_t i = 0, j = 0;  //发、收数据数索引
+	static int8_t write_read_flag = -1;  //发送接收状态缓存
+	if(I2C_GetFlagStatus(I2C_FLAG_STARTDETECTION))  //判断开始
+	{
+		if(iic_wrinfo.dev_adr_tenbit_flag)  //10位地址模式，先发送高位字节
+			I2C_SendData((uint8_t)(iic_wrinfo.device_adr >> 8));
+		else
+			I2C_Send7bitAddress((uint8_t)(iic_wrinfo.device_adr & 0xFE), I2C_DIRECTION_TX);  //发低地址
+	}
+	if(I2C_GetFlagStatus(I2C_FLAG_HEADERSENT))  //判断10位地址高字节已发送
+		I2C_Send7bitAddress((uint8_t)(iic_wrinfo.device_adr & 0xFE), I2C_DIRECTION_TX);  //发低地址
+	if(I2C_GetFlagStatus(I2C_FLAG_ADDRESSSENTMATCHED))  //判断地址发送完成
+		write_read_flag = I2C_GetFlagStatus(I2C_FLAG_TRANSMITTERRECEIVER)  //判断发送接收状态，1为接收，0为发送
+	if(write_read_flag == 0)  //判断为发送
+	{
+		if(I2C_GetFlagStatus(I2C_FLAG_TXEMPTY))  //判断发送数据寄存器为空，启动传输就触发
 		{
-			if(IIC_Master_SendByte(piic->port, *(piic->data++)))  //数据
+			i++;
+			if(i >= iic_wrinfo.len)  //判断发送完成
 			{
-				IIC_Master_Stop(piic->port);
-				error_flag = 1;  //置1发送错误标志
-				break;  //发送出错就停止，跳当前for循环
+				if(I2C_GetFlagStatus(I2C_FLAG_TRANSFERFINISHED))  //没写入新数据
+				{
+					i = 0;  //重新发送计数
+					write_read_flag = -1;  //清发送接收标志
+					I2C_GenerateSTOP(ENABLE);  //停止
+				}
+			}
+			I2C_SendData(*(iic_wrinfo.data++));  //发送数据，写入寄存器就启动传输
+		}
+	}
+	else if(write_read_flag == 1)  //判断为接收
+	{
+		// I2C_GenerateSTART(ENABLE);  //开始
+		if(I2C_GetFlagStatus(I2C_FLAG_RXNOTEMPTY))  //判断接收数据寄存器非空，传输完触发
+		{
+			*(iic_wrinfo.data++) = I2C_ReceiveData();  //接收数据
+			j++;
+			if(j >= iic_wrinfo.len)
+			{
+				j = 0;  //重新接收计数
+				write_read_flag = -1;  //清发送接收标志
+				I2C_AcknowledgeConfig(I2C_ACK_CURR);  //当前字节返回应答，为下次传输准备
+			}
+			else if(j >= iic_wrinfo.len - 1)  //倒数第二个字节
+			{
+				I2C_AcknowledgeConfig(I2C_ACK_NONE);  //不返回应答
+				I2C_GenerateSTOP(ENABLE);  //停止
 			}
 		}
-		
-		if(!error_flag)
-		{
-			IIC_Master_Stop(piic->port);
-			return 0;  //若没有出错，停止后结束函数，返回0
-		}
-		
-		error_flag = 0;  //清0发送错误标志
 	}
-    
-    return 1;  //发送3次都错误，返回1
+	if(I2C_GetFlagStatus(I2C_FLAG_BUSERROR))  //判断总线错误，接收错误起始或停止
+	{
+		I2C_GenerateSTOP(ENABLE);
+		I2C_ClearFlag(I2C_FLAG_BUSERROR);  //清0
+	}
+	if(I2C_GetFlagStatus(I2C_FLAG_ACKNOWLEDGEFAILURE))  //判断应答失败，接收非应答
+	{
+		I2C_GenerateSTOP(ENABLE);
+		I2C_ClearFlag(I2C_FLAG_ACKNOWLEDGEFAILURE);  //清0
+	}
+	if(I2C_GetFlagStatus(I2C_FLAG_ARBITRATIONLOSS))  //判断仲裁失败
+	{
+		I2C_ClearFlag(I2C_FLAG_ARBITRATIONLOSS);  //清0
+	}
 }
 
 //读设备，结构体输入端口、设备地址及其10位地址模式标志、数据和其长度；成功返回0，失败则重发，都失败返回1
@@ -532,59 +270,4 @@ uint8_t IIC_Master_ReadRegister(pIIC_Master_ReadReg_Info_TypeDef piic)
 //I2C中断处理
 INTERRUPT_HANDLER(I2C_IRQHandler, 19)
 {
-	static uint8_t i = 0, j = 0;  //发、收数据数索引
-	static int8_t write_read_flag = -1;  //发送接收状态缓存
-	if(I2C_GetFlagStatus(I2C_FLAG_STARTDETECTION))  //判断开始
-	{
-		if(iic_wrinfo.dev_adr_tenbit_flag)  //10位地址模式，先发送高位字节
-			I2C_SendData((uint8_t)(iic_wrinfo.device_adr >> 8));
-		else
-			I2C_Send7bitAddress((uint8_t)(iic_wrinfo.device_adr & 0xFE), I2C_DIRECTION_TX);  //发低地址
-	}
-	if(I2C_GetFlagStatus(I2C_FLAG_HEADERSENT))  //判断10位地址高字节已发送
-		I2C_Send7bitAddress((uint8_t)(iic_wrinfo.device_adr & 0xFE), I2C_DIRECTION_TX);  //发低地址
-	if(I2C_GetFlagStatus(I2C_FLAG_ADDRESSSENTMATCHED))  //判断地址发送完成
-		write_read_flag = I2C_GetFlagStatus(I2C_FLAG_TRANSMITTERRECEIVER)  //判断发送接收状态，1为接收，0为发送
-	if(write_read_flag == 0)  //判断为发送
-	{
-		if(I2C_GetFlagStatus(I2C_FLAG_TXEMPTY))  //判断发送数据寄存器为空
-		{
-			if(i < iic_wrinfo.len)
-			{
-				I2C_SendData(*(iic_wrinfo.data++));  //发送数据
-				i++;
-			}
-			else
-			{
-				if(I2C_GetFlagStatus(I2C_FLAG_TRANSFERFINISHED))  //判断发送完成，且没写入新数据
-				{
-					I2C_GenerateSTOP(ENABLE);  //停止
-					i = 0;
-				}
-			}
-		}
-	}
-	else if(write_read_flag == 1)  //判断为接收
-	{
-		// I2C_AcknowledgeConfig(I2C_ACK_CURR);  //当前字节返回应答
-		if(I2C_GetFlagStatus(I2C_FLAG_RXNOTEMPTY))  //判断接收数据寄存器非空
-		{
-			*(iic_wrinfo.data++) = I2C_ReceiveData();  //接收数据
-			j++;
-			if(j++ == iic_wrinfo.len - 2)
-			{
-				I2C_AcknowledgeConfig(I2C_ACK_NONE);  //当前字节返回应答
-				I2C_GenerateSTOP(ENABLE);  //停止
-			}
-			// if(j < iic_wrinfo.len - 1)
-			// {
-				// *(iic_wrinfo.data++) = I2C_ReceiveData();  //接收数据
-				// j++;
-			// }
-			// else
-			// {
-				
-			// }
-		}
-	}
 }
