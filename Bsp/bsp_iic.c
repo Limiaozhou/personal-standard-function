@@ -1,7 +1,9 @@
 #include "bsp_iic.h"
 
-IIC_Hard_Master_WRInfo_TypeDef iic_wrinfo;
-IIC_Hard_Master_ReadReg_Info_TypeDef iic_reginfo;
+pIIC_Hard_Master_WRInfo_TypeDef piic_wrinfo;
+pIIC_Hard_Master_ReadReg_Info_TypeDef piic_reginfo;
+
+static uint8_t iic_flag = 0;  //IIC处理函数标志
 
 //内部函数
 //__weak static void delay_us(uint16_t nus);  //延时n us，内部使用
@@ -41,9 +43,9 @@ void IIC_Hard_Init(uint32_t OutputClockFrequencyHz, uint16_t OwnAddress, I2C_Add
 }
 
 //启动IIC读写
-uint8_t IIC_Hard_Master_Write_Read(pIIC_Hard_Master_WRInfo_TypeDef piic, piic_hard_master_write_read pfun)
+uint8_t IIC_Hard_Master_Write_Read(pIIC_Hard_Master_WRInfo_TypeDef piic)
 {
-	iic_wrinfo = *piic;
+	iic_flag = 1;
 	
 	while(iic_wrinfo.error_resend_times--)
 	{
@@ -111,20 +113,7 @@ uint8_t IIC_Hard_Master_Write(pIIC_Hard_Master_WRInfo_TypeDef piic)
 			}
 		}
 	}
-	if(I2C_GetFlagStatus(I2C_FLAG_BUSERROR))  //判断总线错误，接收错误起始或停止
-	{
-		I2C_GenerateSTOP(ENABLE);
-		I2C_ClearFlag(I2C_FLAG_BUSERROR);  //清0
-	}
-	if(I2C_GetFlagStatus(I2C_FLAG_ACKNOWLEDGEFAILURE))  //判断应答失败，接收非应答
-	{
-		I2C_GenerateSTOP(ENABLE);
-		I2C_ClearFlag(I2C_FLAG_ACKNOWLEDGEFAILURE);  //清0
-	}
-	if(I2C_GetFlagStatus(I2C_FLAG_ARBITRATIONLOSS))  //判断仲裁失败
-	{
-		I2C_ClearFlag(I2C_FLAG_ARBITRATIONLOSS);  //清0
-	}
+	
 }
 
 //读设备，结构体输入端口、设备地址及其10位地址模式标志、数据和其长度；成功返回0，失败则重发，都失败返回1
@@ -265,6 +254,25 @@ uint8_t IIC_Master_ReadRegister(pIIC_Master_ReadReg_Info_TypeDef piic)
 	}
     
     return 1;  //发送3次都错误，返回1
+}
+
+//错误判断处理
+uint8_t IIC_Hard_Error_Deal(void)
+{
+	if(I2C_GetFlagStatus(I2C_FLAG_BUSERROR))  //判断总线错误，接收错误起始或停止
+	{
+		I2C_GenerateSTOP(ENABLE);
+		I2C_ClearFlag(I2C_FLAG_BUSERROR);  //清0
+	}
+	if(I2C_GetFlagStatus(I2C_FLAG_ACKNOWLEDGEFAILURE))  //判断应答失败，接收非应答
+	{
+		I2C_GenerateSTOP(ENABLE);
+		I2C_ClearFlag(I2C_FLAG_ACKNOWLEDGEFAILURE);  //清0
+	}
+	if(I2C_GetFlagStatus(I2C_FLAG_ARBITRATIONLOSS))  //判断仲裁失败
+	{
+		I2C_ClearFlag(I2C_FLAG_ARBITRATIONLOSS);  //清0
+	}
 }
 
 //I2C中断处理
