@@ -1,9 +1,9 @@
 #include "bsp_iic.h"
 
-pIIC_Hard_Master_WRInfo_TypeDef piic_wrinfo;
-pIIC_Hard_Master_ReadReg_Info_TypeDef piic_reginfo;
+pIIC_Hard_Master_WRInfo_TypeDef piic_wrinfo = NULL;
+pIIC_Hard_Master_ReadReg_Info_TypeDef piic_reginfo = NULL;
 
-static uint8_t iic_flag = 0;  //IIC处理函数标志
+static uint8_t iic_flag = 0;  //IIC处理函数标志，1发送，2接收
 
 //内部函数
 //__weak static void delay_us(uint16_t nus);  //延时n us，内部使用
@@ -42,15 +42,26 @@ void IIC_Hard_Init(uint32_t OutputClockFrequencyHz, uint16_t OwnAddress, I2C_Add
 	I2C_ITConfig(I2C_IT_EVT | I2C_IT_BUF | I2C_IT_ERR, ENABLE);  //使能事件、收发、错误中断
 }
 
-//启动IIC读写
-uint8_t IIC_Hard_Master_Write_Read(pIIC_Hard_Master_WRInfo_TypeDef piic)
+//启动IIC读写，成功返回0，失败（总线忙或指针为空）返回1
+uint8_t IIC_Hard_Master_Write_Read(pIIC_Hard_Master_WRInfo_TypeDef piic, uint8_t sel)
 {
-	iic_flag = 1;
+	uint8_t resent_times = 1;
 	
-	while(iic_wrinfo.error_resend_times--)
+	piic_wrinfo = piic;
+	
+	if(piic_wrinfo == NULL)  //判断指针为空
+		return 1;
+	
+	iic_flag = sel;
+	resent_times = piic_wrinfo->error_resend_times;
+	
+	while(resent_times--)
 	{
-		if(I2C_GetFlagStatus(I2C_FLAG_BUSBUSY))  //判断总线忙，
+		if(I2C_GetFlagStatus(I2C_FLAG_BUSBUSY))  //判断总线忙
+		{
+			delay_us(1);
 			continue;
+		}
 		
 		I2C_GenerateSTART(ENABLE);  //开始
 		
@@ -65,6 +76,7 @@ uint8_t IIC_Hard_Master_Write(pIIC_Hard_Master_WRInfo_TypeDef piic)
 {
 	static uint8_t i = 0, j = 0;  //发、收数据数索引
 	static int8_t write_read_flag = -1;  //发送接收状态缓存
+	
 	if(I2C_GetFlagStatus(I2C_FLAG_STARTDETECTION))  //判断开始
 	{
 		if(iic_wrinfo.dev_adr_tenbit_flag)  //10位地址模式，先发送高位字节
@@ -113,7 +125,6 @@ uint8_t IIC_Hard_Master_Write(pIIC_Hard_Master_WRInfo_TypeDef piic)
 			}
 		}
 	}
-	
 }
 
 //读设备，结构体输入端口、设备地址及其10位地址模式标志、数据和其长度；成功返回0，失败则重发，都失败返回1
@@ -257,7 +268,7 @@ uint8_t IIC_Master_ReadRegister(pIIC_Master_ReadReg_Info_TypeDef piic)
 }
 
 //错误判断处理
-uint8_t IIC_Hard_Error_Deal(void)
+void IIC_Hard_Error_Deal(void)
 {
 	if(I2C_GetFlagStatus(I2C_FLAG_BUSERROR))  //判断总线错误，接收错误起始或停止
 	{
@@ -278,4 +289,10 @@ uint8_t IIC_Hard_Error_Deal(void)
 //I2C中断处理
 INTERRUPT_HANDLER(I2C_IRQHandler, 19)
 {
+	if((piic_wrinfo != NULL) && (iic_flag != 0))
+	{
+		
+	}
+	
+	IIC_Hard_Error_Deal();
 }
