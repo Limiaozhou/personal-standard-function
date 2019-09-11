@@ -371,8 +371,11 @@ uint8_t IIC_Master_Write(pIIC_Master_WRInfo_TypeDef piic)
 {
     uint8_t i;  //发送数据字节数记录
 	uint8_t error_flag = 0;  //发送错误标志
+    uint8_t resend_times = 1;  //重发次数缓存
     
-	while(piic->error_resend_times--)
+    resend_times = piic->error_resend_times;
+    
+	while(resend_times--)
 	{
 		IIC_Master_Start(piic->port);
         
@@ -423,8 +426,11 @@ uint8_t IIC_Master_Write(pIIC_Master_WRInfo_TypeDef piic)
 uint8_t IIC_Master_ReadDirect(pIIC_Master_WRInfo_TypeDef piic)
 {
     uint8_t i;  //接收数据字节数记录
+    uint8_t resend_times = 1;  //重发次数缓存
     
-	while(piic->error_resend_times--)
+    resend_times = piic->error_resend_times;
+    
+	while(resend_times--)
 	{
 		IIC_Master_Start(piic->port);
 		
@@ -469,8 +475,11 @@ uint8_t IIC_Master_ReadDirect(pIIC_Master_WRInfo_TypeDef piic)
 uint8_t IIC_Master_ReadRegister(pIIC_Master_ReadReg_Info_TypeDef piic)
 {
 	uint8_t i;  //接收数据字节数记录
+    uint8_t resend_times = 1;  //重发次数缓存
     
-	while(piic->wr_info.error_resend_times--)
+    resend_times = piic->wr_info.error_resend_times;
+    
+	while(resend_times--)
 	{
 		//先写寄存器地址
 		IIC_Master_Start(piic->wr_info.port);
