@@ -51,9 +51,10 @@ typedef IIC_Hard_Master_ReadReg_Info_TypeDef* pIIC_Hard_Master_ReadReg_Info_Type
 
 typedef enum
 {
-}IIC_Write_Read_Select_TypeDef;
-
-typedef void (*piic_hard_master_write_read)(pIIC_Hard_Master_WRInfo_TypeDef piic);
+	Write_Sel = 0,  //写
+	ReadDirect_Sel,  //直接读
+	// ReadReg_Sel  //读寄存器
+}IIC_WriteRead_Select_TypeDef;
 
 void IIC_Hard_Init(uint32_t OutputClockFrequencyHz, uint16_t OwnAddress, I2C_AddMode_TypeDef AddMode);  //初始化IIC口
 
