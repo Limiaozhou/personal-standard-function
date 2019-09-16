@@ -11,6 +11,7 @@
 //#include "bsp_key.h"
 //#include "bsp_time.h"
 #include "bsp_usart.h"
+#include "bsp_iic.h"
 
 #include "mid_light.h"
 #include "mid_uart.h"

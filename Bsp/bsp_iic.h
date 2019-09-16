@@ -33,9 +33,9 @@ typedef IIC_Hard_Master_WRInfo_TypeDef* pIIC_Hard_Master_WRInfo_TypeDef;  //IICÖ
 
 typedef enum
 {
-	Delay_No = 0,  //²»ÑÓÊ±
-	Delay_Front,  //¶ÁÖ®Ç°ÑÓÊ±
-	Delay_Back  //¶ÁÖ®ºóÑÓÊ±
+	Delay_Hard_No = 0,  //²»ÑÓÊ±
+	Delay_Hard_Front,  //¶ÁÖ®Ç°ÑÓÊ±
+	Delay_Hard_Back  //¶ÁÖ®ºóÑÓÊ±
 }Delay_Hard_ReadReg_TypeDef;  //¶Á¼Ä´æÆ÷ÑÓÊ±
 
 typedef struct
@@ -53,15 +53,13 @@ typedef enum
 {
 	Write_Sel = 0,  //Ğ´
 	ReadDirect_Sel,  //Ö±½Ó¶Á
-	// ReadReg_Sel  //¶Á¼Ä´æÆ÷
 }IIC_WriteRead_Select_TypeDef;
 
-void IIC_Hard_Init(uint32_t OutputClockFrequencyHz, uint16_t OwnAddress, I2C_AddMode_TypeDef AddMode);  //³õÊ¼»¯IIC¿Ú
+//Ó²¼şIIC³õÊ¼»¯£¬ÅäÖÃÊä³öÊ±ÖÓ¡¢±¾»ú×÷´Ó»úµÄµØÖ·¡¢µØÖ·Ä£Ê½
+void IIC_Hard_Init(uint32_t OutputClockFrequencyHz, uint16_t OwnAddress, I2C_AddMode_TypeDef AddMode);
 
-uint8_t IIC_Hard_Master_Write(pIIC_Hard_Master_WRInfo_TypeDef piic);  //Ğ´Éè±¸£¬³É¹¦·µ»Ø0£¬Ê§°Ü·µ»Ø1
-uint8_t IIC_Hard_Master_ReadDirect(pIIC_Hard_Master_WRInfo_TypeDef piic);  //¶ÁÉè±¸£¬³É¹¦·µ»Ø0£¬Ê§°Ü·µ»Ø1
-
-uint8_t IIC_Hard_Master_ReadRegister(pIIC_Hard_Master_ReadReg_Info_TypeDef piic);  //¶ÁÉè±¸¼Ä´æÆ÷£¬³É¹¦·µ»Ø0£¬Ê§°Ü·µ»Ø1
+//Ó²¼şIIC¶ÁĞ´Æô¶¯£¬ÊäÈëÄÚÈİÖ¸Õë¡¢¶ÁĞ´Ñ¡Ôñ£¬³É¹¦·µ»Ø0£¬Ê§°Ü£¨×ÜÏßÃ¦£©·µ»Ø1
+uint8_t IIC_Hard_Master_WriteRead_Start(pIIC_Hard_Master_WRInfo_TypeDef piic, IIC_WriteRead_Select_TypeDef sel);
 
 #ifdef __cplusplus
 }
