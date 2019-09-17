@@ -5,37 +5,13 @@ static pIIC_Hard_Master_WRInfo_TypeDef piic_wrinfo;
 
 static IIC_WriteRead_Select_TypeDef iic_wr_sel = Write_Sel;
 
-//内部函数
-//__weak static void delay_us(uint16_t nus);  //延时n us，内部使用
-//__weak static void delay_ms(uint16_t nms);  //延时n ms
+static piic_hard_read_data_deal pread_data_deal;
+
 static void IIC_Hard_Master_WriteRead(pIIC_Hard_Master_WRInfo_TypeDef piic);  //硬件IIC读写，输入内容指针
 static uint8_t IIC_Hard_Master_Error_Deal(void);  //错误判断处理，有错误返回1，否则返回0
 
-//延时n us，内部使用
-//__weak static void delay_us(uint16_t nus)
-//{
-//	while (nus--)
-//	{
-//		asm("NOP");
-//		asm("NOP");
-//		asm("NOP");
-//		asm("NOP");
-//		asm("NOP");
-//		asm("NOP");
-//		asm("NOP");
-//		asm("NOP");
-//	}
-//}
-//
-////延时n ms
-//__weak static void delay_ms(uint16_t nms)
-//{
-//	while (nms--)
-//		delay_us(1000);
-//}
-
 //硬件IIC初始化，配置输出时钟、本机作从机的地址、地址模式
-void IIC_Hard_Init(uint32_t OutputClockFrequencyHz, uint16_t OwnAddress, I2C_AddMode_TypeDef AddMode)
+void IIC_Hard_Init(uint32_t OutputClockFrequencyHz, uint16_t OwnAddress, I2C_AddMode_TypeDef AddMode, piic_hard_read_data_deal pdeal)
 {
 	I2C_DeInit();
 	//配置输出时钟、本机作从机的地址、高速模式占空比、应答模式、地址模式、输入时钟
@@ -44,6 +20,7 @@ void IIC_Hard_Init(uint32_t OutputClockFrequencyHz, uint16_t OwnAddress, I2C_Add
 	I2C_ITConfig(I2C_IT_EVT, ENABLE);  //使能事件、收发、错误中断
     I2C_ITConfig(I2C_IT_BUF, ENABLE);
     I2C_ITConfig(I2C_IT_ERR, ENABLE);
+	pread_data_deal = pdeal;  //读取数据处理回调函数
 }
 
 //硬件IIC读写启动，输入内容指针、读写选择，成功返回0，失败（总线忙）返回1
@@ -77,6 +54,7 @@ static void IIC_Hard_Master_WriteRead(pIIC_Hard_Master_WRInfo_TypeDef piic)
 	static uint8_t write_index = 0, read_index = 0;  //发、收数据数索引
 	static int8_t write_read_flag = -1;  //发送接收状态缓存
 	static uint8_t addr10_read_flag = 0;  //10位地址读模式标志
+	uint8_t successful_read_flag = 0;  //成功读取标志
 	
 	if(I2C_GetFlagStatus(I2C_FLAG_STARTDETECTION))  //判断开始
 	{
@@ -149,6 +127,7 @@ static void IIC_Hard_Master_WriteRead(pIIC_Hard_Master_WRInfo_TypeDef piic)
 			read_index++;
 			if(read_index >= piic->len)
 			{
+				successful_read_flag = 1;  //读取成功
 				read_index = 0;  //重新接收计数
 				write_read_flag = -1;  //清发送接收标志
 				I2C_AcknowledgeConfig(I2C_ACK_CURR);  //当前字节返回应答，为下次传输准备
@@ -168,7 +147,11 @@ static void IIC_Hard_Master_WriteRead(pIIC_Hard_Master_WRInfo_TypeDef piic)
 		read_index = 0;
 		write_read_flag = -1;
 		addr10_read_flag = 0;
+		successful_read_flag = 0;
 	}
+	
+	if(successful_read_flag)
+		pread_data_deal(piic->data, piic->len);
 }
 
 //错误判断处理，有错误返回1，否则返回0

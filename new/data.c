@@ -56,12 +56,12 @@ void package_send(void)
 
 void data_deal(void)
 {
+    tvoc_eco2_read_start();  //硬件IIC
 	temp_humi_read(&Evndat.temp20,  &Evndat.humi20);  //温湿度，IIC
-	Get_CO2(&Evndat.co2);                  //CO2，PWM
-	light_read(&Evndat.light_bhvi);   //光照，IIC
-	TVOC_ReadDat(&Evndat.TVOC, &Evndat.tvocco2);  //TVOC，IIC
+	Get_CO2(&Evndat.co2);  //CO2，PWM
+	light_read(&Evndat.light_bhvi);  //光照，IIC
+//	TVOC_ReadDat(&Evndat.TVOC, &Evndat.tvocco2);  //TVOC，IIC
 	pres_temp_read(&Evndat.press, &Evndat.press_temp);  //气压，IIC
-	// PM_Read();  //PM
 	
 	package_send();
 }

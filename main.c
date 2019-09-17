@@ -46,9 +46,11 @@ int main(void)
 	Uart_Init(UART1_Select, 9600, uart1_read_deal);  //UART1波特率9600
     Uart_Init(UART3_Select, 9600, uart3_read_deal);  //UART3波特率9600
     
+    IIC_Hard_Init(100000, 0, I2C_ADDMODE_7BIT, tvoc_data_deal);
+    
     init_Co2();
     Init_Timer4();
-    I2C_MASTERMODE_Init(STANDARDSPEED);
+//    I2C_MASTERMODE_Init(STANDARDSPEED);
 	IWDG_init();
     
     asm("rim");//开全局中断，sim为关中断

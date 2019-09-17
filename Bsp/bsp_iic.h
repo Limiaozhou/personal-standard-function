@@ -55,8 +55,10 @@ typedef enum
 	ReadDirect_Sel,  //直接读
 }IIC_WriteRead_Select_TypeDef;
 
+typedef void (*piic_hard_read_data_deal)(uint8_t * buf, uint16_t len);  //硬件IIC口数据读取处理函数
+
 //硬件IIC初始化，配置输出时钟、本机作从机的地址、地址模式
-void IIC_Hard_Init(uint32_t OutputClockFrequencyHz, uint16_t OwnAddress, I2C_AddMode_TypeDef AddMode);
+void IIC_Hard_Init(uint32_t OutputClockFrequencyHz, uint16_t OwnAddress, I2C_AddMode_TypeDef AddMode, piic_hard_read_data_deal pdeal);
 
 //硬件IIC读写启动，输入内容指针、读写选择，成功返回0，失败（总线忙）返回1
 uint8_t IIC_Hard_Master_WriteRead_Start(pIIC_Hard_Master_WRInfo_TypeDef piic, IIC_WriteRead_Select_TypeDef sel);
