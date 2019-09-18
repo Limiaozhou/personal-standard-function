@@ -132,6 +132,7 @@ static void IIC_Hard_Master_WriteRead(pIIC_Hard_Master_WRInfo_TypeDef piic)
 		if(I2C_GetFlagStatus(I2C_FLAG_RXNOTEMPTY))  //判断接收数据寄存器非空，传输完触发
 		{
 			read_index++;
+			*(piic->data++) = I2C_ReceiveData();  //接收数据
 			if(read_index >= piic->len)
 			{
 				successful_read_flag = 1;  //读取成功
@@ -139,12 +140,11 @@ static void IIC_Hard_Master_WriteRead(pIIC_Hard_Master_WRInfo_TypeDef piic)
 				write_read_flag = -1;  //清发送接收标志
 				I2C_AcknowledgeConfig(I2C_ACK_CURR);  //当前字节返回应答，为下次传输准备
 			}
-			else if(read_index >= piic->len - 1)  //倒数第二个字节
+			else if(read_index >= (piic->len - 1))  //倒数第二个字节
 			{
 				I2C_AcknowledgeConfig(I2C_ACK_NONE);  //不返回应答
 				I2C_GenerateSTOP(ENABLE);  //停止
 			}
-			*(piic->data++) = I2C_ReceiveData();  //接收数据
 		}
 	}
 	
