@@ -13,6 +13,13 @@ static uint8_t IIC_Hard_Master_Error_Deal(void);  //´íÎóÅĞ¶Ï´¦Àí£¬ÓĞ´íÎó·µ»Ø1£¬·
 //Ó²¼şIIC³õÊ¼»¯£¬ÅäÖÃÊä³öÊ±ÖÓ¡¢±¾»ú×÷´Ó»úµÄµØÖ·¡¢µØÖ·Ä£Ê½
 void IIC_Hard_Init(uint32_t OutputClockFrequencyHz, uint16_t OwnAddress, I2C_AddMode_TypeDef AddMode, piic_hard_read_data_deal pdeal)
 {
+	//³õÊ¼»¯¶ÔÓ¦IO
+	GPIO_DeInit(GPIOE);
+	GPIO_Init(GPIOE, GPIO_PIN_1, GPIO_MODE_OUT_OD_HIZ_SLOW);
+	GPIO_Init(GPIOE, GPIO_PIN_2, GPIO_MODE_OUT_OD_HIZ_SLOW);
+	GPIO_WriteHigh(GPIOE, GPIO_PIN_1);
+	GPIO_WriteHigh(GPIOE, GPIO_PIN_2);
+	
 	I2C_DeInit();
 	//ÅäÖÃÊä³öÊ±ÖÓ¡¢±¾»ú×÷´Ó»úµÄµØÖ·¡¢¸ßËÙÄ£Ê½Õ¼¿Õ±È¡¢Ó¦´ğÄ£Ê½¡¢µØÖ·Ä£Ê½¡¢ÊäÈëÊ±ÖÓ
 	I2C_Init(OutputClockFrequencyHz, OwnAddress, I2C_DUTYCYCLE_2, I2C_ACK_CURR, AddMode, CLK_GetClockFreq()/1000000);
@@ -101,9 +108,9 @@ static void IIC_Hard_Master_WriteRead(pIIC_Hard_Master_WRInfo_TypeDef piic)
 				write_read_flag = I2C_GetFlagStatus(I2C_FLAG_TRANSMITTERRECEIVER);
 		}
 		else
-			write_read_flag = I2C_GetFlagStatus(I2C_FLAG_TRANSMITTERRECEIVER);  //·¢ËÍ½ÓÊÕ×´Ì¬£¬1Îª½ÓÊÕ£¬0Îª·¢ËÍ
+			write_read_flag = I2C_GetFlagStatus(I2C_FLAG_TRANSMITTERRECEIVER);  //·¢ËÍ½ÓÊÕ×´Ì¬£¬0Îª½ÓÊÕ£¬1Îª·¢ËÍ
 	}
-	if(write_read_flag == 0)  //ÅĞ¶ÏÎª·¢ËÍ
+	if(write_read_flag == 1)  //ÅĞ¶ÏÎª·¢ËÍ
 	{
 		if(I2C_GetFlagStatus(I2C_FLAG_TXEMPTY))  //ÅĞ¶Ï·¢ËÍÊı¾İ¼Ä´æÆ÷Îª¿Õ£¬Æô¶¯´«Êä¾Í´¥·¢
 		{
@@ -120,7 +127,7 @@ static void IIC_Hard_Master_WriteRead(pIIC_Hard_Master_WRInfo_TypeDef piic)
 			I2C_SendData(*(piic->data++));  //·¢ËÍÊı¾İ£¬Ğ´Èë¼Ä´æÆ÷¾ÍÆô¶¯´«Êä
 		}
 	}
-	else if(write_read_flag == 1)  //ÅĞ¶ÏÎª½ÓÊÕ
+	else if(write_read_flag == 0)  //ÅĞ¶ÏÎª½ÓÊÕ
 	{
 		if(I2C_GetFlagStatus(I2C_FLAG_RXNOTEMPTY))  //ÅĞ¶Ï½ÓÊÕÊı¾İ¼Ä´æÆ÷·Ç¿Õ£¬´«ÊäÍê´¥·¢
 		{

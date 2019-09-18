@@ -8,6 +8,7 @@ extern "C"
 
 #include "stm8s_i2c.h"
 #include "stm8s_clk.h"
+#include "stm8s_gpio.h"
 #include "delay.h"
 
 //#include "typedef.h"
