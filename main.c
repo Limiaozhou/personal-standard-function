@@ -39,9 +39,10 @@ int main(void)
 	CLK_SYSCLK_Config();  //内部高速时钟，HSI和CPU时钟0分频，fcpu = 16MHz
 	
 	Delay_Init(16);  //延时函数基准配置
-    IIC_Master_Init(1);
-    IIC_Master_Init(2);
-    IIC_Master_Init(3);
+//    IIC_Master_Init(1);
+//    IIC_Master_Init(2);
+//    IIC_Master_Init(3);
+    IIC_Simulation_Master_Init();
 	
 	Uart_Init(UART1_Select, 9600, uart1_read_deal);  //UART1波特率9600
     Uart_Init(UART3_Select, 9600, uart3_read_deal);  //UART3波特率9600

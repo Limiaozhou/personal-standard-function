@@ -7,7 +7,7 @@ uint8_t light_read(float * light_data)
 	uint32_t data = 0;  //读取数据缓存
 	IIC_Master_ReadReg_Info_TypeDef iic_info =
 	{
-		.wr_info.port = 1,
+		.wr_info.port = 0,
 		.wr_info.device_adr = 0x94,
         .wr_info.dev_adr_tenbit_flag = 0,
 		.wr_info.data = buf,
@@ -19,7 +19,7 @@ uint8_t light_read(float * light_data)
 		.readreg_delay_nms = 15,
 	};  //IIC读取信息
 	
-	if(IIC_Master_ReadRegister(&iic_info))  //IIC读取数据并保存结果到缓存数组，并判断是否成功
+	if(IIC_Simulation_Master_ReadRegister(&iic_info))  //IIC读取数据并保存结果到缓存数组，并判断是否成功
 		return 1;
 	
 	data = buf[0] | ((uint32_t)buf[1] << 8) | ((uint32_t)buf[2] << 16) | ((uint32_t)buf[3] << 24);  //缓存数据

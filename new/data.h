@@ -11,8 +11,8 @@
 
 #include "mid_uart.h"
 #include "mid_light.h"
-#include "mid_pressure.h"
-#include "mid_temperature.h"
+//#include "mid_pressure.h"
+//#include "mid_temperature.h"
 #include "mid_tvoc.h"
 
 typedef struct
