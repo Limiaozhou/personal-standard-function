@@ -25,13 +25,13 @@ extern "C"
 typedef enum
 {
 	GPIO_Low_Level = 0,  //IO低电平
-	GPIO_High_Level
+	GPIO_High_Level = !GPIO_Low_Level
 }GPIO_OutLevel_TypeDef;  //IO电平
 
 typedef enum
 {
 	GPIO_In = 0,  //IO输入
-	GPIO_Out
+	GPIO_Out = !GPIO_In
 }GPIO_Direction_TypeDef;  //IO电平
 
 typedef struct

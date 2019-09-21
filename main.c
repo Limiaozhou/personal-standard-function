@@ -39,20 +39,19 @@ int main(void)
 	CLK_SYSCLK_Config();  //内部高速时钟，HSI和CPU时钟0分频，fcpu = 16MHz
 	
 	Delay_Init(16);  //延时函数基准配置
-//    IIC_Master_Init(1);
 //    IIC_Master_Init(2);
 //    IIC_Master_Init(3);
     IIC_Simulation_Master_Init();
 	
 	Uart_Init(UART1_Select, 9600, uart1_read_deal);  //UART1波特率9600
-    Uart_Init(UART3_Select, 9600, uart3_read_deal);  //UART3波特率9600
-    
-    IIC_Hard_Init(100000, 0, I2C_ADDMODE_7BIT, tvoc_data_deal);
-    
-    init_Co2();
-    Init_Timer4();
-//    I2C_MASTERMODE_Init(STANDARDSPEED);
-	IWDG_init();
+//    Uart_Init(UART3_Select, 9600, uart3_read_deal);  //UART3波特率9600
+//    
+//    IIC_Hard_Init(100000, 0, I2C_ADDMODE_7BIT, tvoc_data_deal);
+//    
+//    init_Co2();
+//    Init_Timer4();
+////    I2C_MASTERMODE_Init(STANDARDSPEED);
+//	IWDG_init();
     
     asm("rim");//开全局中断，sim为关中断
     
@@ -61,11 +60,11 @@ int main(void)
 	{
 		delay_ms(2000);
 		data_deal();
-        if(RST_GetFlagStatus(RST_FLAG_IWDGF))
-        {
-            uart_write(UART1_Select, "IWDGF_RST", 10);
-            RST_ClearFlag(RST_FLAG_IWDGF);
-        }
+//        if(RST_GetFlagStatus(RST_FLAG_IWDGF))
+//        {
+//            uart_write(UART1_Select, "IWDGF_RST", 10);
+//            RST_ClearFlag(RST_FLAG_IWDGF);
+//        }
 	}
 }
 

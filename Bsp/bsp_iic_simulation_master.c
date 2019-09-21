@@ -141,15 +141,12 @@ static uint8_t IIC_Simulation_Master_ReceiveAck(uint8_t port)
 	if(port < IIC_SIMULATION_MASTER_NUM)
 	{
 		iic_simulation_gpio_write(IIC_GPIO_List[port].sda_port, IIC_GPIO_List[port].sda_pin, GPIO_High_Level);  //释放数据线，准备读取数据
-		
 		iic_simulation_gpio_direction(IIC_GPIO_List[port].sda_port, IIC_GPIO_List[port].sda_pin, GPIO_In);
-		
 		iic_simulation_gpio_write(IIC_GPIO_List[port].scl_port, IIC_GPIO_List[port].scl_pin, GPIO_High_Level);
 		delay_us(DELAY_US_IIC);
-		ack = iic_simulation_gpio_read(IIC_GPIO_List[port].sda_port, IIC_GPIO_List[port].sda_pin);
+		ack = !!iic_simulation_gpio_read(IIC_GPIO_List[port].sda_port, IIC_GPIO_List[port].sda_pin);
 		iic_simulation_gpio_write(IIC_GPIO_List[port].scl_port, IIC_GPIO_List[port].scl_pin, GPIO_Low_Level);
 		delay_us(DELAY_US_IIC);
-		
 		iic_simulation_gpio_direction(IIC_GPIO_List[port].sda_port, IIC_GPIO_List[port].sda_pin, GPIO_Out);
 	}
 	
@@ -191,7 +188,7 @@ static uint8_t IIC_Simulation_Master_ReceiveByte(uint8_t port, uint8_t ack)
 		{
 			iic_simulation_gpio_write(IIC_GPIO_List[port].scl_port, IIC_GPIO_List[port].scl_pin, GPIO_High_Level);
 			delay_us(DELAY_US_IIC);
-			byte |= (iic_simulation_gpio_read(IIC_GPIO_List[port].sda_port, IIC_GPIO_List[port].sda_pin) << (7 - i));
+			byte |= ((!!iic_simulation_gpio_read(IIC_GPIO_List[port].sda_port, IIC_GPIO_List[port].sda_pin)) << (7 - i));
 			iic_simulation_gpio_write(IIC_GPIO_List[port].scl_port, IIC_GPIO_List[port].scl_pin, GPIO_Low_Level);
 			delay_us(DELAY_US_IIC);
 		}
