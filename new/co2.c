@@ -22,7 +22,7 @@ void init_Co2()
 void Init_Timer4(void) 
 {
     TIM4_Cmd(ENABLE);//使能计数器
-    TIM4_TimeBaseInit(TIM4_PRESCALER_128, 0xff);//设置分频系数，设置重装值
+    TIM4_TimeBaseInit(TIM4_PRESCALER_128, 0xff);//设置分频系数，设置重装值，T=2.048ms
     
     
     TIM4_ITConfig(TIM4_IT_UPDATE, ENABLE);//更新中断使能

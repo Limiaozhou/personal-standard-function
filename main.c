@@ -15,6 +15,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
+uint16_t time_data_deal = 0;
+
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -53,8 +55,12 @@ int main(void)
 	/* Infinite loop */
 	while (1)
 	{
-		delay_ms(2000);
-		data_deal();
+//		delay_ms(2000);
+        if(time_data_deal >= 1000)  //2048ms
+        {
+            data_deal();
+            time_data_deal = 0;
+        }
 //        if(RST_GetFlagStatus(RST_FLAG_IWDGF))
 //        {
 //            uart_write(UART1_Select, "IWDGF_RST", 10);
