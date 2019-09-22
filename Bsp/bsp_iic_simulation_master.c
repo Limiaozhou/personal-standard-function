@@ -207,12 +207,13 @@ uint8_t IIC_Simulation_Master_Write(pIIC_Master_WRInfo_TypeDef piic)
         
         if(piic->dev_adr_tenbit_flag)  //从机为10位地址模式判断
         {
-            if(IIC_Simulation_Master_SendByte(piic->port, (uint8_t)(piic->device_adr >> 8)))  //设备高地址
+            //设备高地址 + 写信号，bit0=0为写，bit0=1为读
+            if(IIC_Simulation_Master_SendByte(piic->port, (uint8_t)((piic->device_adr >> 8) & 0xFE)))
             {
                 IIC_Simulation_Master_Stop(piic->port);
                 continue;  //发送出错就停止，跳过后面循环体语句，直接到while循环条件判断，重新启动IIC和发送
             }
-            if(IIC_Simulation_Master_SendByte(piic->port, (uint8_t)(piic->device_adr & 0xFE)))  //设备低地址 + 写信号，bit0=0为写，bit0=1为读
+            if(IIC_Simulation_Master_SendByte(piic->port, (uint8_t)(piic->device_adr & 0xFF)))  //设备低地址
             {
                 IIC_Simulation_Master_Stop(piic->port);
                 continue;
@@ -262,12 +263,20 @@ uint8_t IIC_Simulation_Master_ReadDirect(pIIC_Master_WRInfo_TypeDef piic)
 		
         if(piic->dev_adr_tenbit_flag)
         {
-            if(IIC_Simulation_Master_SendByte(piic->port, (uint8_t)(piic->device_adr >> 8)))
+            if(IIC_Simulation_Master_SendByte(piic->port, (uint8_t)((piic->device_adr >> 8) & 0xFE)))
             {
                 IIC_Simulation_Master_Stop(piic->port);
                 continue;
             }
-            if(IIC_Simulation_Master_SendByte(piic->port, (uint8_t)((piic->device_adr & 0xFE) + 1)))  //注意运算符优先级+高于&
+            if(IIC_Simulation_Master_SendByte(piic->port, (uint8_t)(piic->device_adr & 0xFF)))  //注意运算符优先级+高于&
+            {
+                IIC_Simulation_Master_Stop(piic->port);
+                continue;
+            }
+            
+            //重新开始再发高位加读信号
+            IIC_Simulation_Master_Start(piic->port);
+            if(IIC_Simulation_Master_SendByte(piic->port, (uint8_t)(((piic->device_adr >> 8) & 0xFE) + 1)))
             {
                 IIC_Simulation_Master_Stop(piic->port);
                 continue;
@@ -311,12 +320,12 @@ uint8_t IIC_Simulation_Master_ReadRegister(pIIC_Master_ReadReg_Info_TypeDef piic
 		IIC_Simulation_Master_Start(piic->wr_info.port);
         if(piic->wr_info.dev_adr_tenbit_flag)
         {
-            if(IIC_Simulation_Master_SendByte(piic->wr_info.port, (uint8_t)(piic->wr_info.device_adr >> 8)))
+            if(IIC_Simulation_Master_SendByte(piic->wr_info.port, (uint8_t)((piic->wr_info.device_adr >> 8) & 0xFE)))
             {
                 IIC_Simulation_Master_Stop(piic->wr_info.port);
                 continue;
             }
-            if(IIC_Simulation_Master_SendByte(piic->wr_info.port, (uint8_t)(piic->wr_info.device_adr & 0xFE)))
+            if(IIC_Simulation_Master_SendByte(piic->wr_info.port, (uint8_t)(piic->wr_info.device_adr & 0xFF)))
             {
                 IIC_Simulation_Master_Stop(piic->wr_info.port);
                 continue;
@@ -358,12 +367,19 @@ uint8_t IIC_Simulation_Master_ReadRegister(pIIC_Master_ReadReg_Info_TypeDef piic
 		IIC_Simulation_Master_Start(piic->wr_info.port);
         if(piic->wr_info.dev_adr_tenbit_flag)
         {
-            if(IIC_Simulation_Master_SendByte(piic->wr_info.port, (uint8_t)(piic->wr_info.device_adr >> 8)))
+            if(IIC_Simulation_Master_SendByte(piic->wr_info.port, (uint8_t)((piic->wr_info.device_adr >> 8) & 0xFE)))
             {
                 IIC_Simulation_Master_Stop(piic->wr_info.port);
                 continue;
             }
-            if(IIC_Simulation_Master_SendByte(piic->wr_info.port, (uint8_t)((piic->wr_info.device_adr & 0xFE) + 1)))
+            if(IIC_Simulation_Master_SendByte(piic->wr_info.port, (uint8_t)(piic->wr_info.device_adr & 0xFF)))
+            {
+                IIC_Simulation_Master_Stop(piic->wr_info.port);
+                continue;
+            }
+            
+            IIC_Simulation_Master_Start(piic->wr_info.port);
+            if(IIC_Simulation_Master_SendByte(piic->wr_info.port, (uint8_t)(((piic->wr_info.device_adr >> 8) & 0xFE) + 1)))
             {
                 IIC_Simulation_Master_Stop(piic->wr_info.port);
                 continue;
