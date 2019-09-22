@@ -8,15 +8,14 @@ typedef enum
 
 static IIC_Master_WRInfo_TypeDef iic_info =
 {
-	.port = 2,  //端口2
-	.device_adr = PRES_DEVICE_ADDRESS,  //地址0xEE
-	.dev_adr_tenbit_flag = 0,  //非10位地址
-//	.data = NULL,  //初始数据指针空
-	.len = 1,  //初始数据长度1
-	.error_resend_times = 3,  //失败重读次数3
+	.port = PRES_PORT,
+	.device_adr = PRES_DEVICE_ADDRESS,
+	.dev_adr_tenbit_flag = 0,
+	.len = 1,
+	.error_resend_times = 3,
 };  //IIC读取信息
 
-uint16_t c1, c2, c3, c4, c5, c6;  //校准数据
+static uint16_t c[6];
 
 static uint8_t pres_dev_reset(void);  //设备复位，成功返回0，失败返回1
 static uint8_t calibration_data_read(void);  //读取校准数据，成功返回0，失败返回1
@@ -68,7 +67,7 @@ static uint8_t pres_dev_reset(void)
 	iic_info.data = &command;
 	iic_info.len = 1;
 	
-	result = IIC_Master_Write(&iic_info);
+	result = IIC_Simulation_Master_Write(&iic_info);
 	
     return result;
 }
@@ -78,71 +77,21 @@ static uint8_t calibration_data_read(void)
 {
 	uint8_t buf[2] = {0};
     uint8_t command = 0xA2;
+    uint8_t i;
 	
-	iic_info.data = &command;
-	iic_info.len = 1;
-	if(IIC_Master_Write(&iic_info))  //发送数据
-		return 1;  //出现错误返回1
-	iic_info.data = buf;
-	iic_info.len = 2;
-	if(IIC_Master_ReadDirect(&iic_info))  //读取数据
-		return 1;
-	c1 = ((uint16_t)buf[0] << 8) | buf[1];
-	
-	command = 0xA4;
-	iic_info.data = &command;
-	iic_info.len = 1;
-	if(IIC_Master_Write(&iic_info))
-		return 1;
-	iic_info.data = buf;
-	iic_info.len = 2;
-	if(IIC_Master_ReadDirect(&iic_info))
-		return 1;
-	c2 = ((uint16_t)buf[0] << 8) | buf[1];
-	
-	command = 0xA6;
-	iic_info.data = &command;
-	iic_info.len = 1;
-	if(IIC_Master_Write(&iic_info))
-		return 1;
-	iic_info.data = buf;
-	iic_info.len = 2;
-	if(IIC_Master_ReadDirect(&iic_info))
-		return 1;
-	c3 = ((uint16_t)buf[0] << 8) | buf[1];
-	
-	command = 0xA8;
-	iic_info.data = &command;
-	iic_info.len = 1;
-	if(IIC_Master_Write(&iic_info))
-		return 1;
-	iic_info.data = buf;
-	iic_info.len = 2;
-	if(IIC_Master_ReadDirect(&iic_info))
-		return 1;
-	c4 = ((uint16_t)buf[0] << 8) | buf[1];
-	
-	command = 0xAA;
-	iic_info.data = &command;
-	iic_info.len = 1;
-	if(IIC_Master_Write(&iic_info))
-		return 1;
-	iic_info.data = buf;
-	iic_info.len = 2;
-	if(IIC_Master_ReadDirect(&iic_info))
-		return 1;
-	c5 = ((uint16_t)buf[0] << 8) | buf[1];
-	
-	command = 0xAC;
-	iic_info.data = &command;
-	iic_info.len = 1;
-	if(IIC_Master_Write(&iic_info))
-		return 1;
-	iic_info.data = buf;
-	iic_info.len = 2;
-	if(IIC_Master_ReadDirect(&iic_info))
-		return 1;
-	c6 = ((uint16_t)buf[0] << 8) | buf[1];
+    for(i = 0; i < 6; i++)
+    {
+        iic_info.data = &command;
+        iic_info.len = 1;
+        if(IIC_Simulation_Master_Write(&iic_info))  //发送数据
+            return 1;  //出现错误返回1
+        iic_info.data = buf;
+        iic_info.len = 2;
+        if(IIC_Simulation_Master_ReadDirect(&iic_info))  //读取数据
+            return 1;
+        c[i] = ((uint16_t)buf[0] << 8) | buf[1];
+        command += 2;
+    }
 	
 	return 0;  //没有出现过错误，返回0
 }
@@ -158,19 +107,19 @@ static uint8_t digital_data_read(uint32_t * data, Pres_Temp_Sele_TypeDef sele)
 	
 	iic_info.data = &command;
 	iic_info.len = 1;
-	if(IIC_Master_Write(&iic_info))
+	if(IIC_Simulation_Master_Write(&iic_info))
 		return 1;  //出现错误返回1
 	delay_ms(DELAY_CONVERSION);  //延时等待ADC数据转换完成
 	
 	command = 0x00;
 	iic_info.data = &command;
 	iic_info.len = 1;
-	if(IIC_Master_Write(&iic_info))
+	if(IIC_Simulation_Master_Write(&iic_info))
 		return 1;
 	
 	iic_info.data = buf;
 	iic_info.len = 3;
-	if(IIC_Master_ReadDirect(&iic_info))
+	if(IIC_Simulation_Master_ReadDirect(&iic_info))
 		return 1;
 	*data = ((uint32_t)buf[0] << 16) | ((uint32_t)buf[1] << 8) | buf[2];
 	
@@ -192,9 +141,9 @@ static uint8_t pres_temp_convert(float * pres_data, float * temp_data)
 	if(digital_data_read(&d2, Temperature_Select))
 		return 1;
 	
-	dt = d2 - ((uint32_t)c5 << 8);  //d2 - c5 * 2^8，优先级+高于<<
-	temp = 2000 + ((dt >> 8) * (c6 >> 8) >> 7);  //2000 + dt * c6 / 2^23
-	// temp = 2000 + (dt * c6 >> 23);  //2000 + dt * c6 / 2^23
+	dt = d2 - ((uint32_t)c[4] << 8);  //d2 - c5 * 2^8，优先级+高于<<
+	temp = 2000 + ((dt >> 8) * (c[5] >> 8) >> 7);  //2000 + dt * c6 / 2^23
+	// temp = 2000 + (dt * c[5] >> 23);  //2000 + dt * c6 / 2^23
 	if(temp < 2000)
 	{
 		t2 = dt * dt >> 31;
@@ -209,10 +158,10 @@ static uint8_t pres_temp_convert(float * pres_data, float * temp_data)
 	}
 	temp = temp - t2;
 	
-	off = ((uint64_t)c2 << 16) + ((c4>>3) * (dt>>4));
-	sens = ((uint64_t)c1 << 15) + ((c3>>4) * (dt>>4));
-	// off = ((uint64_t)c2 << 16) + (c4 * dt >> 7);
-	// sens = ((uint64_t)c1 << 15) + (c3 * dt >> 8);
+	off = ((uint64_t)c[1] << 16) + ((c[3]>>3) * (dt>>4));
+	sens = ((uint64_t)c[0] << 15) + ((c[2]>>4) * (dt>>4));
+	// off = ((uint64_t)c[1] << 16) + (c[3] * dt >> 7);
+	// sens = ((uint64_t)c[0] << 15) + (c[2] * dt >> 8);
 	off = off - off2;
 	sens = sens - sens2;
 	p = (((d1 >> 11) * (sens >> 10)) - off) >> 15;

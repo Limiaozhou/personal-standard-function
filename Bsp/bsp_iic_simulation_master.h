@@ -19,8 +19,44 @@ extern "C"
 //typedef unsigned long int uint32_t;
 //typedef signed long int int32_t;
 
-#define IIC_SIMULATION_MASTER_NUM 1  //模拟IIC口数量
-#define DELAY_US_IIC  5  //IIC输出延时us
+#define IIC_SIMULATION_MASTER_NUM 4  //模拟IIC口数量
+#define DELAY_US_IIC  5  //IIC协议电平变换延时us
+
+//模拟IIC端口列表
+#define IIC_GPIO_LIST {\
+	{\
+		.scl_port = GPIOE,\
+		.scl_pin = GPIO_PIN_6,\
+		.sda_port = GPIOE,\
+		.sda_pin = GPIO_PIN_7\
+	},\
+	{\
+		.scl_port = GPIOB,\
+		.scl_pin = GPIO_PIN_5,\
+		.sda_port = GPIOB,\
+		.sda_pin = GPIO_PIN_4\
+	},\
+    {\
+		.scl_port = GPIOB,\
+		.scl_pin = GPIO_PIN_6,\
+		.sda_port = GPIOB,\
+		.sda_pin = GPIO_PIN_7\
+	},\
+    {\
+		.scl_port = GPIOE,\
+		.scl_pin = GPIO_PIN_1,\
+		.sda_port = GPIOE,\
+		.sda_pin = GPIO_PIN_2\
+	},\
+}
+
+typedef enum
+{
+	Pe6Pe7 = 0,  //模拟IIC端口0
+	Pb5Pb4,
+    Pb6Pb7,
+    Pe1Pe2
+}IIC_Simulaton_Port_TypeDef;  //模拟IIC端口索引
 
 typedef enum
 {
@@ -32,7 +68,7 @@ typedef enum
 {
 	GPIO_In = 0,  //IO输入
 	GPIO_Out = !GPIO_In
-}GPIO_Direction_TypeDef;  //IO电平
+}GPIO_Direction_TypeDef;  //IO输入/输出
 
 typedef struct
 {

@@ -7,8 +7,8 @@ uint8_t light_read(float * light_data)
 	uint32_t data = 0;  //读取数据缓存
 	IIC_Master_ReadReg_Info_TypeDef iic_info =
 	{
-		.wr_info.port = 0,
-		.wr_info.device_adr = 0x94,
+		.wr_info.port = LIGHT_PORT,
+		.wr_info.device_adr = LIGHT_DEVICE_ADR,
         .wr_info.dev_adr_tenbit_flag = 0,
 		.wr_info.data = buf,
 		.wr_info.len = 4,

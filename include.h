@@ -1,7 +1,6 @@
 #ifndef __INCLUDE_H
 #define __INCLUDE_H
 
-#include "stdio.h"
 #include "stm8s_rst.h"
 
 #include "delay.h"
@@ -13,7 +12,7 @@
 #include "bsp_usart.h"
 #include "bsp_iic.h"
 
-#include "mid_light.h"
+//#include "mid_light.h"
 #include "mid_uart.h"
 //#include "mid_pressure.h"
 //#include "mid_temperature.h"
