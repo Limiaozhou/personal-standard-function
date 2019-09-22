@@ -55,11 +55,11 @@ int main(void)
 	{
 		delay_ms(2000);
 		data_deal();
-        if(RST_GetFlagStatus(RST_FLAG_IWDGF))
-        {
-            uart_write(UART1_Select, "IWDGF_RST", 10);
-            RST_ClearFlag(RST_FLAG_IWDGF);
-        }
+//        if(RST_GetFlagStatus(RST_FLAG_IWDGF))
+//        {
+//            uart_write(UART1_Select, "IWDGF_RST", 10);
+//            RST_ClearFlag(RST_FLAG_IWDGF);
+//        }
 	}
 }
 
