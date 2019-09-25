@@ -46,10 +46,10 @@ void package_send(void)
     
     uart_write(UART1_Select, send_dat, len);
 	
-    delay_ms(1000);
-	len = sprintf((char*)send_dat, "light = %.2f, pres = %.2f, pres_temp = %.2f, temp = %.2f, humi = %.2f, co2 = %.2f, tvoc = %.2f, tovcco2 = %.2f, pm = %.2f", 
-                      Evndat.light_bhvi, Evndat.press, Evndat.press_temp, Evndat.temp20, Evndat.humi20, Evndat.co2, Evndat.TVOC, Evndat.tvocco2, Evndat.pm25);
-	uart_write(UART1_Select, send_dat, len);
+//    delay_ms(1000);
+//	len = sprintf((char*)send_dat, "light = %.2f, pres = %.2f, pres_temp = %.2f, temp = %.2f, humi = %.2f, co2 = %.2f, tvoc = %.2f, tovcco2 = %.2f, pm = %.2f", 
+//                      Evndat.light_bhvi, Evndat.press, Evndat.press_temp, Evndat.temp20, Evndat.humi20, Evndat.co2, Evndat.TVOC, Evndat.tvocco2, Evndat.pm25);
+//	uart_write(UART1_Select, send_dat, len);
 	
 	IWDG_Feed();
 }

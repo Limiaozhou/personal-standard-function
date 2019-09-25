@@ -14,6 +14,7 @@
 #include "mid_pressure.h"
 #include "mid_temperature.h"
 #include "mid_tvoc.h"
+#include "mid_pm.h"
 
 typedef struct
 {

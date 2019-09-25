@@ -11,8 +11,6 @@
 //	.error_resend_times = 3,  //失败重读次数3
 //};  //IIC读取信息
 
-static uint16_t tvoc_check_sum(uint8_t * buf, uint16_t len);  //和校验计算
-
 ////tvoc及其co2读取开始函数，成功返回0，失败返回1
 //uint8_t tvoc_eco2_read_start(void)
 //{
@@ -61,14 +59,14 @@ uint8_t tvoc_eco2_read(float * tvoc, float * tvocco2)
     if(IIC_Simulation_Master_ReadDirect(&iic_info))
         return 1;
     
-    check_sum = (uint8_t)(((~tvoc_check_sum(&buf[1], 11)) + 1) & 0xFF);  //计算校验
+    check_sum = (uint8_t)(((~check_sum_get(&buf[1], 11)) + 1) & 0xFF);  //计算校验
     if((buf[0] == 0xFF) && (buf[3] != 0x02) && (check_sum == buf[12]))  //判断数据
     {
         *tvoc = (((uint16_t)buf[8] << 8) + buf[9]) / 1000.0;
         *tvocco2 = ((uint16_t) buf[1] << 8) + buf[2];
         
-        if(*tvoc < 0)
-            *tvoc = 0;
+        if(*tvoc <= 0)
+            *tvoc = 0.01;
         if(*tvocco2 < 400)
             *tvocco2 = 400;
         else if(*tvocco2 > 4500)
@@ -81,14 +79,4 @@ uint8_t tvoc_eco2_read(float * tvoc, float * tvocco2)
     }
     
     return 0;
-}
-
-//和校验计算
-static uint16_t tvoc_check_sum(uint8_t * buf, uint16_t len)
-{
-	uint16_t check_sum = 0;
-	while(len--)
-		check_sum += *(buf++);
-	
-	return check_sum;
 }

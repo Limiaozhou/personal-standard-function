@@ -4,6 +4,7 @@
 //#include "bsp_iic.h"
 //#include "data.h"
 #include "bsp_iic_simulation_master.h"
+#include "my_check.h"
 
 #define TVOC_PORT Pe1Pe2
 #define TVOC_DEVICE_ADDRESS 0xA2  //…Ë±∏µÿ÷∑

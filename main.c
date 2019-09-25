@@ -44,7 +44,7 @@ int main(void)
     IIC_Simulation_Master_Init();  //初始化各模拟IIC口
 	
 	Uart_Init(UART1_Select, 9600, uart1_read_deal);  //UART1波特率9600
-    Uart_Init(UART3_Select, 9600, uart3_read_deal);  //UART3波特率9600
+    Uart_Init(UART3_Select, 9600, pm_read_deal);  //UART3波特率9600
     
     init_Co2();
     Init_Timer4();
