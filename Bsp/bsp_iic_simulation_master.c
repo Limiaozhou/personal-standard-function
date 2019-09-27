@@ -47,8 +47,8 @@ static uint8_t IIC_Simulation_Master_ReceiveByte(uint8_t port, uint8_t ack);  //
 //模拟IIC IO口初始化
 static void iic_simulation_gpio_init(GPIO_TypeDef* GPIOx, GPIO_Pin_TypeDef PortPinx, GPIO_TypeDef* GPIOy, GPIO_Pin_TypeDef PortPiny)
 {
-	GPIO_Init(GPIOx, PortPinx, GPIO_MODE_OUT_OD_HIZ_SLOW);  //开漏低速输出
-	GPIO_Init(GPIOy, PortPiny, GPIO_MODE_OUT_OD_HIZ_SLOW);
+	GPIO_Init(GPIOx, PortPinx, GPIO_MODE_OUT_PP_HIGH_SLOW);  //开漏低速输出
+	GPIO_Init(GPIOy, PortPiny, GPIO_MODE_OUT_PP_HIGH_SLOW);
 }
 
 //模拟IIC IO口电平输出，0输出低
