@@ -42,6 +42,7 @@ int main(void)
 	
 	Delay_Init(16);  //延时函数基准配置
     IIC_Simulation_Master_Init();  //初始化各模拟IIC口
+    GPIO_Init(GPIOE, GPIO_PIN_0, GPIO_MODE_OUT_PP_LOW_SLOW);
 	
 	Uart_Init(UART1_Select, 9600, uart1_read_deal);  //UART1波特率9600
     Uart_Init(UART3_Select, 9600, pm_read_deal);  //UART3波特率9600
@@ -59,6 +60,7 @@ int main(void)
         if(time_data_deal >= 1000)  //2048ms
         {
             data_deal();
+            GPIO_WriteReverse(GPIOE, GPIO_PIN_0);
             time_data_deal = 0;
         }
 //        if(RST_GetFlagStatus(RST_FLAG_IWDGF))
