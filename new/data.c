@@ -59,7 +59,7 @@ void data_deal(void)
     light_read(&Evndat.light_bhvi);  //¹âÕÕ
     pres_temp_read(&Evndat.press, &Evndat.press_temp);  //ÆøÑ¹
     temp_humi_read(&Evndat.temp20,  &Evndat.humi20);  //ÎÂÊª¶È
-//    tvoc_eco2_read(&Evndat.TVOC, &Evndat.tvocco2);  //TVOC
+    tvoc_eco2_read(&Evndat.TVOC, &Evndat.tvocco2);  //TVOC
 	Get_CO2(&Evndat.co2);  //CO2£¬PWM
     
 	package_send();
