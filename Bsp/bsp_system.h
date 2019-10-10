@@ -1,12 +1,18 @@
 #ifndef __BSP_SYSTEM_H
 #define __BSP_SYSTEM_H
 
-//#include "stm32f7xx_hal.h"
+#if defined STM32_HAL
+#include "stm32f7xx_hal.h"
+
+#elif defined STM8
 #include "stm8s.h"  //使用库函数不能包括"iostm8s103F3.h"
 #include "stm8s_clk.h"
 
-//#include "typedef.h"  //数据类型声明
+#elif defined STM32_STANDARD
+#include "stm32f10x_rcc.h"
+#endif
 
+//#include "typedef.h"  //数据类型声明
 //数据类型声明
 // typedef unsigned char uint8_t;
 // typedef signed char int8_t;
@@ -15,8 +21,10 @@
 // typedef unsigned long int uint32_t;
 // typedef signed long int int32_t;
 
-//void MPU_Config(void);  //STM32
-//void CPU_CACHE_Enable(void);  //STM32
+#if defined STM32_HAL
+void MPU_Config(void);
+void CPU_CACHE_Enable(void);
+#endif
 
 void CLK_SYSCLK_Config(void);
 
