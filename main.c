@@ -54,7 +54,7 @@ int main(void)
 //    asm("rim");//开全局中断，sim为关中断
 //    
 //	/* Infinite loop */
-	while (1)
+	while(1)
 	{
 //		delay_ms(2000);
 //        if(time_data_deal >= 1000)  //2048ms

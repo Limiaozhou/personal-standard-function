@@ -126,9 +126,6 @@ void CLK_SYSCLK_Config(void)
     }
     
 #elif defined STM32_STANDARD
-//    RCC_DeInit();
-//    RCC_HSEConfig(RCC_HSE_ON);
-//    while(RCC_WaitForHSEStartUp());
     
 #endif
 }
