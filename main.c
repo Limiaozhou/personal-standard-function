@@ -28,19 +28,21 @@
 /* Main program */
 int main(void)
 {
+#if defined STM32_HAL
 	/* STM32 Configure the MPU attributes as Write Through */
-//	MPU_Config();
+	MPU_Config();
 
 	/* STM32 Enable the CPU Cache */
-//	CPU_CACHE_Enable();
+	CPU_CACHE_Enable();
 	
 	/* STM32F7xx HAL library initialization */
-//	HAL_Init();
+	HAL_Init();
+#endif
 
 	/* Configure the system clock to 16 MHz */
-	CLK_SYSCLK_Config();  //内部高速时钟，HSI和CPU时钟0分频，fcpu = 16MHz
+//	CLK_SYSCLK_Config();  //内部高速时钟，HSI和CPU时钟0分频，fcpu = 16MHz
 	
-//	Delay_Init(16);  //延时函数基准配置
+	Delay_Init(72);  //延时函数基准配置
 //    IIC_Simulation_Master_Init();  //初始化各模拟IIC口
 //    GPIO_Init(GPIOE, GPIO_PIN_0, GPIO_MODE_OUT_PP_LOW_SLOW);
 //	
@@ -56,7 +58,7 @@ int main(void)
 //	/* Infinite loop */
 	while(1)
 	{
-//		delay_ms(2000);
+		delay_ms(2000);
 //        if(time_data_deal >= 1000)  //2048ms
 //        {
 //            data_deal();

@@ -2,9 +2,9 @@
 #define __INCLUDE_H
 
 //#include "stm8s_rst.h"
-//
-//#include "delay.h"
-//
+
+#include "delay.h"
+
 #include "bsp_system.h"
 ////#include "bsp_led.h"
 ////#include "bsp_key.h"
