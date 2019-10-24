@@ -71,8 +71,8 @@ static void Error_Handler(void)
 void CLK_SYSCLK_Config(void)
 {
 #if defined STM8
-	CLK_DeInit();  //复位时钟配置，HSI 8分频，2MHz
-	CLK_SYSCLKConfig(CLK_PRESCALER_HSIDIV1);  //改HSI 1分频，16MHz
+	CLK_DeInit();  //复位时钟配置，HSI为8分频，2MHz
+	CLK_SYSCLKConfig(CLK_PRESCALER_HSIDIV1);  //改HSI为1分频，16MHz
     
 #elif defined STM32_HAL
     RCC_ClkInitTypeDef RCC_ClkInitStruct;

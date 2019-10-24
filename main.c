@@ -39,8 +39,8 @@ int main(void)
 	HAL_Init();
 #endif
 
-	/* Configure the system clock to 16 MHz */
-//	CLK_SYSCLK_Config();  //内部高速时钟，HSI和CPU时钟0分频，fcpu = 16MHz
+	/* Configure the system clock */
+	CLK_SYSCLK_Config();
 	
 	Delay_Init(72);  //延时函数基准配置
 //    IIC_Simulation_Master_Init();  //初始化各模拟IIC口
