@@ -42,15 +42,18 @@ int main(void)
 	/* Configure the system clock */
 	CLK_SYSCLK_Config();
 	
+#if defined STM32_STANDARD
+    SysTick_Init();
+#endif
+    
 	Delay_Init(72);  //延时函数基准配置
     Led_GPIO_Init();
     
 //	/* Infinite loop */
 	while(1)
 	{
-        Led_GPIO_Write(LED0, LED_OFF);
-		delay_ms(1000);
-        Led_GPIO_Write(LED2, LED_ON);
+        delay_ms(1000);
+        Led_GPIO_Write(LED3, LED_TOGGLE);
 	}
 }
 

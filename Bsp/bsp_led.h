@@ -19,8 +19,12 @@
 // typedef unsigned long int uint32_t;
 // typedef signed long int int32_t;
 
-#define LED_NUM 2  //LED最大数量
-#define Led(x) x  //led号
+#define LED_GPIO_LIST {\
+{.GPIOx = GPIOA, .Pin = GPIO_Pin_4, .active_level = 0},\
+{.GPIOx = GPIOA, .Pin = GPIO_Pin_5, .active_level = 0},\
+{.GPIOx = GPIOA, .Pin = GPIO_Pin_6, .active_level = 0},\
+{.GPIOx = GPIOD, .Pin = GPIO_Pin_2, .active_level = 0}\
+}
 
 typedef enum
 {
@@ -34,6 +38,7 @@ typedef enum
 	LED0 = 0,
 	LED1,
     LED2,
+    LED3,
 	number_of_led
 }LED_GPIO_Port;  //LED端口
 
@@ -46,5 +51,6 @@ typedef struct
 
 void Led_GPIO_Init(void);
 void Led_GPIO_Write(LED_GPIO_Port ledx, LED_GPIO_OutState state);
+uint8_t Led_GPIO_Read(LED_GPIO_Port ledx);
 
 #endif

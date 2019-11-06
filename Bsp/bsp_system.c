@@ -130,6 +130,14 @@ void CLK_SYSCLK_Config(void)
 #endif
 }
 
+#if defined STM32_STANDARD
+void SysTick_Init(void)
+{
+    if(SysTick_Config(SystemCoreClock / 1000))  //设置重载值，使能systick及其中断
+        while(1);
+}
+#endif
+
 #ifdef  USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number

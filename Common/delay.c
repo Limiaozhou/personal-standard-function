@@ -10,7 +10,6 @@ void Delay_Init(uint8_t sysclk)
     fac_us = sysclk;
 	
 #elif defined STM32_STANDARD
-    SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK);
     fac_us = sysclk;
     
 #elif defined STM8

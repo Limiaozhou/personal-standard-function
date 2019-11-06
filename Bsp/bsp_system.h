@@ -28,6 +28,10 @@ void CPU_CACHE_Enable(void);
 
 void CLK_SYSCLK_Config(void);
 
+#if defined STM32_STANDARD
+void SysTick_Init(void);
+#endif
+
 #ifdef  USE_FULL_ASSERT
 void assert_failed(uint8_t * file, uint32_t line);
 #endif
