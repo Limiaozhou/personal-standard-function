@@ -4,12 +4,12 @@
 #if defined STM32_HAL
 #include "stm32f7xx_hal.h"
 
+#elif defined STM32_STANDARD
+#include "stm32f10x_rcc.h"
+
 #elif defined STM8
 #include "stm8s.h"  //使用库函数不能包括"iostm8s103F3.h"
 #include "stm8s_clk.h"
-
-#elif defined STM32_STANDARD
-#include "stm32f10x_rcc.h"
 #endif
 
 //#include "typedef.h"  //数据类型声明

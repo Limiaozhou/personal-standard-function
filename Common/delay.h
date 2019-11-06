@@ -4,11 +4,11 @@
 #if defined STM32_HAL
 #include "stm32f7xx_hal.h"
 
-#elif defined STM8
-#include "stm8s.h"  //数据类型重定义包含头文件
-
 #elif defined STM32_STANDARD
 #include "misc.h"
+
+#elif defined STM8
+#include "stm8s.h"  //数据类型重定义包含头文件
 #endif
 
 //#include "typedef.h"  //数据类型重定义包含头文件

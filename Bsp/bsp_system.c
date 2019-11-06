@@ -70,11 +70,7 @@ static void Error_Handler(void)
 
 void CLK_SYSCLK_Config(void)
 {
-#if defined STM8
-	CLK_DeInit();  //复位时钟配置，HSI为8分频，2MHz
-	CLK_SYSCLKConfig(CLK_PRESCALER_HSIDIV1);  //改HSI为1分频，16MHz
-    
-#elif defined STM32_HAL
+#if defined STM32_HAL
     RCC_ClkInitTypeDef RCC_ClkInitStruct;
     RCC_OscInitTypeDef RCC_OscInitStruct;
     HAL_StatusTypeDef ret = HAL_OK;
@@ -109,7 +105,7 @@ void CLK_SYSCLK_Config(void)
     ret = HAL_PWREx_EnableOverDrive();
     if(ret != HAL_OK)
     {
-      Error_Handler();
+        Error_Handler();
     }
     
     //    Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2 clocks dividers
@@ -126,7 +122,11 @@ void CLK_SYSCLK_Config(void)
     }
     
 #elif defined STM32_STANDARD
+    //系统时钟已初始化为外部高速-72MHz，其他外设时钟没打开
     
+#elif defined STM8
+	CLK_DeInit();  //复位时钟配置，HSI为8分频，2MHz
+	CLK_SYSCLKConfig(CLK_PRESCALER_HSIDIV1);  //改HSI为1分频，16MHz
 #endif
 }
 
@@ -139,13 +139,13 @@ void CLK_SYSCLK_Config(void)
   * @retval None
   */
 void assert_failed(uint8_t * file, uint32_t line)
-{ 
+{
   /* User can add his own implementation to report the file name and line number,
      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
 
   /* Infinite loop */
-  while (1)
-  {
-  }
+    while (1)
+    {
+    }
 }
 #endif

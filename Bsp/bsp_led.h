@@ -1,41 +1,50 @@
 #ifndef __BSP_LED_H
 #define __BSP_LED_H
 
+#if defined STM32_HAL
 #include "stm32f7xx_hal.h"
 
-//#define STM32F7  //开启stm32_hal_legacy.h--GPIO_SPEED_HIGH
+#elif defined STM32_STANDARD
+#include "stm32f10x_gpio.h"
 
-typedef struct
-{
-	GPIO_TypeDef* GPIOx;
-	uint32_t Pin;
-	uint8_t Pull;
-}LED_GPIOType;  //LED引脚结构体
+#elif defined STM8
+#endif
+
+//#include "typedef.h"  //数据类型声明
+//数据类型声明
+// typedef unsigned char uint8_t;
+// typedef signed char int8_t;
+// typedef unsigned int uint16_t;
+// typedef signed int int16_t;  //8位机int丿16,32位机int丿32
+// typedef unsigned long int uint32_t;
+// typedef signed long int int32_t;
+
+#define LED_NUM 2  //LED最大数量
+#define Led(x) x  //led号
 
 typedef enum
 {
 	LED_OFF = 0,
 	LED_ON,
-	LED_TOGGLE
-}LED_State;  //LED输出状态
+	LED_TOGGLE  //翻转
+}LED_GPIO_OutState;  //LED输出状态
 
-#define LED_NUM 2  //LED最大数量
-#define Led(x) x  //led号
+typedef enum
+{
+	LED0 = 0,
+	LED1,
+    LED2,
+	number_of_led
+}LED_GPIO_Port;  //LED端口
 
-#define LED0_PIN               GPIO_PIN_1  //LED0引脚相关宏定义
-#define LED0_GPIO              GPIOB
-#define LED0_GPIO_CLK_ENABLE() __HAL_RCC_GPIOB_CLK_ENABLE()
+typedef struct
+{
+	GPIO_TypeDef* GPIOx;
+	uint16_t Pin;
+	uint8_t active_level;  //有效电平
+}LED_GPIOType;  //LED引脚结构体
 
-#define LED1_PIN               GPIO_PIN_0
-#define LED1_GPIO              GPIOB
-#define LED1_GPIO_CLK_ENABLE() __HAL_RCC_GPIOB_CLK_ENABLE()
-
-#define LED_NOPULL 0  //GPIO_NOPULL=0
-#define LED_UP     1  //GPIO_PULLUP=1
-#define LED_DOWN   2  //GPIO_PULLUDOWN=2
-
-void Led_GPIO_Init(void);  //LED端口配置
-void Led_Write(uint8_t ledx, LED_State state);  //写LED端口
-uint8_t Led_Read(uint8_t ledx);  //读LED端口
+void Led_GPIO_Init(void);
+void Led_GPIO_Write(LED_GPIO_Port ledx, LED_GPIO_OutState state);
 
 #endif
