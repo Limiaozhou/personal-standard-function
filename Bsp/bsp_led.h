@@ -20,10 +20,10 @@
 // typedef signed long int int32_t;
 
 #define LED_GPIO_LIST {\
-{.GPIOx = GPIOA, .Pin = GPIO_Pin_4, .active_level = 0},\
-{.GPIOx = GPIOA, .Pin = GPIO_Pin_5, .active_level = 0},\
-{.GPIOx = GPIOA, .Pin = GPIO_Pin_6, .active_level = 0},\
-{.GPIOx = GPIOD, .Pin = GPIO_Pin_2, .active_level = 0}\
+{.GPIOx = GPIOA, .Pin = GPIO_Pin_4, .active_level = 0, .RCC_APB2Periph = RCC_APB2Periph_GPIOA},\
+{.GPIOx = GPIOA, .Pin = GPIO_Pin_5, .active_level = 0, .RCC_APB2Periph = RCC_APB2Periph_GPIOA},\
+{.GPIOx = GPIOA, .Pin = GPIO_Pin_6, .active_level = 0, .RCC_APB2Periph = RCC_APB2Periph_GPIOA},\
+{.GPIOx = GPIOD, .Pin = GPIO_Pin_2, .active_level = 0, .RCC_APB2Periph = RCC_APB2Periph_GPIOD}\
 }
 
 typedef enum
@@ -45,6 +45,7 @@ typedef enum
 typedef struct
 {
 	GPIO_TypeDef* GPIOx;
+    uint32_t RCC_APB2Periph;  //外设时钟使能
 	uint16_t Pin;
 	uint8_t active_level;  //有效电平
 }LED_GPIOType;  //LED引脚结构体

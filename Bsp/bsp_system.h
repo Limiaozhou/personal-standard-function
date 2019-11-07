@@ -29,6 +29,7 @@ void CPU_CACHE_Enable(void);
 void CLK_SYSCLK_Config(void);
 
 #if defined STM32_STANDARD
+void NVIC_PriorityGroupInit(void);
 void SysTick_Init(void);
 #endif
 

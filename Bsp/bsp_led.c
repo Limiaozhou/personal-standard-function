@@ -10,16 +10,15 @@ void Led_GPIO_Init(void)
 	
     GPIO_InitTypeDef GPIO_InitStruct;
 	
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD, ENABLE);
-    
-    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_OD;
+    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
     GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
 	
 	for(i = 0; i < number_of_led; i++)  //引脚遍历
 	{
 		if(Led_GPIO_List[i].GPIOx)  //引脚有效
 		{
+            RCC_APB2PeriphClockCmd(Led_GPIO_List[i].RCC_APB2Periph, ENABLE);
+            
 			GPIO_InitStruct.GPIO_Pin = Led_GPIO_List[i].Pin;
 			GPIO_Init(Led_GPIO_List[i].GPIOx, &GPIO_InitStruct);
             
@@ -47,7 +46,6 @@ void Led_GPIO_Write(LED_GPIO_Port ledx, LED_GPIO_OutState state)
             bitstatus_read = Led_GPIO_Read(ledx);
             GPIO_WriteBit(Led_GPIO_List[ledx].GPIOx, Led_GPIO_List[ledx].Pin, (BitAction)!bitstatus_read);
         }
-            
 	}
 }
 

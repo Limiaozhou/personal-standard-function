@@ -43,17 +43,19 @@ int main(void)
 	CLK_SYSCLK_Config();
 	
 #if defined STM32_STANDARD
+    NVIC_PriorityGroupInit();
     SysTick_Init();
 #endif
     
 	Delay_Init(72);  //延时函数基准配置
     Led_GPIO_Init();
+    TIM3_Init(7199, 9);  //7200 * 10 / 72000000 = 0.001s = 1ms
     
 //	/* Infinite loop */
 	while(1)
 	{
-        delay_ms(1000);
-        Led_GPIO_Write(LED3, LED_TOGGLE);
+        if((get_tim3_ticks() % 1000) == 0)
+            Led_GPIO_Write(LED0, LED_TOGGLE);
 	}
 }
 

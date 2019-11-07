@@ -1,144 +1,43 @@
 #include "bsp_time.h"
 
-//static TIM_HandleTypeDef TIM_CommonStruct;  //STM32 通用定时器结构体
+static uint32_t tim3_ticks = 0;
 
-TIME_CountType Time_Table[TIME_NUM];  //定时器计时表
-
-static unsigned char num = 0;  //定时任务注册计数
-
-static void time_count(void);
-
-/*
- *period：自动重装值
- *prescaler：时钟预分频数
- *STM32 定时器溢出时间计算方法:Tout=((period+1)*(prescaler+1))/Ft us
- *Ft=定时器工作频率,单位:Mhz，时钟为HCLK/2
- *STM8 f = fmaster / (2^prescaler)，T = (period+1)/f us
- */
-void TIMx_Init(TIMx_Select_TypeDef timex, unsigned long int prescaler, unsigned long int period)
+void TIM3_Init(uint16_t prescaler, uint16_t period)
 {
-    //STM8
-    switch(timex)
+    TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+	NVIC_InitTypeDef NVIC_InitStructure;
+
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);  //时钟使能
+	
+    TIM_TimeBaseStructure.TIM_Prescaler = prescaler;  //设置用来作为TIMx时钟频率除数的预分频值
+	TIM_TimeBaseStructure.TIM_Period = period;  //设置在下一个更新事件装入活动的自动重装载寄存器周期的值	
+	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;  //设置时钟分割:TDTS = Tck_tim
+	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;  //TIM向上计数模式
+	TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure);  //根据指定的参数初始化TIMx的时间基数单位
+
+	TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);  //使能指定的TIMx中断,允许更新中断
+
+	//中断优先级NVIC设置
+	NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;  //TIM3中断
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;  //先占优先级0级
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;  //从优先级3级
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;  //IRQ通道被使能
+	NVIC_Init(&NVIC_InitStructure);  //初始化NVIC寄存器
+
+	TIM_Cmd(TIM3, ENABLE);  //使能TIMx
+}
+
+//定时器3中断服务程序
+void TIM3_IRQHandler(void)  //TIM3中断
+{
+	if(TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET)  //检查TIM3更新中断发生与否
     {
-        case TIM1_Select :
-        break;
-        
-        case TIM2_Select :  //向下计数，period到0
-            TIM2_PSCR = prescaler & 0x0F;  //预分频2^prescaler，定时器2
-            TIM2_ARRH = period >> 8;  //自动重装值高8位
-            TIM2_ARRL = period & 0xFF;  //自动重装值低8位
-            TIM2_SR1 &= ~0x01;  //清0更新中断
-            TIM2_IER |= 0x01;  //允许更新中断
-            TIM2_CR1 |= 0x81;  //允许重装，使能计数
-        break;
-        
-        case TIM3_Select :
-        break;
-        
-        case TIM4_Select :
-        break;
-        
-        case TIM5_Select :
-        break;
-        
-        case TIM6_Select :
-        break;
-        
-        default :
-        break;
+        tim3_ticks++;
+		TIM_ClearITPendingBit(TIM3, TIM_IT_Update);  //清除TIMx更新中断标志 
     }
-    
-    //STM32
-//	TIM_CommonStruct.Instance = TIM_COMMON;  //通用定时器
-//    TIM_CommonStruct.Init.Prescaler = prescaler;  //分频
-//    TIM_CommonStruct.Init.CounterMode = TIM_COUNTERMODE_UP;  //向上计数器
-//    TIM_CommonStruct.Init.Period = period;  //自动装载值
-//    TIM_CommonStruct.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;  //时钟分频因子
-//
-//	HAL_TIM_Base_Init(&TIM_CommonStruct);  //初始化定时器TIM
-//
-//	HAL_TIM_Base_Start_IT(&TIM_CommonStruct);	//开启定时器更新中断
 }
 
-/* STM32 Init the low level hardware : GPIO, CLOCK, NVIC */
-//void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim)
-//{
-//    if(htim->Instance == TIM_COMMON)
-//	{
-//		TIM_COMMON_CLK_ENABLE();  //开启TIM_CLK
-//		
-//		HAL_NVIC_SetPriority(TIM_COMMON_IRQn, 0, 3);  //设置中断优先级，抢占优先级0，子优先级3
-//		HAL_NVIC_EnableIRQ(TIM_COMMON_IRQn);  //开启ITM中断
-//	}
-//}
-
-/* 定时器计时注册，data:传入计时的时间，返回当前注册的个数，超过最大个数返回0 */
-unsigned char time_register(unsigned long int * data)
+uint32_t get_tim3_ticks(void)
 {
-	if(num < TIME_NUM)
-	{
-		Time_Table[num].t_cnt = data;
-		num++;
-		return num;
-	}
-	else
-		return 0;
+    return tim3_ticks;
 }
-
-/* 开启定时器计时标志 */
-void time_start(unsigned char numx)
-{
-	unsigned char temp = numx - 1;
-	
-	if((temp < num) && Time_Table[temp].t_cnt && (!Time_Table[temp].t_start))
-	{
-		Time_Table[temp].t_start = 1;
-	}
-}
-
-/* 清计时标志及时间 */
-void time_clean(unsigned char numx)
-{
-	unsigned char temp = numx - 1;
-	
-	if((temp < num) && Time_Table[temp].t_cnt && Time_Table[temp].t_start)
-	{
-		Time_Table[temp].t_start = 0;
-		*Time_Table[temp].t_cnt = 0;
-	}
-}
-
-/* 定时器计时 */
-void time_count(void)
-{
-	unsigned char i;
-	for(i = 0; i < num; i++)
-	{
-		if(Time_Table[i].t_start)
-			(*Time_Table[i].t_cnt)++;
-	}
-}
-
-//STM8 定时器中断服务函数，1ms中断一次
-#pragma vector=TIM2_OVR_UIF_vector  //15
-__interrupt void TIM2_OVR_UIF_IRQHandler(void)
-{
-    TIM2_SR1 &= ~0x01;  //清更新中断标志
-    time_count();
-}
-
-/* STM32 定时器中断服务函数，1ms中断一次 */
-//void TIM_COMMON_IRQHandler(void)
-//{
-//	HAL_TIM_IRQHandler(&TIM_CommonStruct);
-//}
-
-/* TM32 定时器中断回调函数 */
-//void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-//{
-//    if(htim==(&TIM_CommonStruct))
-//    {
-//		time_count();
-////		time_common++;
-//    }
-//}

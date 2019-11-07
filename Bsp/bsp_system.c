@@ -131,6 +131,11 @@ void CLK_SYSCLK_Config(void)
 }
 
 #if defined STM32_STANDARD
+void NVIC_PriorityGroupInit(void)
+{
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+}
+
 void SysTick_Init(void)
 {
     if(SysTick_Config(SystemCoreClock / 1000))  //设置重载值，使能systick及其中断
