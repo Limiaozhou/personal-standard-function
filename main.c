@@ -55,7 +55,7 @@ int main(void)
 	while(1)
 	{
         if((get_tim3_ticks() % 1000) == 0)
-            Led_GPIO_Write(LED0, LED_TOGGLE);
+            Led_GPIO_Write(LED3, LED_TOGGLE);
 	}
 }
 

@@ -140,6 +140,8 @@ void SysTick_Init(void)
 {
     if(SysTick_Config(SystemCoreClock / 1000))  //设置重载值，使能systick及其中断
         while(1);
+    
+    SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;  //失能中断
 }
 #endif
 
