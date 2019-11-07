@@ -49,12 +49,12 @@ int main(void)
     
 	Delay_Init(72);  //延时函数基准配置
     Led_GPIO_Init();
-    TIM3_Init(7199, 9);  //7200 * 10 / 72000000 = 0.001s = 1ms
+    TIM3_Init(719, 99);  //720 * 100 / 72000000 = 0.001s = 1ms
     
 //	/* Infinite loop */
 	while(1)
 	{
-        if((get_tim3_ticks() % 1000) == 0)
+        if(((get_tim3_ticks() % 1000) == 0) && (get_tim3_ticks() > 0))
             Led_GPIO_Write(LED3, LED_TOGGLE);
 	}
 }
