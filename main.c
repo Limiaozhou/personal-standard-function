@@ -54,8 +54,8 @@ int main(void)
 //	/* Infinite loop */
 	while(1)
 	{
-        if(((get_tim3_ticks() % 1000) == 0) && (get_tim3_ticks() > 0))
-            Led_GPIO_Write(LED3, LED_TOGGLE);
+        if(((get_tim3_ticks() % 1000) == 0) && (get_tim3_ticks() > 0))  //先到定时器中断
+            Led_GPIO_Write(LED0, LED_TOGGLE);
 	}
 }
 
