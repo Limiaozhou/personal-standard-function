@@ -44,9 +44,9 @@ uint8_t timer_task_start( uint32_t timeout, uint32_t reloadTimeout, void (*timeo
 uint8_t timer_task_stop( void (*timeout_task)(void) );
 
   /*
-   * Get the tick count of a Timer.
+   * Update timer tables
    */
-uint32_t get_timeout( void (*timeout_task)(void) );
+void Timer_Update( uint32_t updateTime );
 
   /*
    * Adjust timer tables
@@ -54,9 +54,9 @@ uint32_t get_timeout( void (*timeout_task)(void) );
 void timers_adjust( void );
 
   /*
-   * Update timer tables
+   * Get the tick count of a Timer.
    */
-void Timer_Update( uint32_t updateTime );
+uint32_t get_timeout( void (*timeout_task)(void) );
 
   /*
    * Count active timers
@@ -64,7 +64,7 @@ void Timer_Update( uint32_t updateTime );
 uint8_t timer_num_active( void );
 
   /*
-   * Get the next OSAL timer expiration.
+   * Get the next timer expiration.
    * This function should only be called in OSAL_PwrMgr.c
    */
 uint32_t next_timeout( void );
