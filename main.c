@@ -1,29 +1,24 @@
-/**
-  ******************************************************************************
-  * @file    main.c 
-  * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    22-April-2016
-  * @brief   Main program body
-  ******************************************************************************
-  * @attention
-  *
-  *
-  ******************************************************************************
-  */
-
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
-//uint16_t time_data_deal = 0;
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
+void time_task1(void);
+void time_task2(void);
 
 /* Private functions ---------------------------------------------------------*/
+void time_task1(void)
+{
+    Led_GPIO_Write(LED3, LED_TOGGLE);
+}
+
+void time_task2(void)
+{
+    timer_task_stop(time_task1);
+}
 
 /* Main program */
 int main(void)
@@ -31,14 +26,14 @@ int main(void)
 #if defined STM32_HAL
 	/* STM32 Configure the MPU attributes as Write Through */
 	MPU_Config();
-
+    
 	/* STM32 Enable the CPU Cache */
 	CPU_CACHE_Enable();
 	
 	/* STM32F7xx HAL library initialization */
 	HAL_Init();
 #endif
-
+    
 	/* Configure the system clock */
 	CLK_SYSCLK_Config();
 	
@@ -50,12 +45,13 @@ int main(void)
 	Delay_Init(72);  //延时函数基准配置
     Led_GPIO_Init();
     TIM3_Init(719, 99);  //720 * 100 / 72000000 = 0.001s = 1ms
+    timer_task_start(1000, 1000, time_task1);
+    timer_task_start(10000, 0, time_task2);
     
 //	/* Infinite loop */
 	while(1)
 	{
-        if(((get_tim3_ticks() % 1000) == 0) && (get_tim3_ticks() > 0))  //先到定时器中断
-            Led_GPIO_Write(LED0, LED_TOGGLE);
+        timers_adjust();
 	}
 }
 
