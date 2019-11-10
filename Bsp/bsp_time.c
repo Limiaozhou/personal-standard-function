@@ -1,8 +1,10 @@
 #include "bsp_time.h"
+#include "stdlib.h"  //包含NULL
 
 static uint32_t tim3_ticks = 0;
+static void (*time3_cb)(void *) = (void *)NULL;
 
-void TIM3_Init(uint16_t prescaler, uint16_t period)
+void TIM3_Init(uint16_t prescaler, uint16_t period, void (*time3_task)(void *))
 {
     TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
@@ -22,7 +24,9 @@ void TIM3_Init(uint16_t prescaler, uint16_t period)
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;  //先占优先级0级
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;  //从优先级3级
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;  //IRQ通道被使能
-	NVIC_Init(&NVIC_InitStructure);  //初始化NVIC寄存器
+	NVIC_Init(&NVIC_InitStructure);  //初始化NVIC寄存器，执行完就先产生中断
+    
+    time3_cb = time3_task;
 
 	TIM_Cmd(TIM3, ENABLE);  //使能TIMx
 }
@@ -32,7 +36,13 @@ void TIM3_IRQHandler(void)  //TIM3中断
 {
 	if(TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET)  //检查TIM3更新中断发生与否
     {
+//        uint32_t time = 1;
+        
         tim3_ticks++;
+        
+        if(time3_cb)
+            time3_cb(&tim3_ticks);
+        
 		TIM_ClearITPendingBit(TIM3, TIM_IT_Update);  //清除TIMx更新中断标志 
     }
 }

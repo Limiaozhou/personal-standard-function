@@ -241,30 +241,26 @@ uint8_t timer_task_stop( void (*timeout_task)(void) )
  *
  * @return  none
  *********************************************************************/
-void Timer_Update( uint32_t updateTime )
-{
-    Timer_TaskTypeDef *srchTimer;  //当前节点
-    Timer_TaskTypeDef *prevTimer;  //前节点
-
+void Timer_Update( void * updateTime )
+{  //若传进来updateTime为8位，强制转换为32位，会将其前或后内存的其他值带进来，而出错！！！
+    Timer_TaskTypeDef *srchTimer;
+    
     // Look for open timer slot
     if ( timerHead != NULL )
     {
         // Add it to the end of the timer list
         srchTimer = timerHead;
-        prevTimer = (void *)NULL;
 
         // Look for open timer slot
         while ( srchTimer )
         {
-            Timer_TaskTypeDef *freeTimer = NULL;
-
-            if (srchTimer->timeout <= updateTime)
+            if (srchTimer->timeout <= *((uint32_t *)updateTime))
             {
                 srchTimer->timeout = 0;
             }
             else
             {
-                srchTimer->timeout = srchTimer->timeout - updateTime;
+                srchTimer->timeout = srchTimer->timeout - *((uint32_t *)updateTime);
             }
 
             // Check for reloading
@@ -272,10 +268,7 @@ void Timer_Update( uint32_t updateTime )
             {
                 // Notify the task of a timeout
                 if(srchTimer->taskPriority_flag)
-                {
-                    srchTimer->taskPerform_flag = 0;
                     srchTimer->timeout_task();
-                }
                 else
                     srchTimer->taskPerform_flag = 1;
 
@@ -284,42 +277,45 @@ void Timer_Update( uint32_t updateTime )
             }
 
             // When timeout or delete (rmTimer_flag == 0)
-            if ( srchTimer->timeout == 0 || srchTimer->rmTimer_flag == 0 )
+            if ( srchTimer->timeout == 0 )
             {
-                // Take out of list
-                if ( prevTimer == NULL )
-                    timerHead = srchTimer->next;
+                srchTimer->rmTimer_flag = 0;
+                
+                if(srchTimer->taskPriority_flag)
+                    srchTimer->timeout_task();
                 else
-                    prevTimer->next = srchTimer->next;
-
-                // Setup to free memory
-                freeTimer = srchTimer;
-
-                // Next
-                srchTimer = srchTimer->next;
+                    srchTimer->taskPerform_flag = 1;
             }
-            else
-            {
-                // Get next
-                prevTimer = srchTimer;
-                srchTimer = srchTimer->next;
-            }
-
-            if ( freeTimer )
-            {
-                if ( freeTimer->timeout == 0 )
-                {
-                    if(freeTimer->taskPriority_flag)
-                    {
-                        freeTimer->taskPerform_flag = 0;
-                        freeTimer->timeout_task();
-                    }
-                    else
-                        freeTimer->taskPerform_flag = 1;
-                }
-                free( freeTimer );
-            }
+            srchTimer = srchTimer->next;
         }
+    }
+}
+
+void timeout_task_loop(void)
+{
+    Timer_TaskTypeDef *srchTimer;
+    Timer_TaskTypeDef *prevTimer = (void *)NULL;
+    
+    for( srchTimer = timerHead; srchTimer; srchTimer = srchTimer->next )
+    {
+        if( (srchTimer->taskPerform_flag) && (!srchTimer->taskPriority_flag) )
+        {
+            srchTimer->timeout_task();
+            srchTimer->taskPerform_flag = 0;
+        }
+        
+        if(!srchTimer->rmTimer_flag)
+        {
+            // Take out of list
+            if(prevTimer == NULL)
+                timerHead = srchTimer->next;
+            else
+                prevTimer->next = srchTimer->next;
+            
+            free(srchTimer);
+        }
+        
+        prevTimer = srchTimer;
     }
 }
 
@@ -332,7 +328,7 @@ void Timer_Update( uint32_t updateTime )
  *
  * @return  none
  *********************************************************************/
-void timers_adjust( void )
+void timers_adjust( void * timer_elapsed )
 {
     static uint32_t oldTime = 0;
     static uint8_t oldTime_flag = 0;  //设置oldTime标志
@@ -343,12 +339,12 @@ void timers_adjust( void )
     {
         if(!oldTime_flag)
         {
-            oldTime = get_tim3_ticks();
+            oldTime = *((uint32_t *)timer_elapsed);
             oldTime_flag = 1;
         }
         
         // Compute elapsed time (msec)
-        nowTime = get_tim3_ticks();
+        nowTime = *((uint32_t *)timer_elapsed);
         if(nowTime >= oldTime)
             eTime = nowTime - oldTime;
         else
@@ -357,7 +353,7 @@ void timers_adjust( void )
         if ( eTime )
         {
             oldTime = nowTime;
-            Timer_Update( eTime );
+            Timer_Update( &eTime );
         }
     }
 }

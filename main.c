@@ -5,9 +5,13 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+//uint32_t time_ticks;
+
 /* Private function prototypes -----------------------------------------------*/
 void time_task1(void);
 void time_task2(void);
+void test(uint8_t * data);
+void test1(void *);
 
 /* Private functions ---------------------------------------------------------*/
 void time_task1(void)
@@ -18,6 +22,17 @@ void time_task1(void)
 void time_task2(void)
 {
     timer_task_stop(time_task1);
+}
+
+void test(uint8_t * data)
+{
+}
+
+void test1(void * a)
+{
+    uint8_t * b;
+    b = (uint8_t*)a;
+    *b = 1;
 }
 
 /* Main program */
@@ -44,14 +59,16 @@ int main(void)
     
 	Delay_Init(72);  //延时函数基准配置
     Led_GPIO_Init();
-    TIM3_Init(719, 99);  //720 * 100 / 72000000 = 0.001s = 1ms
-    timer_task_start(1000, 1000, time_task1);
-    timer_task_start(10000, 0, time_task2);
+    TIM3_Init(719, 99, timers_adjust);  //720 * 100 / 72000000 = 0.001s = 1ms
+    timer_task_start(1000, 1000, 1, time_task1);
+    timer_task_start(10000, 0, 0, time_task2);
     
 //	/* Infinite loop */
 	while(1)
 	{
-        timers_adjust();
+//        time_ticks = get_tim3_ticks();
+//        timers_adjust(&time_ticks);
+        timeout_task_loop();
 	}
 }
 
