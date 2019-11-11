@@ -6,6 +6,7 @@
 #include "bsp_system.h"
 #include "bsp_led.h"
 #include "bsp_time.h"
+#include "bsp_key.h"
 
 #include "mid_timers.h"
 

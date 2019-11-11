@@ -37,7 +37,7 @@ void TIM3_IRQHandler(void)  //TIM3中断
 {
 	if(TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET)  //检查TIM3更新中断发生与否
     {
-        tim3_ticks++;
+        ++tim3_ticks;
         
         if(time3_cb)
             time3_cb(&time_interval);
