@@ -3,6 +3,10 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
+#define LED_BLUE  LED0
+#define LED_GREEN LED1
+#define LED_RED   LED2
+
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 //uint32_t time_ticks;
@@ -10,29 +14,31 @@
 /* Private function prototypes -----------------------------------------------*/
 void time_task1(void);
 void time_task2(void);
-void test(uint8_t * data);
-void test1(void *);
+void time_task3(void);
+void time_task4(void);
 
 /* Private functions ---------------------------------------------------------*/
 void time_task1(void)
 {
-    Led_GPIO_Write(LED3, LED_TOGGLE);
+    Led_GPIO_Write(LED_BLUE, LED_TOGGLE);
+    delay_ms(1500);
 }
 
 void time_task2(void)
 {
+    Led_GPIO_Write(LED_GREEN, LED_TOGGLE);
+}
+
+void time_task3(void)
+{
     timer_task_stop(time_task1);
+    timer_task_stop(time_task2);
+    timer_task_start(1000, 1000, 0, time_task4);
 }
 
-void test(uint8_t * data)
+void time_task4(void)
 {
-}
-
-void test1(void * a)
-{
-    uint8_t * b;
-    b = (uint8_t*)a;
-    *b = 1;
+    Led_GPIO_Write(LED_RED, LED_TOGGLE);
 }
 
 /* Main program */
@@ -59,9 +65,10 @@ int main(void)
     
 	Delay_Init(72);  //延时函数基准配置
     Led_GPIO_Init();
-    TIM3_Init(719, 99, timers_adjust);  //720 * 100 / 72000000 = 0.001s = 1ms
-    timer_task_start(1000, 1000, 1, time_task1);
-    timer_task_start(10000, 0, 0, time_task2);
+    TIM3_Init(719, 99, Timer_Update);  //720 * 100 / 72000000 = 0.001s = 1ms
+    timer_task_start(2000, 2000, 0, time_task1);
+    timer_task_start(1000, 1000, 1, time_task2);
+    timer_task_start(20000, 0, 1, time_task3);
     
 //	/* Infinite loop */
 	while(1)

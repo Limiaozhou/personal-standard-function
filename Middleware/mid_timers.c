@@ -286,18 +286,22 @@ void Timer_Update( void * updateTime )
                 else
                     srchTimer->taskPerform_flag = 1;
             }
+            
             srchTimer = srchTimer->next;
         }
     }
 }
 
-void timeout_task_loop(void)
+/* 非优先任务调度运行，要注意任务执行时间不能太长，Timer_Update会改变节点内容影响运行 */
+void timeout_task_loop( void )
 {
     Timer_TaskTypeDef *srchTimer;
-    Timer_TaskTypeDef *prevTimer = (void *)NULL;
+    Timer_TaskTypeDef *prevTimer = NULL;
     
-    for( srchTimer = timerHead; srchTimer; srchTimer = srchTimer->next )
+    for( srchTimer = timerHead; srchTimer; )
     {
+        Timer_TaskTypeDef *freeTimer = NULL;
+        
         if( (srchTimer->taskPerform_flag) && (!srchTimer->taskPriority_flag) )
         {
             srchTimer->timeout_task();
@@ -312,10 +316,21 @@ void timeout_task_loop(void)
             else
                 prevTimer->next = srchTimer->next;
             
-            free(srchTimer);
+            // Setup to free memory
+            freeTimer = srchTimer;
+            
+            // Next
+            srchTimer = srchTimer->next;
+        }
+        else
+        {
+            // Get next
+            prevTimer = srchTimer;
+            srchTimer = srchTimer->next;
         }
         
-        prevTimer = srchTimer;
+        if(freeTimer)
+            free(freeTimer);
     }
 }
 

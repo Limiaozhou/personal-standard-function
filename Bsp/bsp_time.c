@@ -1,7 +1,8 @@
 #include "bsp_time.h"
 #include "stdlib.h"  //包含NULL
 
-static uint32_t tim3_ticks = 0;
+static uint32_t tim3_ticks = 0;  //时间滴答
+static uint32_t time_interval = 1;  //时间间隔
 static void (*time3_cb)(void *) = (void *)NULL;
 
 void TIM3_Init(uint16_t prescaler, uint16_t period, void (*time3_task)(void *))
@@ -36,12 +37,10 @@ void TIM3_IRQHandler(void)  //TIM3中断
 {
 	if(TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET)  //检查TIM3更新中断发生与否
     {
-//        uint32_t time = 1;
-        
         tim3_ticks++;
         
         if(time3_cb)
-            time3_cb(&tim3_ticks);
+            time3_cb(&time_interval);
         
 		TIM_ClearITPendingBit(TIM3, TIM_IT_Update);  //清除TIMx更新中断标志 
     }

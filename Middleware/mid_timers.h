@@ -48,7 +48,7 @@ uint8_t timer_task_stop( void (*timeout_task)(void) );
    */
 void Timer_Update( void * updateTime );  //Ê±¼ä¼ä¸ô
 
-void timeout_task_loop(void);
+void timeout_task_loop( void );
 
   /*
    * Adjust timer tables
