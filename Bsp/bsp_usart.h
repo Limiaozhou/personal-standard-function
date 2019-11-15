@@ -1,54 +1,90 @@
 #ifndef __BSP_USART_H
 #define __BSP_USART_H
 
-//#include "stm32f7xx_hal.h"
+#if defined STM32_HAL
+#include "stm32f7xx_hal.h"
+
+#elif defined STM32_STANDARD
+#include "stm32f10x_usart.h"
+
+#elif defined STM8
 #include "stm8s_uart1.h"
 #include "stm8s_uart3.h"
 #include "stm8s_it.h"
+#endif
 
-#include "queue.h"
-
-// #include "typedef.h"
+//#include "typedef.h"
 
 //数据类型声明
-// typedef unsigned char uint8_t;
-// typedef signed char int8_t;
-// typedef unsigned int uint16_t;
-// typedef signed int int16_t;  //8位机int为16,32位机int为32
-// typedef unsigned long int uint32_t;
-// typedef signed long int int32_t;
+//typedef unsigned char uint8_t;
+//typedef signed char int8_t;
+//typedef unsigned int uint16_t;
+//typedef signed int int16_t;  //8位机int为16,32位机int为32
+//typedef unsigned long int uint32_t;
+//typedef signed long int int32_t;
+
+#define UART_CONFIG_LIST {\
+    {\
+        {.GPIO_Tx = GPIOA, .Pin_Tx = GPIO_Pin_9, .RCC_APB2Periph_Tx = RCC_APB2Periph_GPIOA,\
+         .GPIO_Rx = GPIOA, .Pin_Rx = GPIO_Pin_10, .RCC_APB2Periph_Rx = RCC_APB2Periph_GPIOA},\
+        {.USARTx = USART1, .RCC_APBPeriph = RCC_APB2Periph_USART1, .USART_BaudRate = 9600, .RCC_APBPeriph_Sel = RCC_APB2Periph_Sel},\
+        {.NVIC_IRQChannel = USART1_IRQn, .NVIC_IRQChannelPreemptionPriority = 3, .NVIC_IRQChannelSubPriority = 3},\
+         .uart_priority_task = NULL, .pbuffer = NULL, .Buffer_Size = 50,\
+    }\
+};
+
+typedef struct
+{
+	GPIO_TypeDef* GPIO_Tx;
+    GPIO_TypeDef* GPIO_Rx;
+    uint32_t RCC_APB2Periph_Tx;
+    uint32_t RCC_APB2Periph_Rx;
+	uint16_t Pin_Tx;
+    uint16_t Pin_Rx;
+}Uart_GPIOType;  //uart引脚配置
 
 typedef enum
 {
-	UART1_Select = 0,
-	UART2_Select,
-    UART3_Select
-}UARTx_Select_TypeDef;  //串口号选择枚举体
+	RCC_APB1Periph_Sel = 0,
+	RCC_APB2Periph_Sel
+}Uart_RCC_APBPeriph;  //外设时钟选择
 
-//STM32
-//#define USART1_RX_GPIO GPIOA
-//#define USART1_RX_PIN  GPIO_PIN_10
-//#define USART1_RX_AF   GPIO_AF7_USART1
-//#define USART1_RX_GPIO_CLK_ENABLE() __HAL_RCC_GPIOA_CLK_ENABLE()
-//
-//#define USART1_TX_GPIO GPIOA
-//#define USART1_TX_PIN  GPIO_PIN_9
-//#define USART1_TX_AF   GPIO_AF7_USART1
-//#define USART1_TX_GPIO_CLK_ENABLE() __HAL_RCC_GPIOA_CLK_ENABLE()
-//
-//#define USART1_DMA_CLK_ENABLE() __HAL_RCC_DMA2_CLK_ENABLE()
-//
-//#define USART1_TX_DMA_STREAM  DMA2_Stream7
-//#define USART1_TX_DMA_CHANNEL DMA_CHANNEL_4
-//
-//#define USART1_RX_DMA_STREAM  DMA2_Stream5
-//#define USART1_RX_DMA_CHANNEL DMA_CHANNEL_4
+typedef struct
+{
+	USART_TypeDef* USARTx;
+    uint32_t RCC_APBPeriph;
+    uint32_t USART_BaudRate;
+	Uart_RCC_APBPeriph RCC_APBPeriph_Sel;
+}Uart_UartType;  //uart端口配置
 
-typedef void (*uart_data_deal_cb)(uint8_t * pdata, uint32_t len);  //数据处理回调函数
+typedef struct
+{
+	uint8_t NVIC_IRQChannel;
+    uint8_t NVIC_IRQChannelPreemptionPriority;
+    uint8_t NVIC_IRQChannelSubPriority;
+}Uart_NVICType;  //uart中断配置
 
-void Uart_Init(UARTx_Select_TypeDef uartx, uint32_t bound, uart_data_deal_cb uartx_data_deal);  //串口初始化，输入串口号、波特率、数据处理函数
+typedef struct
+{
+	Uart_GPIOType Uart_GPIO;
+    Uart_UartType Uart_Uart;
+    Uart_NVICType Uart_NVIC;
+    void (*uart_priority_task)(uint8_t * pdata, uint32_t len);  //优先任务，中断调度执行
+    uint8_t * pbuffer;  //串口数据缓存指针
+    uint32_t Buffer_Size;  //数据缓存大小
+}Uart_ConfigType;  //uart配置
 
-void uart_write(UARTx_Select_TypeDef uartx, uint8_t * pdata, uint32_t len);  //写串口，输入串口号、数据指针及长度
-void uart_read(UARTx_Select_TypeDef uartx);  //读串口，输入串口号，已在串口空闲中断中调用
+typedef enum
+{
+	Uart1 = 0,
+	number_of_uart
+}Uart_Port;  //uart端口
+
+void Uart_Init(void);
+
+void Uart_PriorityTask_Regist(Uart_Port uartx, void (*uart_task)(uint8_t * pdata, uint32_t len));  //优先任务函数注册
+
+void uart_write(Uart_Port uartx, uint8_t * pdata, uint32_t len);
+void uart_read(Uart_Port uartx, void (*uart_task)(uint8_t * pdata, uint32_t len));
 
 #endif
