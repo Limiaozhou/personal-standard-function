@@ -1,4 +1,4 @@
-#include "bsp_time.h"
+#include "bsp_time3.h"
 #include "stdlib.h"  //°üº¬NULL
 
 static uint32_t tim3_ticks = 0;  //Ê±¼äµÎ´ð

@@ -1,9 +1,9 @@
 #include "bsp_key.h"
 
-/* KEY±í */
+/* KEYè¡¨ */
 static KEY_GPIOType Key_GPIO_List[number_of_key] = KEY_GPIO_LIST;
 
-/* KEYÒı½Å³õÊ¼»¯ */
+/* KEYå¼•è„šåˆå§‹åŒ– */
 void Key_GPIO_Init(void)
 {
 	uint8_t i;
@@ -12,9 +12,9 @@ void Key_GPIO_Init(void)
 	
     GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
 	
-	for(i = 0; i < number_of_key; i++)  //Òı½Å±éÀú
+	for(i = 0; i < number_of_key; i++)  //å¼•è„šéå†
 	{
-		if(Key_GPIO_List[i].GPIOx)  //Òı½ÅÓĞĞ§
+		if(Key_GPIO_List[i].GPIOx)  //å¼•è„šæœ‰æ•ˆ
 		{
             RCC_APB2PeriphClockCmd(Key_GPIO_List[i].RCC_APB2Periph, ENABLE);
             

@@ -1,5 +1,5 @@
-#ifndef __BSP_TIME_H
-#define __BSP_TIME_H
+#ifndef __BSP_TIME3_H
+#define __BSP_TIME3_H
 
 #if defined STM32_HAL
 #include "stm32f7xx_hal.h"

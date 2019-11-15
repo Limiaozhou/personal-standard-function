@@ -20,12 +20,14 @@
 // typedef signed long int int32_t;
 
 #define KEY_GPIO_LIST {\
-{.GPIOx = GPIOA, .Pin = GPIO_Pin_0, .RCC_APB2Periph = RCC_APB2Periph_GPIOA, .Mode = GPIO_Mode_IPU}\
+{.GPIOx = GPIOA, .Pin = GPIO_Pin_0, .RCC_APB2Periph = RCC_APB2Periph_GPIOA, .Mode = GPIO_Mode_IPU},\
+{.GPIOx = GPIOA, .Pin = GPIO_Pin_7, .RCC_APB2Periph = RCC_APB2Periph_GPIOA, .Mode = GPIO_Mode_IPU}\
 }
 
 typedef enum
 {
 	KEY0 = 0,
+    KEY1,
 	number_of_key
 }KEY_GPIO_Port;  //¶Ë¿ÚºÅ
 

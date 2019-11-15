@@ -17,6 +17,7 @@ void time_task2(void);
 void time_task3(void);
 void time_task4(void);
 void time_task5(void);
+void time_task6(void);
 
 /* Private functions ---------------------------------------------------------*/
 void time_task1(void)
@@ -35,6 +36,7 @@ void time_task3(void)
     timer_task_stop(time_task1);
     timer_task_stop(time_task2);
     timer_task_start(1000, 1000, 0, time_task4);
+    timer_task_start(5, 5, 1, time_task6);
 }
 
 void time_task4(void)
@@ -48,6 +50,14 @@ void time_task5(void)
         Led_GPIO_Write(LED3, LED_ON);
     else
         Led_GPIO_Write(LED3, LED_OFF);
+}
+
+void time_task6(void)
+{
+    if(!Key_GPIO_Read(KEY1))
+        Led_GPIO_Write(LED_BLUE, LED_ON);
+    else
+        Led_GPIO_Write(LED_BLUE, LED_OFF);
 }
 
 /* Main program */
@@ -72,15 +82,16 @@ int main(void)
     SysTick_Init();
 #endif
     
-	Delay_Init(72);  //—” ±∫Ø ˝ª˘◊º≈‰÷√
+	Delay_Init(72);  //Âª∂Êó∂ÂáΩÊï∞Âü∫ÂáÜÈÖçÁΩÆ
     Led_GPIO_Init();
+    Key_GPIO_Init();
     TIM3_Init(719, 99, Timer_Update);  //720 * 100 / 72000000 = 0.001s = 1ms
-//    timer_task_start(2000, 2000, 0, time_task1);
-//    timer_task_start(1000, 1000, 1, time_task2);
-//    timer_task_start(20000, 0, 1, time_task3);
-    timer_task_start(5, 5, 0, time_task5);
     
-//	/* Infinite loop */
+    timer_task_start(2000, 2000, 0, time_task1);
+    timer_task_start(1000, 1000, 1, time_task2);
+    timer_task_start(20000, 0, 1, time_task3);
+    
+	/* Infinite loop */
 	while(1)
 	{
 //        time_ticks = get_tim3_ticks();
