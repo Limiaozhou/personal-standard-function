@@ -112,13 +112,13 @@ int main(void)
     Led_GPIO_Init();
     Key_GPIO_Init();
     TIM3_Init(719, 99, Timer_Update);  //720 * 100 / 72000000 = 0.001s = 1ms
-    Uart_Init();
-//    Uart_PriorityTask_Regist(Uart1, uart_task2);
+    Uart_Init(Uart1, 115200);
+    Uart_PriorityTask_Regist(Uart1, uart_task2);
     
     timer_task_start(2000, 2000, 0, time_task1);
     timer_task_start(1000, 1000, 1, time_task2);
     timer_task_start(20000, 0, 1, time_task3);
-    timer_task_start(100, 100, 0, time_task7);
+//    timer_task_start(100, 100, 0, time_task7);
     
 	/* Infinite loop */
 	while(1)

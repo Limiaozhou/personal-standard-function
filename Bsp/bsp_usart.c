@@ -1,28 +1,33 @@
 #include "bsp_usart.h"
 #include "stdlib.h"  //包含NULL
 
-Uart_ConfigType Uart_ConfigList[number_of_uart] = UART_CONFIG_LIST;
+Uart_PortInfo Uart_PortInfoList[number_of_uart] = {NULL};
 
 uint8_t uart1_buffer[20];
 uint8_t uart1_buffer_len;
 
-static void Uart_GPIOInit(Uart_GPIOType * pUart_GPIO);
-static void Uart_UartInit(Uart_UartType * pUart_Uart);
-static void Uart_NVICInit(Uart_NVICType * pUart_NVIC);
-static void Uart_IRQHandler_Deal(Uart_Port uartx);
+static void Uart_GPIOInit(Uart_GPIOType * pUart_GPIO);  //串口引脚配置
+static void Uart_UartInit(Uart_UartType * pUart_Uart);  //串口参数配置
+static void Uart_NVICInit(Uart_NVICType * pUart_NVIC);  //串口中断配置
+static void Uart_IRQHandler_Deal(Uart_Port uartx);  //串口中断处理
 
-void Uart_Init(void)
+//串口初始化
+void Uart_Init(Uart_Port uartx, uint32_t baudrate)
 {
-    uint8_t i;
+    Uart_ConfigType Uart_ConfigList[number_of_uart] = UART_CONFIG_LIST;
     
-    for(i = 0; i < number_of_uart; i++)
+    if((uartx < number_of_uart) && Uart_ConfigList[uartx].Uart_Uart.USARTx)
     {
-        Uart_GPIOInit(&Uart_ConfigList[i].Uart_GPIO);
-        Uart_UartInit(&Uart_ConfigList[i].Uart_Uart);
-        Uart_NVICInit(&Uart_ConfigList[i].Uart_NVIC);
+        Uart_ConfigList[uartx].Uart_Uart.USART_BaudRate = baudrate;
+        Uart_PortInfoList[uartx].USARTx = Uart_ConfigList[uartx].Uart_Uart.USARTx;
+        
+        Uart_GPIOInit(&Uart_ConfigList[uartx].Uart_GPIO);
+        Uart_UartInit(&Uart_ConfigList[uartx].Uart_Uart);
+        Uart_NVICInit(&Uart_ConfigList[uartx].Uart_NVIC);
     }
 }
 
+//串口引脚配置
 static void Uart_GPIOInit(Uart_GPIOType * pUart_GPIO)
 {
     GPIO_InitTypeDef GPIO_InitStruct;
@@ -41,6 +46,7 @@ static void Uart_GPIOInit(Uart_GPIOType * pUart_GPIO)
     GPIO_Init(pUart_GPIO->GPIO_Rx, &GPIO_InitStruct);
 }
 
+//串口参数配置
 static void Uart_UartInit(Uart_UartType * pUart_Uart)
 {
     USART_InitTypeDef USART_InitStructure;
@@ -65,6 +71,7 @@ static void Uart_UartInit(Uart_UartType * pUart_Uart)
     USART_Cmd(pUart_Uart->USARTx, ENABLE);  //使能串口
 }
 
+//串口中断配置
 static void Uart_NVICInit(Uart_NVICType * pUart_NVIC)
 {
     NVIC_InitTypeDef NVIC_InitStructure;
@@ -79,44 +86,47 @@ static void Uart_NVICInit(Uart_NVICType * pUart_NVIC)
 //优先任务函数注册
 void Uart_PriorityTask_Regist(Uart_Port uartx, void (*uart_task)(uint8_t * pdata, uint32_t len))
 {
-    if((uartx < number_of_uart) && Uart_ConfigList[uartx].Uart_Uart.USARTx)
-        Uart_ConfigList[uartx].uart_priority_task = uart_task;
+    if((uartx < number_of_uart) && Uart_PortInfoList[uartx].USARTx)
+        Uart_PortInfoList[uartx].uart_priority_task = uart_task;
 }
 
+//串口写数据
 void uart_write(Uart_Port uartx, uint8_t * pdata, uint32_t len)
 {
-    if((uartx < number_of_uart) && Uart_ConfigList[uartx].Uart_Uart.USARTx)
+    if((uartx < number_of_uart) && Uart_PortInfoList[uartx].USARTx)
     {
         while(len--)
         {
-            USART_SendData(Uart_ConfigList[uartx].Uart_Uart.USARTx, *(pdata++));
-            while(!USART_GetFlagStatus(Uart_ConfigList[uartx].Uart_Uart.USARTx, USART_FLAG_TXE));  //发送寄存器空标志，发完和复位值为1，写UART1_DR会清0
+            USART_SendData(Uart_PortInfoList[uartx].USARTx, *(pdata++));
+            while(!USART_GetFlagStatus(Uart_PortInfoList[uartx].USARTx, USART_FLAG_TXE));  //发送寄存器空标志，发完和复位值为1，写UART1_DR会清0
         }
     }
 }
 
+//串口读数据处理
 void uart_read(Uart_Port uartx, void (*uart_task)(uint8_t * pdata, uint32_t len))
 {
-    if((uartx < number_of_uart) && Uart_ConfigList[uartx].Uart_Uart.USARTx && uart1_buffer_len)
+    if((uartx < number_of_uart) && Uart_PortInfoList[uartx].USARTx && uart1_buffer_len)
     {
         uart_task(uart1_buffer, uart1_buffer_len);
         uart1_buffer_len = 0;
     }
 }
 
+//串口中断处理
 static void Uart_IRQHandler_Deal(Uart_Port uartx)
 {
-    if((uartx < number_of_uart) && Uart_ConfigList[uartx].Uart_Uart.USARTx)
+    if((uartx < number_of_uart) && Uart_PortInfoList[uartx].USARTx)
     {
-        if(USART_GetITStatus(Uart_ConfigList[uartx].Uart_Uart.USARTx, USART_IT_RXNE) != RESET)
-            uart1_buffer[uart1_buffer_len++] = USART_ReceiveData(Uart_ConfigList[uartx].Uart_Uart.USARTx);
+        if(USART_GetITStatus(Uart_PortInfoList[uartx].USARTx, USART_IT_RXNE) != RESET)
+            uart1_buffer[uart1_buffer_len++] = USART_ReceiveData(Uart_PortInfoList[uartx].USARTx);
         
-        if(USART_GetITStatus(Uart_ConfigList[uartx].Uart_Uart.USARTx, USART_IT_IDLE) != RESET)
+        if(USART_GetITStatus(Uart_PortInfoList[uartx].USARTx, USART_IT_IDLE) != RESET)
         {
-            USART_ReceiveData(Uart_ConfigList[uartx].Uart_Uart.USARTx);
-            if(Uart_ConfigList[uartx].uart_priority_task != NULL)
+            USART_ReceiveData(Uart_PortInfoList[uartx].USARTx);
+            if(Uart_PortInfoList[uartx].uart_priority_task != NULL)
             {
-                Uart_ConfigList[uartx].uart_priority_task(uart1_buffer, uart1_buffer_len);
+                Uart_PortInfoList[uartx].uart_priority_task(uart1_buffer, uart1_buffer_len);
                 uart1_buffer_len = 0;
             }
         }
@@ -125,6 +135,6 @@ static void Uart_IRQHandler_Deal(Uart_Port uartx)
 
 void USART1_IRQHandler(void)
 {
-    if(Uart_ConfigList[Uart1].Uart_Uart.USARTx == USART1)
+    if(Uart_PortInfoList[Uart1].USARTx == USART1)
         Uart_IRQHandler_Deal(Uart1);
 }
