@@ -119,6 +119,7 @@ int main(void)
     timer_task_start(1000, 1000, 1, time_task2);
     timer_task_start(20000, 0, 1, time_task3);
 //    timer_task_start(100, 100, 0, time_task7);
+    timer_task_start(5, 5, 1, time_task5);
     
 	/* Infinite loop */
 	while(1)
