@@ -1,8 +1,15 @@
 #ifndef __QUEUE_H
 #define __QUEUE_H
 
-#include "stdlib.h"  //内存分配函数包含头文件
+#if defined STM32_HAL
+#include "stm32f7xx_hal.h"
+
+#elif defined STM32_STANDARD
+#include "stm32f10x.h"
+
+#elif defined STM8
 #include "stm8s.h"  //数据类型重定义包含头文件
+#endif
 
 //#include "typedef.h"  //数据类型重定义包含头文件
 
@@ -14,41 +21,21 @@
 // typedef unsigned long int uint32_t;
 // typedef signed long int int32_t;
 
-typedef enum
-{
-    Uint8_Type = 0,
-    Int8_Type,
-    Uint16_Type,
-    Int16_Type,
-    Uint32_Type,
-    Int32_Type
-}DataType_Select_Typedef;  //数据类型选择枚举体
-
-typedef union
-{
-    uint8_t * data_uint8;
-    int8_t * data_int8;
-    uint16_t * data_uint16;
-    int16_t * data_int16;
-    uint32_t * data_uint32;
-    int32_t * data_int32;
-}Data_Typedef;  //各类型数据联合体
-
 typedef struct
 {
-	uint32_t head;  //头指针，指向要读取数据地址
+    uint32_t head;  //头指针，指向要读取数据地址
 	uint32_t tail;  //尾指针，指向要写入数据地址
 	
 	uint32_t len;  //队列已保存数据长度
-	uint32_t size;  //队列数据最大尺寸
-	
-	Data_Typedef data;  //数据位
-    DataType_Select_Typedef data_type;  //数据类型选择结构体
-}Queue_TypeDef;  //数据队列结构体
+	uint32_t queue_size;  //队列尺寸
+    
+    uint8_t * pdata;  //数据指针
+    uint8_t data_size;  //数据尺寸（占字节数）
+}Queue_TypeDef;  //队列结构体
 
-typedef Queue_TypeDef* pQueue_TypeDef;  //指向队列结构体的指针
+typedef Queue_TypeDef* pQueue_TypeDef;
 
-void queue_init(pQueue_TypeDef pqueue, uint32_t size, DataType_Select_Typedef datatype);  //队列初始化，设置队列数据尺寸并分配数据空间
+pQueue_TypeDef queue_init(uint32_t queue_size, uint8_t data_size);  //队列初始化，设置队列数据尺寸并分配数据空间
 void queue_delete(pQueue_TypeDef pqueue);  //队列删除，删除分配的数据空间
 
 uint8_t queue_write(pQueue_TypeDef pqueue, void* pdata, uint32_t len);  //写入队列指定长度数据，成功返回0，失败返回1
