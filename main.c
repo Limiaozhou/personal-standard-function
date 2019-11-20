@@ -112,7 +112,7 @@ int main(void)
     Led_GPIO_Init();
     Key_GPIO_Init();
     TIM3_Init(719, 99, Timer_Update);  //720 * 100 / 72000000 = 0.001s = 1ms
-    Uart_Init(Uart1, 115200);
+    Uart_Init(Uart1, 115200, 20);
     Uart_PriorityTask_Regist(Uart1, uart_task2);
     
     timer_task_start(2000, 2000, 0, time_task1);

@@ -3,16 +3,13 @@
 
 Uart_PortInfo Uart_PortInfoList[number_of_uart] = {NULL};
 
-uint8_t uart1_buffer[20];
-uint8_t uart1_buffer_len;
-
 static void Uart_GPIOInit(Uart_GPIOType * pUart_GPIO);  //串口引脚配置
 static void Uart_UartInit(Uart_UartType * pUart_Uart);  //串口参数配置
 static void Uart_NVICInit(Uart_NVICType * pUart_NVIC);  //串口中断配置
 static void Uart_IRQHandler_Deal(Uart_Port uartx);  //串口中断处理
 
 //串口初始化
-void Uart_Init(Uart_Port uartx, uint32_t baudrate)
+void Uart_Init(Uart_Port uartx, uint32_t baudrate, uint32_t buf_size)
 {
     Uart_ConfigType Uart_ConfigList[number_of_uart] = UART_CONFIG_LIST;
     
@@ -20,6 +17,12 @@ void Uart_Init(Uart_Port uartx, uint32_t baudrate)
     {
         Uart_ConfigList[uartx].Uart_Uart.USART_BaudRate = baudrate;
         Uart_PortInfoList[uartx].USARTx = Uart_ConfigList[uartx].Uart_Uart.USARTx;
+        
+        if(buf_size > 0)
+        {
+            Uart_PortInfoList[uartx].Buffer_Size = buf_size;
+            Uart_PortInfoList[uartx].pbuffer = (uint8_t*)malloc(Uart_PortInfoList[uartx].Buffer_Size * sizeof(uint8_t));
+        }
         
         Uart_GPIOInit(&Uart_ConfigList[uartx].Uart_GPIO);
         Uart_UartInit(&Uart_ConfigList[uartx].Uart_Uart);
@@ -106,10 +109,10 @@ void uart_write(Uart_Port uartx, uint8_t * pdata, uint32_t len)
 //串口读数据处理
 void uart_read(Uart_Port uartx, void (*uart_task)(uint8_t * pdata, uint32_t len))
 {
-    if((uartx < number_of_uart) && Uart_PortInfoList[uartx].USARTx && uart1_buffer_len)
+    if((uartx < number_of_uart) && Uart_PortInfoList[uartx].USARTx && Uart_PortInfoList[uartx].buffer_len)
     {
-        uart_task(uart1_buffer, uart1_buffer_len);
-        uart1_buffer_len = 0;
+        uart_task(Uart_PortInfoList[uartx].pbuffer, Uart_PortInfoList[uartx].buffer_len);
+        Uart_PortInfoList[uartx].buffer_len = 0;
     }
 }
 
@@ -119,15 +122,15 @@ static void Uart_IRQHandler_Deal(Uart_Port uartx)
     if((uartx < number_of_uart) && Uart_PortInfoList[uartx].USARTx)
     {
         if(USART_GetITStatus(Uart_PortInfoList[uartx].USARTx, USART_IT_RXNE) != RESET)
-            uart1_buffer[uart1_buffer_len++] = USART_ReceiveData(Uart_PortInfoList[uartx].USARTx);
+            Uart_PortInfoList[uartx].pbuffer[Uart_PortInfoList[uartx].buffer_len++] = USART_ReceiveData(Uart_PortInfoList[uartx].USARTx);
         
         if(USART_GetITStatus(Uart_PortInfoList[uartx].USARTx, USART_IT_IDLE) != RESET)
         {
             USART_ReceiveData(Uart_PortInfoList[uartx].USARTx);
             if(Uart_PortInfoList[uartx].uart_priority_task != NULL)
             {
-                Uart_PortInfoList[uartx].uart_priority_task(uart1_buffer, uart1_buffer_len);
-                uart1_buffer_len = 0;
+                Uart_PortInfoList[uartx].uart_priority_task(Uart_PortInfoList[uartx].pbuffer, Uart_PortInfoList[uartx].buffer_len);
+                Uart_PortInfoList[uartx].buffer_len = 0;
             }
         }
     }

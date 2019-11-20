@@ -33,6 +33,9 @@ typedef struct
 {
 	USART_TypeDef* USARTx;
     void (*uart_priority_task)(uint8_t * pdata, uint32_t len);  //优先任务，中断调度执行
+    uint8_t * pbuffer;  //串口数据缓存指针
+    uint32_t Buffer_Size;  //数据缓存大小
+    uint32_t buffer_len;  //缓存数据长度
 }Uart_PortInfo;  //uart端口信息
 
 #if defined STM32_STANDARD
@@ -41,8 +44,7 @@ typedef struct
         {.GPIO_Tx = GPIOA, .Pin_Tx = GPIO_Pin_9, .RCC_APB2Periph_Tx = RCC_APB2Periph_GPIOA,\
          .GPIO_Rx = GPIOA, .Pin_Rx = GPIO_Pin_10, .RCC_APB2Periph_Rx = RCC_APB2Periph_GPIOA},\
         {.USARTx = USART1, .RCC_APBPeriph = RCC_APB2Periph_USART1, .USART_BaudRate = 9600, .RCC_APBPeriph_Sel = RCC_APB2Periph_Sel},\
-        {.NVIC_IRQChannel = USART1_IRQn, .NVIC_IRQChannelPreemptionPriority = 3, .NVIC_IRQChannelSubPriority = 3},\
-         .pbuffer = NULL, .Buffer_Size = 50,\
+        {.NVIC_IRQChannel = USART1_IRQn, .NVIC_IRQChannelPreemptionPriority = 3, .NVIC_IRQChannelSubPriority = 3}\
     }\
 };
 
@@ -82,12 +84,10 @@ typedef struct
 	Uart_GPIOType Uart_GPIO;
     Uart_UartType Uart_Uart;
     Uart_NVICType Uart_NVIC;
-    uint8_t * pbuffer;  //串口数据缓存指针
-    uint32_t Buffer_Size;  //数据缓存大小
 }Uart_ConfigType;  //uart配置
 #endif
 
-void Uart_Init(Uart_Port uartx, uint32_t baudrate);
+void Uart_Init(Uart_Port uartx, uint32_t baudrate, uint32_t buf_size);
 
 void Uart_PriorityTask_Regist(Uart_Port uartx, void (*uart_task)(uint8_t * pdata, uint32_t len));  //优先任务函数注册
 
