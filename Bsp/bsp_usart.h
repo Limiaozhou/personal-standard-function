@@ -13,6 +13,8 @@
 #include "stm8s_it.h"
 #endif
 
+#include "queue.h"
+
 //#include "typedef.h"
 
 //数据类型声明
@@ -33,9 +35,10 @@ typedef struct
 {
 	USART_TypeDef* USARTx;
     void (*uart_priority_task)(uint8_t * pdata, uint32_t len);  //优先任务，中断调度执行
-    uint8_t * pbuffer;  //串口数据缓存指针
-    uint32_t Buffer_Size;  //数据缓存大小
-    uint32_t buffer_len;  //缓存数据长度
+    pQueue_TypeDef pbuffer_queue;  //串口接收数据缓存队列
+//    uint8_t * pbuffer;  //串口数据缓存指针
+//    uint32_t Buffer_Size;  //数据缓存大小
+//    uint32_t buffer_len;  //缓存数据长度
 }Uart_PortInfo;  //uart端口信息
 
 #if defined STM32_STANDARD

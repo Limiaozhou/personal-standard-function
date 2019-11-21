@@ -75,15 +75,20 @@ void uart_task1(uint8_t * pdata, uint32_t len)
 
 void uart_task2(uint8_t * pdata, uint32_t len)
 {
-    uint8_t i;
-    uint8_t buf[20] = {0};
+    uint32_t i;
+    uint8_t * pbuf= (uint8_t*)malloc( len * sizeof(uint8_t) );
+    
+    if(!pbuf)
+        return;
     
     for(i = 0; i < len; ++i)
     {
-        buf[i] = pdata[len - 1 -i];
+        pbuf[i] = pdata[len - 1 -i];
     }
     
-    uart_write(Uart1, buf, len);
+    uart_write(Uart1, pbuf, len);
+    
+    free(pbuf);
 }
 
 /* Main program */
@@ -119,7 +124,7 @@ int main(void)
     timer_task_start(1000, 1000, 1, time_task2);
     timer_task_start(20000, 0, 1, time_task3);
 //    timer_task_start(100, 100, 0, time_task7);
-    timer_task_start(5, 5, 1, time_task5);
+//    timer_task_start(5, 5, 1, time_task5);
     
 	/* Infinite loop */
 	while(1)
