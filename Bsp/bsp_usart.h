@@ -44,6 +44,10 @@ typedef struct
 #if defined STM32_STANDARD
 #define UART_CONFIG_LIST {\
     {\
+        {.DMAy_Channelx_Tx = DMA1_Channel4, .DMA_PeripheralBaseAddr_Tx = (u32)&USART1->DR, .DMA_MemoryBaseAddr_Tx = NULL,\
+         .DMA_BufferSize_Tx = 50, .DMA_Priority_Tx = DMA_Priority_Medium,\
+         .DMAy_Channelx_Rx = DMA1_Channel5, .DMA_PeripheralBaseAddr_Rx = (u32)&USART1->DR, .DMA_MemoryBaseAddr_Rx = NULL,\
+         .DMA_BufferSize_Rx = 50, .DMA_Priority_Rx = DMA_Priority_Medium},\
         {.GPIO_Tx = GPIOA, .Pin_Tx = GPIO_Pin_9, .RCC_APB2Periph_Tx = RCC_APB2Periph_GPIOA,\
          .GPIO_Rx = GPIOA, .Pin_Rx = GPIO_Pin_10, .RCC_APB2Periph_Rx = RCC_APB2Periph_GPIOA},\
         {.USARTx = USART1, .RCC_APBPeriph = RCC_APB2Periph_USART1, .USART_BaudRate = 9600, .RCC_APBPeriph_Sel = RCC_APB2Periph_Sel},\
@@ -84,6 +88,21 @@ typedef struct
 
 typedef struct
 {
+	DMA_Channel_TypeDef* DMAy_Channelx_Tx;
+    uint32_t DMA_PeripheralBaseAddr_Tx;
+    uint32_t DMA_MemoryBaseAddr_Tx;
+    uint32_t DMA_BufferSize_Tx;
+    uint32_t DMA_Priority_Tx;
+    DMA_Channel_TypeDef* DMAy_Channelx_Rx;
+    uint32_t DMA_PeripheralBaseAddr_Rx;
+    uint32_t DMA_MemoryBaseAddr_Rx;
+    uint32_t DMA_BufferSize_Rx;
+    uint32_t DMA_Priority_Rx;
+}Uart_DMAType;  //uart dma≈‰÷√
+
+typedef struct
+{
+    Uart_DMAType  Uart_DMA;
 	Uart_GPIOType Uart_GPIO;
     Uart_UartType Uart_Uart;
     Uart_NVICType Uart_NVIC;
