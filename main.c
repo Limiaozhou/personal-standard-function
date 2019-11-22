@@ -19,6 +19,8 @@ void time_task4(void);
 void time_task5(void);
 void time_task6(void);
 void time_task7(void);
+void time_task8(void);
+
 void uart_task1(uint8_t * pdata, uint32_t len);
 void uart_task2(uint8_t * pdata, uint32_t len);
 
@@ -68,9 +70,16 @@ void time_task7(void)
     uart_read(Uart1, uart_task2);
 }
 
+void time_task8(void)
+{
+    static uint8_t buf[15] = "0123456789aBcD";
+    uart_write_dma(Uart1, buf, 14);
+}
+
 void uart_task1(uint8_t * pdata, uint32_t len)
 {
-    uart_write(Uart1, pdata, len);
+    uart_write_dma(Uart1, pdata, len);
+//    uart_write(Uart1, pdata, len);
 }
 
 void uart_task2(uint8_t * pdata, uint32_t len)
@@ -85,8 +94,8 @@ void uart_task2(uint8_t * pdata, uint32_t len)
     {
         pbuf[i] = pdata[len - 1 -i];
     }
-    
-    uart_write(Uart1, pbuf, len);
+    uart_write_dma(Uart1, pbuf, len);
+//    uart_write(Uart1, pbuf, len);
     
     free(pbuf);
 }
@@ -117,14 +126,15 @@ int main(void)
     Led_GPIO_Init();
     Key_GPIO_Init();
     TIM3_Init(719, 99, Timer_Update);  //720 * 100 / 72000000 = 0.001s = 1ms
-    Uart_Init(Uart1, 115200, 20);
-    Uart_PriorityTask_Regist(Uart1, uart_task2);
+    Uart_Init(Uart1, 115200, 20, 20);
+    Uart_PriorityTask_Regist(Uart1, uart_task1);
     
     timer_task_start(2000, 2000, 0, time_task1);
     timer_task_start(1000, 1000, 1, time_task2);
     timer_task_start(20000, 0, 1, time_task3);
 //    timer_task_start(100, 100, 0, time_task7);
 //    timer_task_start(5, 5, 1, time_task5);
+//    timer_task_start(1000, 1000, 1, time_task8);
     
 	/* Infinite loop */
 	while(1)
