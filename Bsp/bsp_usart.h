@@ -26,7 +26,7 @@
 //typedef signed long int int32_t;
 
 //是否使用环形队列，要包含"queue.h"
-#define QUEUE_USED 0
+//#define QUEUE_USED 1
 
 typedef enum
 {
@@ -47,15 +47,18 @@ typedef struct
     DMA_Channel_TypeDef* DMAy_Channelx_Tx;
     DMA_Channel_TypeDef* DMAy_Channelx_Rx;
     void (*uart_priority_task)(uint8_t * pdata, uint32_t len);  //优先任务，中断调度执行
-    uint8_t * pbuffer_Rx;  //数据缓存指针
-    uint32_t Buffer_Size_Rx;  //数据缓存大小
-    uint32_t buffer_len_Rx;  //缓存数据长度
-    uint8_t * pbuffer_Tx;
-    uint32_t Buffer_Size_Tx;
-    uint32_t buffer_len_Tx;
-#if QUEUE_USED == 1
-    pQueue_TypeDef pbuffer_queue_Rx;  //串口接收数据缓存队列
-#endif
+//    uint8_t * pbuffer_Rx;  //数据缓存指针
+//    uint32_t Buffer_Size_Rx;  //数据缓存大小
+//    uint32_t buffer_len_Rx;  //缓存数据长度
+//    uint8_t * pbuffer_Tx;
+//    uint32_t Buffer_Size_Tx;
+//    uint32_t buffer_len_Tx;
+//#if QUEUE_USED == 1
+    pQueue_TypeDef pbuffer_queue_Rx;  //串口接收数据缓存环形队列
+    pQueue_TypeDef pframe_queue_Rx;  //串口接收数据帧环形队列，保存帧数和每帧长度信息
+    pQueue_TypeDef pbuffer_queue_Tx;
+    pQueue_TypeDef pframe_queue_Tx;
+//#endif
     UartTx_Mode_SelType UartTx_Mode_Sel;
 }Uart_PortInfo;  //uart端口信息
 
