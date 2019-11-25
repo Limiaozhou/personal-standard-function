@@ -68,7 +68,7 @@ typedef struct
 #if defined STM32_STANDARD
 #define UART_CONFIG_LIST {\
     {\
-        {.DMAy_Channelx_Tx = NULL/*DMA1_Channel4*/, .DMA_PeripheralBaseAddr_Tx = (u32)&USART1->DR, .DMA_Priority_Tx = DMA_Priority_Medium,\
+        {.DMAy_Channelx_Tx = /*NULL*/DMA1_Channel4, .DMA_PeripheralBaseAddr_Tx = (u32)&USART1->DR, .DMA_Priority_Tx = DMA_Priority_Medium,\
          .DMAy_Channelx_Rx = NULL/*DMA1_Channel5*/, .DMA_PeripheralBaseAddr_Rx = (u32)&USART1->DR, .DMA_Priority_Rx = DMA_Priority_Medium},\
         {.GPIO_Tx = GPIOA, .Pin_Tx = GPIO_Pin_9, .RCC_APB2Periph_Tx = RCC_APB2Periph_GPIOA,\
          .GPIO_Rx = GPIOA, .Pin_Rx = GPIO_Pin_10, .RCC_APB2Periph_Rx = RCC_APB2Periph_GPIOA},\

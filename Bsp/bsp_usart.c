@@ -55,19 +55,17 @@ void Uart_Init(Uart_Port uartx, uint32_t baudrate, uint32_t rxbuf_size, uint32_t
 //            }
 //            else
 //            {
-//#if QUEUE_USED == 1
                 Uart_PortInfoList[uartx].pbuffer_queue_Rx = queue_init(rxbuf_size, 1);
                 Uart_PortInfoList[uartx].pframe_queue_Rx = queue_init(10, 4);
                 
-//#else
-//                Uart_PortInfoList[uartx].pbuffer_Rx = (uint8_t*)malloc( rxbuf_size * sizeof(uint8_t) );
-//                if(Uart_PortInfoList[uartx].pbuffer_Rx)  //分配内存成功
-//                {  //设置寄存器数据量要大于等于可能接收的数，否则数据会错位，寄存器减到0后一个数据，会在下个帧成第一个数据
-//                    Uart_PortInfoList[uartx].Buffer_Size_Rx = rxbuf_size;  //分配成功才能置dma数量寄存器非0
-//                    Uart_ConfigList[uartx].Uart_DMA.DMA_MemoryBaseAddr_Rx = (uint32_t)Uart_PortInfoList[uartx].pbuffer_Rx;
-//                    Uart_ConfigList[uartx].Uart_DMA.DMA_BufferSize_Rx = Uart_PortInfoList[uartx].Buffer_Size_Rx;
-//                }
-//#endif
+                if(Uart_PortInfoList[uartx].DMAy_Channelx_Rx)
+                {
+                    if( (Uart_PortInfoList[uartx].pbuffer_queue_Rx) && (Uart_PortInfoList[uartx].pbuffer_queue_Rx->pdata) )
+                    {  //分配队列成功，再配置DMA
+                        Uart_ConfigList[uartx].Uart_DMA.DMA_MemoryBaseAddr_Rx = (uint32_t)Uart_PortInfoList[uartx].pbuffer_queue_Rx->pdata;
+                        Uart_ConfigList[uartx].Uart_DMA.DMA_BufferSize_Rx = Uart_PortInfoList[uartx].pbuffer_queue_Rx->data_size;
+                    }
+                }
 //            }
         }
         
@@ -86,6 +84,15 @@ void Uart_Init(Uart_Port uartx, uint32_t baudrate, uint32_t rxbuf_size, uint32_t
 //            {
                 Uart_PortInfoList[uartx].pbuffer_queue_Tx = queue_init(txbuf_size, 1);
                 Uart_PortInfoList[uartx].pframe_queue_Tx = queue_init(10, 4);
+                
+                if(Uart_PortInfoList[uartx].DMAy_Channelx_Tx)
+                {
+                    if( (Uart_PortInfoList[uartx].pbuffer_queue_Tx) && (Uart_PortInfoList[uartx].pbuffer_queue_Tx->pdata) )
+                    {
+                        Uart_ConfigList[uartx].Uart_DMA.DMA_MemoryBaseAddr_Tx = (uint32_t)Uart_PortInfoList[uartx].pbuffer_queue_Tx->pdata;
+                        Uart_ConfigList[uartx].Uart_DMA.DMA_BufferSize_Tx = Uart_PortInfoList[uartx].pbuffer_queue_Tx->data_size;
+                    }
+                }
 //            }
         }
         
@@ -190,7 +197,7 @@ static void Uart_DMAInit(Uart_DMAType * pUart_DMA)
     DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;  //内存地址寄存器递增
     DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;  //数据宽度为8位
     DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;  //数据宽度为8位
-    DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;  //工作在正常缓存模式
+    DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;  //环形模式
     DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;  //DMA通道x没有设置为内存到内存传输
     
 	if(pUart_DMA->DMAy_Channelx_Tx)  //有Tx通道
@@ -243,6 +250,10 @@ void uart_write(Uart_Port uartx, uint8_t * pdata, uint32_t len)
     {
         if(Uart_PortInfoList[uartx].DMAy_Channelx_Tx)
         {
+            if( queue_write(Uart_PortInfoList[uartx].pbuffer_queue_Tx, pdata, len) )
+                    return;
+            
+            queue_write(Uart_PortInfoList[uartx].pframe_queue_Tx, &len, 1);
 //            uint32_t size = Uart_PortInfoList[uartx].Buffer_Size_Tx;
 //            
 //            memcpy( Uart_PortInfoList[uartx].pbuffer_Tx, pdata, (len > size ? size : len) );
@@ -275,57 +286,72 @@ void uart_write(Uart_Port uartx, uint8_t * pdata, uint32_t len)
 //串口定时发送数据，运行一次发送队列中一个数据，100
 void uart_send_loop(Uart_Port uartx)
 {
-    if( (uartx < number_of_uart) && Uart_PortInfoList[uartx].USARTx && (Uart_PortInfoList[uartx].UartTx_Mode_Sel != UartTx_ImmediatelyBlock_Sel) )
+    if( (uartx < number_of_uart) && Uart_PortInfoList[uartx].USARTx )
     {
-        if( Uart_PortInfoList[uartx].UartTx_Mode_Sel == UartTx_LoopBlock_Sel )
-        {
-            uint32_t frame_len = 0;  //记录帧长度，发送完一帧的数据，再读下一帧长
-            
-            queue_read( Uart_PortInfoList[uartx].pframe_queue_Tx, &frame_len, 1 );
-            
-            while(frame_len--)
-            {
-                uint8_t data = 0;
-                
-                queue_read( Uart_PortInfoList[uartx].pbuffer_queue_Tx, &data, 1 );
-                USART_SendData( Uart_PortInfoList[uartx].USARTx, data );
-                while(!USART_GetFlagStatus(Uart_PortInfoList[uartx].USARTx, USART_FLAG_TXE));
-            }
-        }
-        else
+        if(Uart_PortInfoList[uartx].DMAy_Channelx_Tx)
         {
             if(!Uart_PortInfoList[uartx].current_frame_len)
             {
-                if(++Uart_PortInfoList[uartx].frame_interval_times >= FRAME_INTERVAL_TIMES)
+                queue_read( Uart_PortInfoList[uartx].pframe_queue_Tx, &Uart_PortInfoList[uartx].current_frame_len, 1 );
+                if( Uart_PortInfoList[uartx].current_frame_len && USART_GetFlagStatus(Uart_PortInfoList[uartx].USARTx, USART_FLAG_TC) )
                 {
-                    queue_read( Uart_PortInfoList[uartx].pframe_queue_Tx, &Uart_PortInfoList[uartx].current_frame_len, 1 );
-                    if(Uart_PortInfoList[uartx].UartTx_Mode_Sel == UartTx_Interrupt_Sel)
-                    {
-                        if( Uart_PortInfoList[uartx].current_frame_len && USART_GetFlagStatus(Uart_PortInfoList[uartx].USARTx, USART_FLAG_TXE) )
-                        {
-                            uint8_t data = 0;
-                            
-                            queue_read( Uart_PortInfoList[uartx].pbuffer_queue_Tx, &data, 1 );
-                            USART_SendData( Uart_PortInfoList[uartx].USARTx, data );
-                            --Uart_PortInfoList[uartx].current_frame_len;
-                            
-                            if(Uart_PortInfoList[uartx].current_frame_len)
-                                USART_ITConfig(Uart_PortInfoList[uartx].USARTx, USART_IT_TXE, ENABLE);  //开启发送字节中断
-                        }
-                    }
-                    Uart_PortInfoList[uartx].frame_interval_times = 0;
+                    DMA_Cmd( Uart_PortInfoList[uartx].DMAy_Channelx_Tx, ENABLE );  //使能通道
+                    USART_ITConfig(Uart_PortInfoList[uartx].USARTx, USART_IT_TC, ENABLE);  //开启发送完成中断
                 }
             }
-            
-            if( Uart_PortInfoList[uartx].UartTx_Mode_Sel == UartTx_Loop_Sel )
+        }
+        else if( Uart_PortInfoList[uartx].UartTx_Mode_Sel != UartTx_ImmediatelyBlock_Sel )
+        {
+            if( (Uart_PortInfoList[uartx].UartTx_Mode_Sel == UartTx_LoopBlock_Sel) )
             {
-                if( Uart_PortInfoList[uartx].current_frame_len && USART_GetFlagStatus(Uart_PortInfoList[uartx].USARTx, USART_FLAG_TXE) )
+                uint32_t frame_len = 0;  //记录帧长度，发送完一帧的数据，再读下一帧长
+                
+                queue_read( Uart_PortInfoList[uartx].pframe_queue_Tx, &frame_len, 1 );
+                
+                while(frame_len--)
                 {
                     uint8_t data = 0;
                     
                     queue_read( Uart_PortInfoList[uartx].pbuffer_queue_Tx, &data, 1 );
                     USART_SendData( Uart_PortInfoList[uartx].USARTx, data );
-                    --Uart_PortInfoList[uartx].current_frame_len;
+                    while(!USART_GetFlagStatus(Uart_PortInfoList[uartx].USARTx, USART_FLAG_TXE));
+                }
+            }
+            else
+            {
+                if(!Uart_PortInfoList[uartx].current_frame_len)
+                {
+                    if(++Uart_PortInfoList[uartx].frame_interval_times >= FRAME_INTERVAL_TIMES)
+                    {
+                        queue_read( Uart_PortInfoList[uartx].pframe_queue_Tx, &Uart_PortInfoList[uartx].current_frame_len, 1 );
+                        if(Uart_PortInfoList[uartx].UartTx_Mode_Sel == UartTx_Interrupt_Sel)
+                        {
+                            if( Uart_PortInfoList[uartx].current_frame_len && USART_GetFlagStatus(Uart_PortInfoList[uartx].USARTx, USART_FLAG_TXE) )
+                            {
+                                uint8_t data = 0;
+                                
+                                queue_read( Uart_PortInfoList[uartx].pbuffer_queue_Tx, &data, 1 );
+                                USART_SendData( Uart_PortInfoList[uartx].USARTx, data );
+                                --Uart_PortInfoList[uartx].current_frame_len;
+                                
+                                if(Uart_PortInfoList[uartx].current_frame_len)
+                                    USART_ITConfig(Uart_PortInfoList[uartx].USARTx, USART_IT_TXE, ENABLE);  //开启发送字节中断
+                            }
+                        }
+                        Uart_PortInfoList[uartx].frame_interval_times = 0;
+                    }
+                }
+                
+                if( Uart_PortInfoList[uartx].UartTx_Mode_Sel == UartTx_Loop_Sel )
+                {
+                    if( Uart_PortInfoList[uartx].current_frame_len && USART_GetFlagStatus(Uart_PortInfoList[uartx].USARTx, USART_FLAG_TXE) )
+                    {
+                        uint8_t data = 0;
+                        
+                        queue_read( Uart_PortInfoList[uartx].pbuffer_queue_Tx, &data, 1 );
+                        USART_SendData( Uart_PortInfoList[uartx].USARTx, data );
+                        --Uart_PortInfoList[uartx].current_frame_len;
+                    }
                 }
             }
         }
@@ -335,10 +361,10 @@ void uart_send_loop(Uart_Port uartx)
 //串口读数据处理
 void uart_read(Uart_Port uartx, void (*uart_task)(uint8_t * pdata, uint32_t len))
 {
-//    if( (uartx < number_of_uart) && Uart_PortInfoList[uartx].USARTx )
-//    {
-//        if(Uart_PortInfoList[uartx].DMAy_Channelx_Rx)
-//        {
+    if( (uartx < number_of_uart) && Uart_PortInfoList[uartx].USARTx )
+    {
+        if(Uart_PortInfoList[uartx].DMAy_Channelx_Rx)
+        {
 //            uint32_t buf_len = Uart_PortInfoList[uartx].Buffer_Size_Rx - DMA_GetCurrDataCounter(Uart_PortInfoList[uartx].DMAy_Channelx_Rx);
 //            
 //            if(buf_len)
@@ -346,34 +372,27 @@ void uart_read(Uart_Port uartx, void (*uart_task)(uint8_t * pdata, uint32_t len)
 //                uart_task(Uart_PortInfoList[uartx].pbuffer_Rx, buf_len);
 //                DMA_ReEnable( Uart_PortInfoList[uartx].DMAy_Channelx_Rx, Uart_PortInfoList[uartx].Buffer_Size_Rx );
 //            }
-//        }
-//        else
-//        {
-//#if QUEUE_USED == 1
-//            uint32_t buf_len = get_queue_len(Uart_PortInfoList[uartx].pbuffer_queue_Rx);  //保存数据长度
-//            
-//            if( buf_len )
-//            {
-//                uint8_t * pdata = (uint8_t*)malloc( buf_len * sizeof(uint8_t) );  //分配数据空间
-//                
-//                if(!pdata)
-//                    return;
-//                
-//                queue_read( Uart_PortInfoList[uartx].pbuffer_queue_Rx, pdata, buf_len );
-//                uart_task(pdata, buf_len);
-//                
-//                free(pdata);  //释放数据空间
-//            }
-//            
-//#else
-//            if(Uart_PortInfoList[uartx].buffer_len_Rx)
-//            {
-//                uart_task(Uart_PortInfoList[uartx].pbuffer_Rx, Uart_PortInfoList[uartx].buffer_len_Rx);
-//                Uart_PortInfoList[uartx].buffer_len_Rx = 0;
-//            }
-//#endif
-//        }
-//    }
+        }
+        else
+        {
+            uint32_t current_frame_len = 0;
+            
+            queue_read( Uart_PortInfoList[uartx].pframe_queue_Rx, &current_frame_len, 1 );
+            
+            if( current_frame_len )
+            {
+                uint8_t * pdata = (uint8_t*)malloc( current_frame_len * sizeof(uint8_t) );
+                
+                if(!pdata)
+                    return;
+                
+                queue_read( Uart_PortInfoList[uartx].pbuffer_queue_Rx, pdata, current_frame_len );
+                uart_task(pdata, current_frame_len);
+                
+                free(pdata);
+            }
+        }
+    }
 }
 
 //串口中断处理
@@ -381,22 +400,12 @@ static void Uart_IRQHandler_Deal(Uart_Port uartx)
 {
     if((uartx < number_of_uart) && Uart_PortInfoList[uartx].USARTx)
     {
-        uint8_t data = 0;
-        
         if(USART_GetITStatus(Uart_PortInfoList[uartx].USARTx, USART_IT_RXNE) != RESET)
         {
-            data = USART_ReceiveData(Uart_PortInfoList[uartx].USARTx);
+            uint8_t data = USART_ReceiveData(Uart_PortInfoList[uartx].USARTx);
             
             if(!Uart_PortInfoList[uartx].DMAy_Channelx_Rx)
-            {
-//#if QUEUE_USED == 1
                 queue_write(Uart_PortInfoList[uartx].pbuffer_queue_Rx, &data, 1);
-                
-//#else
-//                if( Uart_PortInfoList[uartx].buffer_len_Rx < Uart_PortInfoList[uartx].Buffer_Size_Rx )
-//                    Uart_PortInfoList[uartx].pbuffer_Rx[Uart_PortInfoList[uartx].buffer_len_Rx++] = data;
-//#endif
-            }
         }
         
         if(USART_GetITStatus(Uart_PortInfoList[uartx].USARTx, USART_IT_IDLE) != RESET)
@@ -422,29 +431,22 @@ static void Uart_IRQHandler_Deal(Uart_Port uartx)
                 }
                 else
                 {
-//#if QUEUE_USED == 1
-                    uint32_t buf_len = get_queue_len(Uart_PortInfoList[uartx].pbuffer_queue_Rx);
+                    uint32_t current_frame_len = 0;
                     
-                    if( buf_len )
+                    queue_read( Uart_PortInfoList[uartx].pframe_queue_Rx, &current_frame_len, 1 );
+                    
+                    if( current_frame_len )
                     {
-                        uint8_t * pdata = (uint8_t*)malloc( buf_len * sizeof(uint8_t) );
+                        uint8_t * pdata = (uint8_t*)malloc( current_frame_len * sizeof(uint8_t) );
                         
                         if(!pdata)
                             return;
                         
-                        queue_read( Uart_PortInfoList[uartx].pbuffer_queue_Rx, pdata, buf_len );
-                        Uart_PortInfoList[uartx].uart_priority_task(pdata, buf_len);
+                        queue_read( Uart_PortInfoList[uartx].pbuffer_queue_Rx, pdata, current_frame_len );
+                        Uart_PortInfoList[uartx].uart_priority_task(pdata, current_frame_len);
                         
                         free(pdata);
                     }
-                    
-//#else
-//                    if(Uart_PortInfoList[uartx].buffer_len_Rx)
-//                    {
-//                        Uart_PortInfoList[uartx].uart_priority_task(Uart_PortInfoList[uartx].pbuffer_Rx, Uart_PortInfoList[uartx].buffer_len_Rx);
-//                        Uart_PortInfoList[uartx].buffer_len_Rx = 0;
-//                    }
-//#endif
                 }
             }
         }
@@ -464,6 +466,17 @@ static void Uart_IRQHandler_Deal(Uart_Port uartx)
                     if(!Uart_PortInfoList[uartx].current_frame_len)
                         USART_ITConfig(Uart_PortInfoList[uartx].USARTx, USART_IT_TXE, DISABLE);  //关闭发送字节中断
                 }
+            }
+        }
+        
+        if(USART_GetITStatus(Uart_PortInfoList[uartx].USARTx, USART_IT_TC) != RESET)
+        {
+            if(Uart_PortInfoList[uartx].DMAy_Channelx_Tx)
+            {
+                DMA_Cmd( Uart_PortInfoList[uartx].DMAy_Channelx_Tx, DISABLE );  //失能通道
+                USART_ClearITPendingBit(Uart_PortInfoList[uartx].USARTx, USART_IT_TC);
+                USART_ITConfig(Uart_PortInfoList[uartx].USARTx, USART_IT_TC, DISABLE);  //关闭发送完成中断
+                Uart_PortInfoList[uartx].current_frame_len = 0;
             }
         }
     }
