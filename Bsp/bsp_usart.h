@@ -36,8 +36,9 @@ typedef enum
 
 typedef enum
 {
-	UartTx_Block_Sel = 0,  //阻塞发送，死循环直到发送完
-	UartTx_Timing_Sel,  //定时发送，循环运行，判断发送完再发送下一个
+    UartTx_ImmediatelyBlock_Sel = 0,  //立即阻塞发送，死循环直到发送完
+	UartTx_LoopBlock_Sel,  //循环阻塞发送，满足发送条件就死循环直到发送完
+	UartTx_Loop_Sel,  //循环发送，判断发送完再发送下一个
     UartTx_Interrupt_Sel  //中断发送，利用发送完成中断发送下一个
 }UartTx_Mode_SelType;  //uart发送方式选择
 
@@ -59,6 +60,8 @@ typedef struct
     pQueue_TypeDef pbuffer_queue_Tx;
     pQueue_TypeDef pframe_queue_Tx;
 //#endif
+    uint32_t current_frame_len;  //当前帧长度
+    uint32_t frame_interval_times;  //发送帧之间间隔循环次数
     UartTx_Mode_SelType UartTx_Mode_Sel;
 }Uart_PortInfo;  //uart端口信息
 
@@ -144,6 +147,6 @@ void Uart_PriorityTask_Regist(Uart_Port uartx, void (*uart_task)(uint8_t * pdata
 void uart_write(Uart_Port uartx, uint8_t * pdata, uint32_t len);
 void uart_read(Uart_Port uartx, void (*uart_task)(uint8_t * pdata, uint32_t len));
 
-void uart_send_timing(Uart_Port uartx);
+void uart_send_loop(Uart_Port uartx);
 
 #endif
