@@ -8,6 +8,7 @@
 #include "bsp_time3.h"
 #include "bsp_key.h"
 #include "bsp_usart.h"
+#include "bsp_iwdg.h"
 
 #include "mid_timers.h"
 

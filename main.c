@@ -22,6 +22,7 @@ void time_task7(void);
 void time_task8(void);
 void time_task9(void);
 void time_task10(void);
+void time_task11(void);
 
 void uart_task1(uint8_t * pdata, uint32_t len);
 void uart_task2(uint8_t * pdata, uint32_t len);
@@ -89,6 +90,11 @@ void time_task10(void)
     Led_GPIO_Write(LED_BLUE, LED_TOGGLE);
 }
 
+void time_task11(void)
+{
+    IWDG_Feed();
+}
+
 void uart_task1(uint8_t * pdata, uint32_t len)
 {
     uart_write(Uart1, pdata, len);
@@ -139,6 +145,7 @@ int main(void)
     TIM3_Init(719, 99, Timer_Update);  //720 * 100 / 72000000 = 0.001s = 1ms
     Uart_Init(Uart1, 115200, 20, 20, UartTx_Interrupt_Sel);
 //    Uart_PriorityTask_Regist(Uart1, uart_task1);
+    IWDG_Init(IWDG_Prescaler_64, 1000);  //1.6s溢出
     
 //    timer_task_start(2000, 2000, 0, time_task1);  //闪蓝灯
     timer_task_start(1000, 1000, 1, time_task2);  //闪绿灯
@@ -148,6 +155,7 @@ int main(void)
     timer_task_start(1000, 1000, 1, time_task8);  //读串口1缓存并执行
     timer_task_start(2000, 2000, 0, time_task10);  //串口1写循环
     timer_task_start(1000, 1000, 1, time_task9);  //串口1发送循环
+    timer_task_start(1000, 1000, 0, time_task11);  //独立看门狗复位
     
 	/* Infinite loop */
 	while(1)
