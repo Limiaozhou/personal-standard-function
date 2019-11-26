@@ -140,10 +140,10 @@ uint32_t get_queue_len(pQueue_TypeDef pqueue)
     if(!pqueue)
         return 0;
     
-//	 if(pqueue->tail >= pqueue->head)
-//		 pqueue->len = pqueue->tail - pqueue->head;
-//	 else
-//		 pqueue->len = pqueue->size - pqueue->head + pqueue->tail;
+	 if(pqueue->tail >= pqueue->head)
+		 pqueue->len = pqueue->tail - pqueue->head;
+	 else
+		 pqueue->len = pqueue->queue_size - pqueue->head + pqueue->tail;
 	
 	return pqueue->len;
 }

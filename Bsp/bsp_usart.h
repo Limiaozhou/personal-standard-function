@@ -48,20 +48,12 @@ typedef struct
     DMA_Channel_TypeDef* DMAy_Channelx_Tx;
     DMA_Channel_TypeDef* DMAy_Channelx_Rx;
     void (*uart_priority_task)(uint8_t * pdata, uint32_t len);  //优先任务，中断调度执行
-//    uint8_t * pbuffer_Rx;  //数据缓存指针
-//    uint32_t Buffer_Size_Rx;  //数据缓存大小
-//    uint32_t buffer_len_Rx;  //缓存数据长度
-//    uint8_t * pbuffer_Tx;
-//    uint32_t Buffer_Size_Tx;
-//    uint32_t buffer_len_Tx;
-//#if QUEUE_USED == 1
     pQueue_TypeDef pbuffer_queue_Rx;  //串口接收数据缓存环形队列
     pQueue_TypeDef pframe_queue_Rx;  //串口接收数据帧环形队列，保存帧数和每帧长度信息
     pQueue_TypeDef pbuffer_queue_Tx;
     pQueue_TypeDef pframe_queue_Tx;
-//#endif
-    uint32_t current_frame_len;  //当前帧长度
-    uint32_t frame_interval_times;  //发送帧之间间隔循环次数
+    uint32_t current_frame_len_Tx;  //当前帧长度
+    uint32_t frame_interval_times_Tx;  //发送帧之间间隔循环次数
     UartTx_Mode_SelType UartTx_Mode_Sel;
 }Uart_PortInfo;  //uart端口信息
 
@@ -69,7 +61,7 @@ typedef struct
 #define UART_CONFIG_LIST {\
     {\
         {.DMAy_Channelx_Tx = /*NULL*/DMA1_Channel4, .DMA_PeripheralBaseAddr_Tx = (u32)&USART1->DR, .DMA_Priority_Tx = DMA_Priority_Medium,\
-         .DMAy_Channelx_Rx = NULL/*DMA1_Channel5*/, .DMA_PeripheralBaseAddr_Rx = (u32)&USART1->DR, .DMA_Priority_Rx = DMA_Priority_Medium},\
+         .DMAy_Channelx_Rx = /*NULL*/DMA1_Channel5, .DMA_PeripheralBaseAddr_Rx = (u32)&USART1->DR, .DMA_Priority_Rx = DMA_Priority_Medium},\
         {.GPIO_Tx = GPIOA, .Pin_Tx = GPIO_Pin_9, .RCC_APB2Periph_Tx = RCC_APB2Periph_GPIOA,\
          .GPIO_Rx = GPIOA, .Pin_Rx = GPIO_Pin_10, .RCC_APB2Periph_Rx = RCC_APB2Periph_GPIOA},\
         {.USARTx = USART1, .RCC_APBPeriph = RCC_APB2Periph_USART1, .RCC_APBPeriph_Sel = RCC_APB2Periph_Sel},\
@@ -107,7 +99,6 @@ typedef struct
 	Uart_RCC_APBPeriph_Sel RCC_APBPeriph_Sel;
     Uart_DMA_UseSel DMA_UseTx_Sel;  //Tx使用DMA选择
     Uart_DMA_UseSel DMA_UseRx_Sel;
-    UartTx_Mode_SelType UartTx_Mode_Sel;
 }Uart_UartType;  //uart端口配置
 
 typedef struct

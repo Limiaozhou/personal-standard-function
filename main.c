@@ -137,7 +137,7 @@ int main(void)
     Led_GPIO_Init();
     Key_GPIO_Init();
     TIM3_Init(719, 99, Timer_Update);  //720 * 100 / 72000000 = 0.001s = 1ms
-    Uart_Init(Uart1, 115200, 100, 100, UartTx_Interrupt_Sel);
+    Uart_Init(Uart1, 115200, 20, 20, UartTx_Interrupt_Sel);
 //    Uart_PriorityTask_Regist(Uart1, uart_task1);
     
 //    timer_task_start(2000, 2000, 0, time_task1);  //闪蓝灯
@@ -145,7 +145,7 @@ int main(void)
     timer_task_start(20000, 0, 1, time_task3);  //关蓝绿灯闪烁任务，闪红灯，检测按键开关蓝灯
 //    timer_task_start(5, 5, 1, time_task5);  //按键检测开关LED3
     timer_task_start(1000, 1000, 0, time_task7);  //闪LED3
-    timer_task_start(100, 100, 1, time_task8);  //读串口1缓存并执行
+    timer_task_start(1000, 1000, 1, time_task8);  //读串口1缓存并执行
     timer_task_start(2000, 2000, 0, time_task10);  //串口1写循环
     timer_task_start(1000, 1000, 1, time_task9);  //串口1发送循环
     
