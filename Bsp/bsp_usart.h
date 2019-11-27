@@ -30,6 +30,7 @@ typedef enum
 {
 	Uart1 = 0,
     Uart2,
+    Uart3,
 	number_of_uart
 }Uart_Port;  //uart¶Ë¿Ú
 
@@ -73,6 +74,14 @@ typedef struct
          .GPIO_Rx = GPIOA, .Pin_Rx = GPIO_Pin_3, .RCC_APB2Periph_Rx = RCC_APB2Periph_GPIOA},\
         {.USARTx = USART2, .RCC_APBPeriph = RCC_APB1Periph_USART2, .RCC_APBPeriph_Sel = RCC_APB1Periph_Sel},\
         {.NVIC_IRQChannel = USART2_IRQn, .NVIC_IRQChannelPreemptionPriority = 3, .NVIC_IRQChannelSubPriority = 3}\
+    },\
+    {\
+        {.DMAy_Channelx_Tx = /*NULL*/DMA1_Channel2, .DMA_PeripheralBaseAddr_Tx = (u32)&USART3->DR, .DMA_Priority_Tx = DMA_Priority_Medium,\
+         .DMAy_Channelx_Rx = /*NULL*/DMA1_Channel3, .DMA_PeripheralBaseAddr_Rx = (u32)&USART3->DR, .DMA_Priority_Rx = DMA_Priority_Medium},\
+        {.GPIO_Tx = GPIOB, .Pin_Tx = GPIO_Pin_10, .RCC_APB2Periph_Tx = RCC_APB2Periph_GPIOB,\
+         .GPIO_Rx = GPIOB, .Pin_Rx = GPIO_Pin_11, .RCC_APB2Periph_Rx = RCC_APB2Periph_GPIOB},\
+        {.USARTx = USART3, .RCC_APBPeriph = RCC_APB1Periph_USART3, .RCC_APBPeriph_Sel = RCC_APB1Periph_Sel},\
+        {.NVIC_IRQChannel = USART3_IRQn, .NVIC_IRQChannelPreemptionPriority = 3, .NVIC_IRQChannelSubPriority = 3}\
     }\
 };
 

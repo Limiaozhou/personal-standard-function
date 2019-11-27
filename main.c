@@ -12,52 +12,36 @@
 //uint32_t time_ticks;
 
 /* Private function prototypes -----------------------------------------------*/
-void time_task1(void);
-void time_task2(void);
-void time_task3(void);
-void time_task4(void);
-void time_task5(void);
-void time_task6(void);
-void time_task7(void);
-void time_task8(void);
-void time_task9(void);
-void time_task10(void);
-void time_task11(void);
-void time_task12(void);
-void time_task13(void);
-void time_task14(void);
-void time_task15(void);
-
-void uart_task1(uint8_t * pdata, uint32_t len);
-void uart_task2(uint8_t * pdata, uint32_t len);
-void uart_task3(uint8_t * pdata, uint32_t len);
+void ledblue_twinkle(void);
+void led3_twinkle(void);
+void key0_control_led3(void);
+void key1_control_ledgreen(void);
+void uart1_write_with_ledred(void);
+void uart1_send(void);
+void uart1_read(void);
+void uart1_read_deal(uint8_t * pdata, uint32_t len);
+void printf_test(void);
+void uart2_write(void);
+void uart2_send(void);
+void uart2_read(void);
+void uart2_read_deal(uint8_t * pdata, uint32_t len);
+void uart3_write(void);
+void uart3_send(void);
+void uart3_read(void);
+void uart3_read_deal(uint8_t * pdata, uint32_t len);
 
 /* Private functions ---------------------------------------------------------*/
-void time_task1(void)
+void ledblue_twinkle(void)
 {
     Led_GPIO_Write(LED_BLUE, LED_TOGGLE);
-    delay_ms(1500);
 }
 
-void time_task2(void)
+void led3_twinkle(void)
 {
-    Led_GPIO_Write(LED_GREEN, LED_TOGGLE);
+    Led_GPIO_Write(LED3, LED_TOGGLE);
 }
 
-void time_task3(void)
-{
-    timer_task_stop(time_task1);
-    timer_task_stop(time_task2);
-    timer_task_start(1000, 1000, 0, time_task4);
-    timer_task_start(5, 5, 1, time_task6);
-}
-
-void time_task4(void)
-{
-    Led_GPIO_Write(LED_RED, LED_TOGGLE);
-}
-
-void time_task5(void)
+void key0_control_led3(void)
 {
     if(!Key_GPIO_Read(KEY0))
         Led_GPIO_Write(LED3, LED_ON);
@@ -65,7 +49,7 @@ void time_task5(void)
         Led_GPIO_Write(LED3, LED_OFF);
 }
 
-void time_task6(void)
+void key1_control_ledgreen(void)
 {
     if(!Key_GPIO_Read(KEY1))
         Led_GPIO_Write(LED_GREEN, LED_ON);
@@ -73,34 +57,29 @@ void time_task6(void)
         Led_GPIO_Write(LED_GREEN, LED_OFF);
 }
 
-void time_task7(void)
+void uart1_write_with_ledred(void)
 {
-    Led_GPIO_Write(LED3, LED_TOGGLE);
+    uint8_t buf[] = "01234567890";
+    uart_write( Uart1, buf, sizeof(buf) );
+    Led_GPIO_Write(LED_RED, LED_TOGGLE);
 }
 
-void time_task8(void)
-{
-    uart_read(Uart1, uart_task1);
-}
-
-void time_task9(void)
+void uart1_send(void)
 {
     uart_send_loop(Uart1);
 }
 
-void time_task10(void)
+void uart1_read(void)
 {
-    uint8_t buf[] = "01234567890";
-    uart_write(Uart1, buf, 11);
-    Led_GPIO_Write(LED_BLUE, LED_TOGGLE);
+    uart_read(Uart1, uart1_read_deal);
 }
 
-void time_task11(void)
+void uart1_read_deal(uint8_t * pdata, uint32_t len)
 {
-    IWDG_Feed();
+    uart_write(Uart1, pdata, len);
 }
 
-void time_task12(void)
+void printf_test(void)
 {
     printf("Uart_ConfigType size : %d byte\r\n", sizeof(Uart_ConfigType));
     printf("Uart_DMAType size : %d byte\r\n", sizeof(Uart_DMAType));
@@ -112,47 +91,46 @@ void time_task12(void)
     printf("Current parameters value: file %s on line %d\r\n", (uint8_t *)__FILE__, __LINE__);
 }
 
-void time_task13(void)
+void uart2_write(void)
 {
-    uart_read(Uart2, uart_task3);
+    uint8_t buf[] = "01234567890";
+    uart_write( Uart2, buf, sizeof(buf) );
 }
 
-void time_task14(void)
+void uart2_send(void)
 {
     uart_send_loop(Uart2);
 }
 
-void time_task15(void)
+void uart2_read(void)
 {
-    uint8_t buf[] = "abcdefghijk";
-    uart_write(Uart2, buf, 11);
+    uart_read(Uart2, uart2_read_deal);
 }
 
-void uart_task1(uint8_t * pdata, uint32_t len)
-{
-    uart_write(Uart1, pdata, len);
-}
-
-void uart_task2(uint8_t * pdata, uint32_t len)
-{
-    uint32_t i;
-    uint8_t * pbuf= (uint8_t*)malloc( len * sizeof(uint8_t) );
-    
-    if(!pbuf)
-        return;
-    
-    for(i = 0; i < len; ++i)
-    {
-        pbuf[i] = pdata[len - 1 -i];
-    }
-    uart_write(Uart1, pbuf, len);
-    
-    free(pbuf);
-}
-
-void uart_task3(uint8_t * pdata, uint32_t len)
+void uart2_read_deal(uint8_t * pdata, uint32_t len)
 {
     uart_write(Uart2, pdata, len);
+}
+
+void uart3_write(void)
+{
+    uint8_t buf[] = "01234567890";
+    uart_write( Uart3, buf, sizeof(buf) );
+}
+
+void uart3_send(void)
+{
+    uart_send_loop(Uart3);
+}
+
+void uart3_read(void)
+{
+    uart_read(Uart3, uart3_read_deal);
+}
+
+void uart3_read_deal(uint8_t * pdata, uint32_t len)
+{
+    uart_write(Uart3, pdata, len);
 }
 
 /* Main program */
@@ -182,23 +160,26 @@ int main(void)
     Key_GPIO_Init();
     TIM3_Init(719, 99, Timer_Update);  //720 * 100 / 72000000 = 0.001s = 1ms
     Uart_Init(Uart1, 115200, 20, 20, UartTx_Interrupt_Sel);
-//    Uart_PriorityTask_Regist(Uart1, uart_task1);
+//    Uart_PriorityTask_Regist(Uart1, uart1_read_deal);
     Uart_Init(Uart2, 115200, 20, 20, UartTx_Interrupt_Sel);
+    Uart_Init(Uart3, 115200, 20, 20, UartTx_Interrupt_Sel);
     IWDG_Init(IWDG_Prescaler_64, 1000);  //1.6s溢出
     
-//    timer_task_start(2000, 2000, 0, time_task1);  //闪蓝灯
-    timer_task_start(1000, 1000, 1, time_task2);  //闪绿灯
-    timer_task_start(20000, 0, 1, time_task3);  //关蓝绿灯闪烁任务，闪红灯，检测按键开关蓝灯
-//    timer_task_start(5, 5, 1, time_task5);  //按键检测开关LED3
-    timer_task_start(1000, 1000, 0, time_task7);  //闪LED3
-    timer_task_start(1000, 1000, 1, time_task8);  //读串口1缓存并执行
-    timer_task_start(2000, 2000, 0, time_task10);  //串口1写循环，闪蓝灯
-    timer_task_start(1000, 1000, 1, time_task9);  //串口1发送循环
-    timer_task_start(1000, 1000, 0, time_task11);  //独立看门狗复位
-//    timer_task_start(2000, 2000, 0, time_task12);  //printf
-    timer_task_start(1000, 1000, 1, time_task13);  //读串口2缓存并执行
-    timer_task_start(2000, 2000, 0, time_task14);  //串口2写循环
-    timer_task_start(1000, 1000, 1, time_task15);  //串口2发送循环
+    timer_task_start(100, 0, 0, printf_test);
+    timer_task_start(1000, 1000, 0, IWDG_Feed);
+    timer_task_start(1000, 1000, 0, ledblue_twinkle);
+    timer_task_start(1000, 1000, 0, led3_twinkle);
+//    timer_task_start(5, 5, 0, key0_control_led3);
+    timer_task_start(5, 5, 0, key1_control_ledgreen);
+    timer_task_start(2000, 2000, 0, uart1_write_with_ledred);
+    timer_task_start(2000, 2000, 0, uart1_send);
+    timer_task_start(2000, 2000, 0, uart1_read);
+    timer_task_start(2000, 2000, 0, uart2_write);
+    timer_task_start(2000, 2000, 0, uart2_send);
+    timer_task_start(2000, 2000, 0, uart2_read);
+    timer_task_start(2000, 2000, 0, uart3_write);
+    timer_task_start(2000, 2000, 0, uart3_send);
+    timer_task_start(2000, 2000, 0, uart3_read);
     
 	/* Infinite loop */
 	while(1)

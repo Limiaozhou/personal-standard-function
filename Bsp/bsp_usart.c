@@ -99,6 +99,8 @@ void Uart_Init(Uart_Port uartx, uint32_t baudrate, uint32_t rxbuf_size, uint32_t
         Uart_GPIOInit(&Uart_ConfigList[uartx].Uart_GPIO);
         Uart_UartInit(&Uart_ConfigList[uartx].Uart_Uart);
         Uart_NVICInit(&Uart_ConfigList[uartx].Uart_NVIC);
+        
+        printf("Uart_ConfigList size : %d byte\r\n", sizeof(Uart_ConfigList));
     }
 }
 
@@ -458,4 +460,10 @@ void USART2_IRQHandler(void)
 {
     if(Uart_PortInfoList[Uart2].USARTx == USART2)
         Uart_IRQHandler_Deal(Uart2);
+}
+
+void USART3_IRQHandler(void)
+{
+    if(Uart_PortInfoList[Uart3].USARTx == USART3)
+        Uart_IRQHandler_Deal(Uart3);
 }
