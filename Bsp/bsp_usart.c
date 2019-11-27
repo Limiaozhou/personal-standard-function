@@ -14,6 +14,34 @@ static void Uart_DMAInit(Uart_DMAType * pUart_DMA);  //串口DMA配置
 static void DMA_ReEnable(DMA_Channel_TypeDef* DMAy_Channelx, uint32_t DMA_BufferSize);  //DMA失能，配置数量寄存器，再重新使能
 static void Uart_IRQHandler_Deal(Uart_Port uartx);  //串口中断处理
 
+/*加入以下代码,支持printf函数,而不需要选择use MicroLIB*/
+#if 1
+/*确保没有从 C 库链接使用半主机的函数*/
+//#pragma import(__use_no_semihosting)
+
+/*标准库需要的支持函数*/
+//struct __FILE
+//{
+//	int handle;
+//};
+//
+//FILE __stdout;
+
+/*定义_sys_exit()以避免使用半主机模式*/
+//void _sys_exit(int x)
+//{
+//	x = x;
+//}
+
+/*重定义fputc函数*/
+int fputc(int ch, FILE *f)
+{
+	while(USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET);
+    USART_SendData(USART1, (uint8_t)ch);
+	return ch;
+}
+#endif
+
 //串口初始化
 void Uart_Init(Uart_Port uartx, uint32_t baudrate, uint32_t rxbuf_size, uint32_t txbuf_size, UartTx_Mode_SelType mode)
 {
@@ -424,4 +452,10 @@ void USART1_IRQHandler(void)
 {
     if(Uart_PortInfoList[Uart1].USARTx == USART1)
         Uart_IRQHandler_Deal(Uart1);
+}
+
+void USART2_IRQHandler(void)
+{
+    if(Uart_PortInfoList[Uart2].USARTx == USART2)
+        Uart_IRQHandler_Deal(Uart2);
 }

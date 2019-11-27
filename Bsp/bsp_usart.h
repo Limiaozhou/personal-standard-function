@@ -14,6 +14,7 @@
 #endif
 
 #include "queue.h"
+#include "stdio.h"  //包含fputc等输入输出函数
 
 //#include "typedef.h"
 
@@ -25,12 +26,10 @@
 //typedef unsigned long int uint32_t;
 //typedef signed long int int32_t;
 
-//是否使用环形队列，要包含"queue.h"
-//#define QUEUE_USED 1
-
 typedef enum
 {
 	Uart1 = 0,
+    Uart2,
 	number_of_uart
 }Uart_Port;  //uart端口
 
@@ -66,6 +65,14 @@ typedef struct
          .GPIO_Rx = GPIOA, .Pin_Rx = GPIO_Pin_10, .RCC_APB2Periph_Rx = RCC_APB2Periph_GPIOA},\
         {.USARTx = USART1, .RCC_APBPeriph = RCC_APB2Periph_USART1, .RCC_APBPeriph_Sel = RCC_APB2Periph_Sel},\
         {.NVIC_IRQChannel = USART1_IRQn, .NVIC_IRQChannelPreemptionPriority = 3, .NVIC_IRQChannelSubPriority = 3}\
+    },\
+    {\
+        {.DMAy_Channelx_Tx = /*NULL*/DMA1_Channel7, .DMA_PeripheralBaseAddr_Tx = (u32)&USART2->DR, .DMA_Priority_Tx = DMA_Priority_Medium,\
+         .DMAy_Channelx_Rx = /*NULL*/DMA1_Channel6, .DMA_PeripheralBaseAddr_Rx = (u32)&USART2->DR, .DMA_Priority_Rx = DMA_Priority_Medium},\
+        {.GPIO_Tx = GPIOA, .Pin_Tx = GPIO_Pin_2, .RCC_APB2Periph_Tx = RCC_APB2Periph_GPIOA,\
+         .GPIO_Rx = GPIOA, .Pin_Rx = GPIO_Pin_3, .RCC_APB2Periph_Rx = RCC_APB2Periph_GPIOA},\
+        {.USARTx = USART2, .RCC_APBPeriph = RCC_APB1Periph_USART2, .RCC_APBPeriph_Sel = RCC_APB1Periph_Sel},\
+        {.NVIC_IRQChannel = USART2_IRQn, .NVIC_IRQChannelPreemptionPriority = 3, .NVIC_IRQChannelSubPriority = 3}\
     }\
 };
 
