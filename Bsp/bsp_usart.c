@@ -263,7 +263,6 @@ void uart_write(Uart_Port uartx, uint8_t * pdata, uint32_t len)
             memcpy( Uart_PortInfoList[uartx].pbuffer_queue_Tx->pdata, pdata, (len > size ? size : len) );
             
             DMA_ReEnable( Uart_PortInfoList[uartx].DMAy_Channelx_Tx, len );  //使能通道
-            USART_ITConfig(Uart_PortInfoList[uartx].USARTx, USART_IT_TC, ENABLE);  //开启发送完成中断
         }
         else
         {
@@ -445,13 +444,6 @@ static void Uart_IRQHandler_Deal(Uart_Port uartx)
         if(USART_GetITStatus(Uart_PortInfoList[uartx].USARTx, USART_IT_TC) != RESET)
         {  //帧发送完成
             USART_ClearITPendingBit(Uart_PortInfoList[uartx].USARTx, USART_IT_TC);  //清中断
-            
-            if(Uart_PortInfoList[uartx].DMAy_Channelx_Tx)
-            {
-                DMA_Cmd( Uart_PortInfoList[uartx].DMAy_Channelx_Tx, DISABLE );  //失能通道
-                DMA_SetCurrDataCounter( Uart_PortInfoList[uartx].DMAy_Channelx_Tx, 0 );
-                USART_ITConfig(Uart_PortInfoList[uartx].USARTx, USART_IT_TC, DISABLE);  //关闭发送完成中断
-            }
         }
     }
 }
