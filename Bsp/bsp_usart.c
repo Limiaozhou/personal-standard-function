@@ -440,11 +440,6 @@ static void Uart_IRQHandler_Deal(Uart_Port uartx)
             else
                 USART_ITConfig(Uart_PortInfoList[uartx].USARTx, USART_IT_TXE, DISABLE);
         }
-        
-        if(USART_GetITStatus(Uart_PortInfoList[uartx].USARTx, USART_IT_TC) != RESET)
-        {  //帧发送完成
-            USART_ClearITPendingBit(Uart_PortInfoList[uartx].USARTx, USART_IT_TC);  //清中断
-        }
     }
 }
 
