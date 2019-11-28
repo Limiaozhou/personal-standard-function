@@ -54,8 +54,8 @@ void Uart_Init(Uart_Port uartx, uint32_t baudrate, uint32_t rxbuf_size, uint32_t
         Uart_ConfigList[uartx].Uart_Uart.DMA_UseRx_Sel = DMA_NoUsed_Sel;
         Uart_ConfigList[uartx].Uart_DMA.DMA_MemoryBaseAddr_Tx = NULL;
         Uart_ConfigList[uartx].Uart_DMA.DMA_MemoryBaseAddr_Rx = NULL;
-        Uart_ConfigList[uartx].Uart_DMA.DMA_BufferSize_Tx = 0;
-        Uart_ConfigList[uartx].Uart_DMA.DMA_BufferSize_Rx = 0;
+        Uart_ConfigList[uartx].Uart_DMA.DMA_BufferSize_Tx = 1;  //要大于0，否则初始化dma数量寄存器会出错
+        Uart_ConfigList[uartx].Uart_DMA.DMA_BufferSize_Rx = 1;
         
         if(Uart_ConfigList[uartx].Uart_DMA.DMAy_Channelx_Tx)
             Uart_ConfigList[uartx].Uart_Uart.DMA_UseTx_Sel = DMA_Used_Sel;
@@ -214,6 +214,9 @@ static void Uart_DMAInit(Uart_DMAType * pUart_DMA)
         DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;  //普通模式
         DMA_InitStructure.DMA_Priority = pUart_DMA->DMA_Priority_Tx;  //DMA通道优先级
         DMA_Init(pUart_DMA->DMAy_Channelx_Tx, &DMA_InitStructure);  //根据DMA_InitStruct中指定的参数初始化DMA的通道
+        
+        DMA_Cmd(pUart_DMA->DMAy_Channelx_Tx, ENABLE);  //关闭通道
+        DMA_SetCurrDataCounter( pUart_DMA->DMAy_Channelx_Tx, 0 );  //清0数量寄存器，以后续正常启动
     }
     
     if(pUart_DMA->DMAy_Channelx_Rx)
