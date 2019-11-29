@@ -61,7 +61,8 @@ typedef struct
 #define UART_CONFIG_LIST {\
     {\
         {.DMAy_Channelx_Tx = /*NULL*/DMA1_Channel4, .DMA_PeripheralBaseAddr_Tx = (u32)&USART1->DR, .DMA_Priority_Tx = DMA_Priority_Medium,\
-         .DMAy_Channelx_Rx = /*NULL*/DMA1_Channel5, .DMA_PeripheralBaseAddr_Rx = (u32)&USART1->DR, .DMA_Priority_Rx = DMA_Priority_Medium},\
+         .DMAy_Channelx_Rx = /*NULL*/DMA1_Channel5, .DMA_PeripheralBaseAddr_Rx = (u32)&USART1->DR, .DMA_Priority_Rx = DMA_Priority_Medium,\
+         .RCC_AHBPeriph = RCC_AHBPeriph_DMA1},\
         {.GPIO_Tx = GPIOA, .Pin_Tx = GPIO_Pin_9, .RCC_APB2Periph_Tx = RCC_APB2Periph_GPIOA,\
          .GPIO_Rx = GPIOA, .Pin_Rx = GPIO_Pin_10, .RCC_APB2Periph_Rx = RCC_APB2Periph_GPIOA},\
         {.USARTx = USART1, .RCC_APBPeriph = RCC_APB2Periph_USART1, .RCC_APBPeriph_Sel = RCC_APB2Periph_Sel},\
@@ -69,7 +70,8 @@ typedef struct
     },\
     {\
         {.DMAy_Channelx_Tx = /*NULL*/DMA1_Channel7, .DMA_PeripheralBaseAddr_Tx = (u32)&USART2->DR, .DMA_Priority_Tx = DMA_Priority_Medium,\
-         .DMAy_Channelx_Rx = /*NULL*/DMA1_Channel6, .DMA_PeripheralBaseAddr_Rx = (u32)&USART2->DR, .DMA_Priority_Rx = DMA_Priority_Medium},\
+         .DMAy_Channelx_Rx = /*NULL*/DMA1_Channel6, .DMA_PeripheralBaseAddr_Rx = (u32)&USART2->DR, .DMA_Priority_Rx = DMA_Priority_Medium,\
+         .RCC_AHBPeriph = RCC_AHBPeriph_DMA1},\
         {.GPIO_Tx = GPIOA, .Pin_Tx = GPIO_Pin_2, .RCC_APB2Periph_Tx = RCC_APB2Periph_GPIOA,\
          .GPIO_Rx = GPIOA, .Pin_Rx = GPIO_Pin_3, .RCC_APB2Periph_Rx = RCC_APB2Periph_GPIOA},\
         {.USARTx = USART2, .RCC_APBPeriph = RCC_APB1Periph_USART2, .RCC_APBPeriph_Sel = RCC_APB1Periph_Sel},\
@@ -77,7 +79,8 @@ typedef struct
     },\
     {\
         {.DMAy_Channelx_Tx = /*NULL*/DMA1_Channel2, .DMA_PeripheralBaseAddr_Tx = (u32)&USART3->DR, .DMA_Priority_Tx = DMA_Priority_Medium,\
-         .DMAy_Channelx_Rx = /*NULL*/DMA1_Channel3, .DMA_PeripheralBaseAddr_Rx = (u32)&USART3->DR, .DMA_Priority_Rx = DMA_Priority_Medium},\
+         .DMAy_Channelx_Rx = /*NULL*/DMA1_Channel3, .DMA_PeripheralBaseAddr_Rx = (u32)&USART3->DR, .DMA_Priority_Rx = DMA_Priority_Medium,\
+         .RCC_AHBPeriph = RCC_AHBPeriph_DMA1},\
         {.GPIO_Tx = GPIOB, .Pin_Tx = GPIO_Pin_10, .RCC_APB2Periph_Tx = RCC_APB2Periph_GPIOB,\
          .GPIO_Rx = GPIOB, .Pin_Rx = GPIO_Pin_11, .RCC_APB2Periph_Rx = RCC_APB2Periph_GPIOB},\
         {.USARTx = USART3, .RCC_APBPeriph = RCC_APB1Periph_USART3, .RCC_APBPeriph_Sel = RCC_APB1Periph_Sel},\
@@ -136,6 +139,7 @@ typedef struct
     uint32_t DMA_MemoryBaseAddr_Rx;
     uint32_t DMA_BufferSize_Rx;
     uint32_t DMA_Priority_Rx;
+    uint32_t RCC_AHBPeriph;
 }Uart_DMAType;  //uart dma≈‰÷√
 
 typedef struct

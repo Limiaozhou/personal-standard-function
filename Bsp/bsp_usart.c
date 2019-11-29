@@ -196,7 +196,7 @@ static void Uart_DMAInit(Uart_DMAType * pUart_DMA)
     
     DMA_InitTypeDef DMA_InitStructure;
     
-    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
+    RCC_AHBPeriphClockCmd(pUart_DMA->RCC_AHBPeriph, ENABLE);
     
     DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;  //外设地址寄存器不变
     DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;  //内存地址寄存器递增
