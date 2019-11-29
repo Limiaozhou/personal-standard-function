@@ -213,9 +213,9 @@ int main(void)
 //    Uart_PriorityTask_Regist(Uart1, uart1_read_deal);
     Uart_Init(Uart2, 115200, 50, 50, UartTx_Interrupt_Sel);
     Uart_Init(Uart3, 115200, 50, 50, UartTx_Interrupt_Sel);
-    Uart_Init(Uart4, 115200, 50, 50, UartTx_Interrupt_Sel);
-    Uart_Init(Uart5, 115200, 50, 50, UartTx_Interrupt_Sel);
-    Uart_PriorityTask_Regist(Uart5, uart5_read_deal);
+//    Uart_Init(Uart4, 115200, 50, 50, UartTx_Interrupt_Sel);
+//    Uart_Init(Uart5, 115200, 50, 50, UartTx_Interrupt_Sel);
+//    Uart_PriorityTask_Regist(Uart5, uart5_read_deal);
     IWDG_Init(IWDG_Prescaler_64, 1000);  //1.6s溢出
     
     timer_task_start(100, 0, 0, printf_test);
@@ -230,15 +230,15 @@ int main(void)
     timer_task_start(2000, 2000, 0, uart2_write);
     timer_task_start(2000, 2000, 0, uart2_send);
     timer_task_start(2000, 2000, 0, uart2_read);
+    timer_task_start(1000, 1000, 0, uart3_send);
     timer_task_start(2000, 2000, 0, uart3_write);
-    timer_task_start(2000, 2000, 0, uart3_send);
-    timer_task_start(2000, 2000, 0, uart3_read);
-    timer_task_start(2000, 2000, 0, uart4_write);
-    timer_task_start(2000, 2000, 0, uart4_send);
-    timer_task_start(2000, 2000, 0, uart4_read);
-    timer_task_start(2000, 2000, 0, uart5_write);
-    timer_task_start(2000, 2000, 0, uart5_send);
-    timer_task_start(2000, 2000, 0, uart5_read);
+    timer_task_start(1000, 1000, 0, uart3_read);
+//    timer_task_start(2000, 2000, 0, uart4_write);
+//    timer_task_start(2000, 2000, 0, uart4_send);
+//    timer_task_start(2000, 2000, 0, uart4_read);
+//    timer_task_start(2000, 2000, 0, uart5_write);
+//    timer_task_start(2000, 2000, 0, uart5_send);
+//    timer_task_start(2000, 2000, 0, uart5_read);
     
 	/* Infinite loop */
 	while(1)
