@@ -29,6 +29,9 @@ void uart3_write(void);
 void uart3_send(void);
 void uart3_read(void);
 void uart3_read_deal(uint8_t * pdata, uint32_t len);
+void uart4_send(void);
+void uart4_read(void);
+void uart4_read_deal(uint8_t * pdata, uint32_t len);
 
 /* Private functions ---------------------------------------------------------*/
 void ledblue_twinkle(void)
@@ -133,6 +136,27 @@ void uart3_read_deal(uint8_t * pdata, uint32_t len)
     uart_write(Uart3, pdata, len);
 }
 
+void uart4_write(void)
+{
+    uint8_t buf[] = "01234567890";
+    uart_write( Uart4, buf, sizeof(buf) );
+}
+
+void uart4_send(void)
+{
+    uart_send_loop(Uart4);
+}
+
+void uart4_read(void)
+{
+    uart_read(Uart4, uart4_read_deal);
+}
+
+void uart4_read_deal(uint8_t * pdata, uint32_t len)
+{
+    uart_write(Uart4, pdata, len);
+}
+
 /* Main program */
 int main(void)
 {
@@ -163,6 +187,7 @@ int main(void)
 //    Uart_PriorityTask_Regist(Uart1, uart1_read_deal);
     Uart_Init(Uart2, 115200, 20, 20, UartTx_Interrupt_Sel);
     Uart_Init(Uart3, 115200, 20, 20, UartTx_Interrupt_Sel);
+    Uart_Init(Uart4, 115200, 20, 20, UartTx_Interrupt_Sel);
     IWDG_Init(IWDG_Prescaler_64, 1000);  //1.6s溢出
     
     timer_task_start(100, 0, 0, printf_test);
@@ -180,6 +205,9 @@ int main(void)
     timer_task_start(2000, 2000, 0, uart3_write);
     timer_task_start(2000, 2000, 0, uart3_send);
     timer_task_start(2000, 2000, 0, uart3_read);
+    timer_task_start(2000, 2000, 0, uart4_write);
+    timer_task_start(2000, 2000, 0, uart4_send);
+    timer_task_start(2000, 2000, 0, uart4_read);
     
 	/* Infinite loop */
 	while(1)

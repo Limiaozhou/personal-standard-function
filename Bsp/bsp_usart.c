@@ -463,3 +463,9 @@ void USART3_IRQHandler(void)
     if(Uart_PortInfoList[Uart3].USARTx == USART3)
         Uart_IRQHandler_Deal(Uart3);
 }
+
+void UART4_IRQHandler(void)
+{
+    if(Uart_PortInfoList[Uart4].USARTx == UART4)
+        Uart_IRQHandler_Deal(Uart4);
+}
