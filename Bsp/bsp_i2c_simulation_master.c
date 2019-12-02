@@ -38,7 +38,7 @@ static void i2c_simulation_gpio_init(I2C_Simulation_GPIO_TypeDef * pI2C_GPIO)
     RCC_APB2PeriphClockCmd(pI2C_GPIO->RCC_APB2Periph_sda, ENABLE);
     
     GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_OD;
+    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_OD;  //开漏输出
     
     GPIO_InitStruct.GPIO_Pin = pI2C_GPIO->Pin_scl;
     GPIO_Init(pI2C_GPIO->GPIO_scl, &GPIO_InitStruct);
@@ -48,27 +48,34 @@ static void i2c_simulation_gpio_init(I2C_Simulation_GPIO_TypeDef * pI2C_GPIO)
 }
 
 //模拟I2C IO口电平输出，0输出低
-static void i2c_simulation_gpio_write(GPIO_TypeDef* GPIOx, GPIO_Pin_TypeDef PortPinx, uint8_t level)
+static void i2c_simulation_gpio_write(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, GPIO_OutLevel_TypeDef level)
 {
-	if(level)
-		GPIO_WriteHigh(GPIOx, PortPinx);
-	else
-		GPIO_WriteLow(GPIOx, PortPinx);
+    GPIO_WriteBit(GPIOx, GPIO_Pin, (BitAction)level);
 }
 
 //模拟I2C IO口输入/出方向，0输入
-static void i2c_simulation_gpio_direction(GPIO_TypeDef* GPIOx, GPIO_Pin_TypeDef PortPinx, GPIO_Direction_TypeDef dir)
+static void i2c_simulation_gpio_direction(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, GPIO_Direction_TypeDef dir)
 {
+    if(!GPIOx)
+        return;  //通道没有就返回
+    
+    GPIO_InitTypeDef GPIO_InitStruct;
+    
+    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStruct.GPIO_Pin = GPIO_Pin;
+    
 	if(dir == GPIO_Out)
-		GPIOx->DDR |= (uint8_t)PortPinx;
+		GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_OD;
 	else
-		GPIOx->DDR &= (uint8_t)(~PortPinx);
+		GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+    
+    GPIO_Init(GPIOx, &GPIO_InitStruct);
 }
 
 //模拟I2C IO口电平读取，返回电平值
-static uint8_t i2c_simulation_gpio_read(GPIO_TypeDef* GPIOx, GPIO_Pin_TypeDef PortPinx)
+static uint8_t i2c_simulation_gpio_read(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 {
-	return ((uint8_t)GPIO_ReadInputPin(GPIOx, PortPinx));
+	return GPIO_ReadInputDataBit(GPIOx, GPIO_Pin);
 }
 
 #elif defined STM8
@@ -109,7 +116,7 @@ void I2C_Simulation_Master_Init(void)
 {
 	uint8_t i;  //I2C口索引
 	for(i = 0; i < number_of_i2c_simulation; i++)
-		i2c_simulation_gpio_init(I2C_GPIO_List[i].GPIO_scl, I2C_GPIO_List[i].scl_pin, I2C_GPIO_List[i].GPIO_sda, I2C_GPIO_List[i].sda_pin);
+		i2c_simulation_gpio_init(&I2C_GPIO_List[i]);
 }
 
 //起始信号，当SCL处于高电平时，SDA由高电平变成低电平时
@@ -117,12 +124,12 @@ static void I2C_Simulation_Master_Start(uint8_t port)
 {
 	if(port < number_of_i2c_simulation)
 	{
-		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].sda_pin, GPIO_High_Level);
-		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_scl, I2C_GPIO_List[port].scl_pin, GPIO_High_Level);
+		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].Pin_sda, GPIO_High_Level);
+		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_scl, I2C_GPIO_List[port].Pin_scl, GPIO_High_Level);
 		delay_us(DELAY_US_I2C);
-		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].sda_pin, GPIO_Low_Level);
+		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].Pin_sda, GPIO_Low_Level);
 		delay_us(DELAY_US_I2C);
-		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_scl, I2C_GPIO_List[port].scl_pin, GPIO_Low_Level);
+		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_scl, I2C_GPIO_List[port].Pin_scl, GPIO_Low_Level);
 		delay_us(DELAY_US_I2C);
 	}
 }
@@ -132,10 +139,10 @@ static void I2C_Simulation_Master_Stop(uint8_t port)
 {
 	if(port < number_of_i2c_simulation)
 	{
-		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].sda_pin, GPIO_Low_Level);
-		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_scl, I2C_GPIO_List[port].scl_pin, GPIO_High_Level);
+		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].Pin_sda, GPIO_Low_Level);
+		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_scl, I2C_GPIO_List[port].Pin_scl, GPIO_High_Level);
 		delay_us(DELAY_US_I2C);
-		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].sda_pin, GPIO_High_Level);
+		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].Pin_sda, GPIO_High_Level);
 		delay_us(DELAY_US_I2C);
 	}
 }
@@ -145,11 +152,11 @@ static void I2C_Simulation_Master_SendAck(uint8_t port, uint8_t ack)
 {
 	if(port < number_of_i2c_simulation)
 	{
-		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].sda_pin, ack);
+		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].Pin_sda, (GPIO_OutLevel_TypeDef)ack);
 		delay_us(DELAY_US_I2C);
-		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_scl, I2C_GPIO_List[port].scl_pin, GPIO_High_Level);
+		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_scl, I2C_GPIO_List[port].Pin_scl, GPIO_High_Level);
 		delay_us(DELAY_US_I2C);
-		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_scl, I2C_GPIO_List[port].scl_pin, GPIO_Low_Level);
+		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_scl, I2C_GPIO_List[port].Pin_scl, GPIO_Low_Level);
 		delay_us(DELAY_US_I2C);
 	}
 }
@@ -161,14 +168,14 @@ static uint8_t I2C_Simulation_Master_ReceiveAck(uint8_t port)
     
 	if(port < number_of_i2c_simulation)
 	{
-		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].sda_pin, GPIO_High_Level);  //释放数据线，准备读取数据
-		i2c_simulation_gpio_direction(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].sda_pin, GPIO_In);
-		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_scl, I2C_GPIO_List[port].scl_pin, GPIO_High_Level);
+		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].Pin_sda, GPIO_High_Level);  //释放数据线，准备读取数据
+		i2c_simulation_gpio_direction(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].Pin_sda, GPIO_In);
+		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_scl, I2C_GPIO_List[port].Pin_scl, GPIO_High_Level);
 		delay_us(DELAY_US_I2C);
-		ack = !!i2c_simulation_gpio_read(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].sda_pin);
-		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_scl, I2C_GPIO_List[port].scl_pin, GPIO_Low_Level);
+		ack = !!i2c_simulation_gpio_read(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].Pin_sda);
+		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_scl, I2C_GPIO_List[port].Pin_scl, GPIO_Low_Level);
 		delay_us(DELAY_US_I2C);
-		i2c_simulation_gpio_direction(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].sda_pin, GPIO_Out);
+		i2c_simulation_gpio_direction(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].Pin_sda, GPIO_Out);
 	}
 	
     return ack;
@@ -184,11 +191,11 @@ static uint8_t I2C_Simulation_Master_SendByte(uint8_t port, uint8_t byte)
 		for(i = 0; i < 8; i++)
 		{
 			bit = !!(byte & (0x80 >> i));  //取逻辑值0或1，否则P0_0=bit时，只读取bit数据的最低位bit0的值
-			i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].sda_pin, bit);
+			i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].Pin_sda, (GPIO_OutLevel_TypeDef)bit);
 			delay_us(DELAY_US_I2C);
-			i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_scl, I2C_GPIO_List[port].scl_pin, GPIO_High_Level);
+			i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_scl, I2C_GPIO_List[port].Pin_scl, GPIO_High_Level);
 			delay_us(DELAY_US_I2C);
-			i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_scl, I2C_GPIO_List[port].scl_pin, GPIO_Low_Level);
+			i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_scl, I2C_GPIO_List[port].Pin_scl, GPIO_Low_Level);
 			delay_us(DELAY_US_I2C);
 		}
 	}
@@ -203,17 +210,17 @@ static uint8_t I2C_Simulation_Master_ReceiveByte(uint8_t port, uint8_t ack)
     
 	if(port < number_of_i2c_simulation)
 	{
-		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].sda_pin, GPIO_High_Level);
-		i2c_simulation_gpio_direction(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].sda_pin, GPIO_In);
+		i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].Pin_sda, GPIO_High_Level);
+		i2c_simulation_gpio_direction(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].Pin_sda, GPIO_In);
 		for(i = 0; i < 8; i++)
 		{
-			i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_scl, I2C_GPIO_List[port].scl_pin, GPIO_High_Level);
+			i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_scl, I2C_GPIO_List[port].Pin_scl, GPIO_High_Level);
 			delay_us(DELAY_US_I2C);
-			byte |= ((!!i2c_simulation_gpio_read(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].sda_pin)) << (7 - i));
-			i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_scl, I2C_GPIO_List[port].scl_pin, GPIO_Low_Level);
+			byte |= ((!!i2c_simulation_gpio_read(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].Pin_sda)) << (7 - i));
+			i2c_simulation_gpio_write(I2C_GPIO_List[port].GPIO_scl, I2C_GPIO_List[port].Pin_scl, GPIO_Low_Level);
 			delay_us(DELAY_US_I2C);
 		}
-		i2c_simulation_gpio_direction(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].sda_pin, GPIO_Out);
+		i2c_simulation_gpio_direction(I2C_GPIO_List[port].GPIO_sda, I2C_GPIO_List[port].Pin_sda, GPIO_Out);
 	}
 	
 	I2C_Simulation_Master_SendAck(port, ack);  //接收完一个字节，发送应答

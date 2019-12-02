@@ -43,8 +43,10 @@ typedef enum
 	{\
 		.GPIO_scl = GPIOA,\
 		.Pin_scl = GPIO_Pin_4,\
+        .RCC_APB2Periph_scl = RCC_APB2Periph_GPIOA,\
 		.GPIO_sda = GPIOA,\
-		.Pin_sda = GPIO_Pin_5\
+		.Pin_sda = GPIO_Pin_5,\
+        .RCC_APB2Periph_sda = RCC_APB2Periph_GPIOA,\
 	},\
 }
 
