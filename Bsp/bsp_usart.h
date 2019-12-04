@@ -95,7 +95,7 @@ typedef struct
         {.GPIO_Tx = GPIOC, .Pin_Tx = GPIO_Pin_10, .RCC_APB2Periph_Tx = RCC_APB2Periph_GPIOC,\
          .GPIO_Rx = GPIOC, .Pin_Rx = GPIO_Pin_11, .RCC_APB2Periph_Rx = RCC_APB2Periph_GPIOC},\
         {.USARTx = UART4, .RCC_APBPeriph = RCC_APB1Periph_UART4, .RCC_APBPeriph_Sel = RCC_APB1Periph_Sel},\
-        {.NVIC_IRQChannel = NULL/*UART4_IRQn*/, .NVIC_IRQChannelPreemptionPriority = 3, .NVIC_IRQChannelSubPriority = 3}\
+        {.NVIC_IRQChannel = /*NULL*/UART4_IRQn, .NVIC_IRQChannelPreemptionPriority = 3, .NVIC_IRQChannelSubPriority = 3}\
     },\
     {\
         {.DMAy_Channelx_Tx = NULL, .DMA_PeripheralBaseAddr_Tx = (u32)NULL, .DMA_Priority_Tx = DMA_Priority_Medium,\
@@ -104,7 +104,7 @@ typedef struct
         {.GPIO_Tx = GPIOC, .Pin_Tx = GPIO_Pin_12, .RCC_APB2Periph_Tx = RCC_APB2Periph_GPIOC,\
          .GPIO_Rx = GPIOD, .Pin_Rx = GPIO_Pin_2, .RCC_APB2Periph_Rx = RCC_APB2Periph_GPIOD},\
         {.USARTx = UART5, .RCC_APBPeriph = RCC_APB1Periph_UART5, .RCC_APBPeriph_Sel = RCC_APB1Periph_Sel},\
-        {.NVIC_IRQChannel = NULL/*UART5_IRQn*/, .NVIC_IRQChannelPreemptionPriority = 3, .NVIC_IRQChannelSubPriority = 3}\
+        {.NVIC_IRQChannel = /*NULL*/UART5_IRQn, .NVIC_IRQChannelPreemptionPriority = 3, .NVIC_IRQChannelSubPriority = 3}\
     }\
 };
 
@@ -171,6 +171,7 @@ typedef struct
 }Uart_ConfigType;  //uart配置
 #endif
 
+//串口初始化，uartx：串口号，baudrate：波特率，rxbuf_size：接收缓存大小，txbuf_size：发送缓存大小，mode：发送模式（若启用了发送dma通道，则该模式选择无效）
 void Uart_Init(Uart_Port uartx, uint32_t baudrate, uint32_t rxbuf_size, uint32_t txbuf_size, UartTx_Mode_SelType mode);
 
 void Uart_PriorityTask_Regist(Uart_Port uartx, void (*uart_task)(uint8_t * pdata, uint32_t len));  //优先任务函数注册

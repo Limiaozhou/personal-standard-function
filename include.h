@@ -12,4 +12,6 @@
 
 #include "mid_timers.h"
 
+#include "app_uart.h"
+
 #endif
